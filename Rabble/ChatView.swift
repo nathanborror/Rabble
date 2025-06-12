@@ -105,7 +105,7 @@ struct ConnectionForm: View {
 
     var connect: (Session) -> Void
 
-    @State var session = Session(server: "irc.zeronode.net", nickname: "sketch22", name: "Nathan Borror")
+    @State var session = Session(server: "irc.libera.chat", nickname: "", name: "")
 
     var body: some View {
         Form {
