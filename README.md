@@ -1,3 +1,5 @@
+<img src="Images/Animals.png" width="256">
+
 # Rabble
 
 An experimental IRC client written in pure Swift.
