@@ -59,6 +59,7 @@ struct ChatView: View {
                     Divider()
                     ForEach(client.sessions) { session in
                         Button("\(session.nickname)@\(session.server)") {
+                            selected = session.id
                             client.connect(session: session)
                         }
                     }
