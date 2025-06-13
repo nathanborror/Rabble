@@ -2,8 +2,9 @@ import SwiftUI
 import RabbleKit
 
 struct ChatView: View {
-    @State private var selected: UUID? = nil
     @Environment(Client.self) var client
+    
+    @State private var selected: String? = nil
     @State private var messageText = ""
     @State private var showingNewConnectionForm = false
 
@@ -46,12 +47,6 @@ struct ChatView: View {
         }
         .toolbar {
             ToolbarItem {
-                Button("List Channels", systemImage: "number") {
-                    guard let selected else { return }
-                    try? client.command("LIST", sessionID: selected)
-                }
-            }
-            ToolbarItem {
                 Menu {
                     Button("New Connection") {
                         showingNewConnectionForm = true
@@ -60,16 +55,21 @@ struct ChatView: View {
                     ForEach(client.sessions) { session in
                         Button("\(session.nickname)@\(session.server)") {
                             selected = session.id
-                            client.connect(session: session)
                         }
                     }
                 } label: {
                     Label("Connect", systemImage: "plus")
                 }
+                .menuIndicator(.hidden)
             }
             if let selected, let session = try? client.session(selected) {
                 ToolbarItem {
-                    if session.isConnected {
+                    Button("List Channels", systemImage: "number") {
+                        try? client.command("LIST", sessionID: session.id)
+                    }
+                }
+                ToolbarItem {
+                    if session.connected {
                         Button("Disconnect", systemImage: "network.slash") {
                             try? client.disconnect(sessionID: session.id)
                         }
@@ -87,12 +87,12 @@ struct ChatView: View {
     }
 
     func handleSubmit() {
+        guard let selected else { return }
         do {
-            guard let selected else { return }
             try client.send("\(messageText)\n", sessionID: selected)
             messageText = ""
         } catch {
-            print(error)
+            try? client.upsert(message: .init(command: .error("\(error)")), sessionID: selected)
         }
     }
 }

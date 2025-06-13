@@ -1,15 +1,25 @@
 import Foundation
 
 public struct Message: Codable, Identifiable, Sendable {
-    public var id = UUID()
-    public var created: Date = .now
+    public var id: String
+    public var prefix: String?
+    public var command: Command
+    public var params: [String]
+    public var tags: [String: String]?
+    public var raw: String
+    public var created: Date
 
-    public let tags: [String: String]?
-    public let prefix: String?
-    public let command: Command
-    public let params: [String]
+    public init(id: String = UUID().uuidString, prefix: String? = nil, command: Command, params: [String] = [], tags: [String : String]? = nil, raw: String = "") {
+        self.id = id
+        self.prefix = prefix
+        self.command = command
+        self.params = params
+        self.tags = tags
+        self.raw = raw
+        self.created = .now
+    }
 
-    init?(raw: String) {
+    public static func parse(_ raw: String) -> Self? {
         var rest = raw[...]
 
         // 1. Parse tags
@@ -49,11 +59,7 @@ public struct Message: Codable, Identifiable, Sendable {
         guard let firstSpace = rest.firstIndex(of: " ") else {
             // Only command, no params
             let command = String(rest)
-            self.tags = tags
-            self.prefix = prefix
-            self.command = .init(command)
-            self.params = []
-            return
+            return .init(prefix: prefix, command: .init(command), tags: tags, raw: raw)
         }
         let command = String(rest[..<firstSpace])
         rest = rest[firstSpace...]
@@ -78,66 +84,6 @@ public struct Message: Codable, Identifiable, Sendable {
             params.append(param)
             i = nextSpace
         }
-
-        self.tags = tags
-        self.prefix = prefix
-        self.command = .init(command)
-        self.params = params
+        return .init(prefix: prefix, command: .init(command), params: params, tags: tags, raw: raw)
     }
 }
-
-//public struct Message: Identifiable, Hashable {
-//    public let id = UUID()
-//    public let created: Date = .now
-//
-//    public let prefix: String?
-//    public let command: String
-//    public let params: [String]
-//    public let trailing: String?
-//
-//    public init?(raw: String) {
-//        var rest = raw[...]
-//        var prefix: String? = nil
-//        if rest.first == ":" {
-//            rest.removeFirst()
-//            if let space = rest.firstIndex(of: " ") {
-//                prefix = String(rest[..<space])
-//                rest = rest[rest.index(after: space)...]
-//            } else {
-//                return nil
-//            }
-//        }
-//        guard let commandRange = rest.rangeOfCharacter(from: .whitespaces) else {
-//            self.prefix = prefix
-//            self.command = String(rest)
-//            self.params = []
-//            self.trailing = nil
-//            return
-//        }
-//        let command = String(rest[..<commandRange.lowerBound])
-//        rest = rest[commandRange.upperBound...]
-//
-//        // Params & trailing
-//        var params: [String] = []
-//        var trailing: String? = nil
-//        while !rest.isEmpty {
-//            if rest.first == ":" {
-//                rest.removeFirst()
-//                trailing = String(rest)
-//                break
-//            }
-//            if let space = rest.firstIndex(of: " ") {
-//                params.append(String(rest[..<space]))
-//                rest = rest[rest.index(after: space)...]
-//            } else {
-//                params.append(String(rest))
-//                break
-//            }
-//        }
-//
-//        self.prefix = prefix
-//        self.command = command
-//        self.params = params
-//        self.trailing = trailing
-//    }
-//}

@@ -6,7 +6,7 @@ import Network
 public final class Client {
     public var sessions: [Session] = []
 
-    private var pool: [UUID: NWConnection] = [:]
+    private var pool: [String: NWConnection] = [:]
     private let sessionsURL = URL.documentsDirectory.appending(path: "sessions.json")
 
     public enum Error: Swift.Error {
@@ -44,7 +44,9 @@ public final class Client {
         }
     }
 
-    public func session(_ id: UUID) throws -> Session {
+    // Session management
+
+    public func session(_ id: String) throws -> Session {
         guard let index = sessions.firstIndex(where: { $0.id == id }) else {
             throw Error.sessionNotFound
         }
@@ -61,6 +63,12 @@ public final class Client {
         save()
     }
 
+    public func upsert(message: Message, sessionID: String) throws {
+        var session = try session(sessionID)
+        session.messages.append(message)
+        try upsert(session: session)
+    }
+
     public func connect(session: Session) {
         let endpoint = NWEndpoint.hostPort(host: .init(session.server), port: .init(integerLiteral: session.port))
         pool[session.id] = NWConnection(to: endpoint, using: .tcp)
@@ -70,7 +78,7 @@ public final class Client {
                 var session = session
                 switch state {
                 case .ready:
-                    session.isConnected = true
+                    session.connected = true
                     // TODO: What is the difference between a nickname and a username?
                     let messages = [
                         "NICK \(session.nickname)\n",
@@ -90,12 +98,12 @@ public final class Client {
                     }
                 case .failed(let error):
                     // TODO: Format this correctly
-                    if let message = Message(raw: "ERROR: \(error)") {
+                    if let message = Message.parse("ERROR: \(error)") {
                         session.messages.append(message)
                     }
-                    session.isConnected = false
+                    session.connected = false
                 case .cancelled:
-                    session.isConnected = false
+                    session.connected = false
                 default:
                     break
                 }
@@ -105,9 +113,9 @@ public final class Client {
         pool[session.id]?.start(queue: .main)
     }
 
-    public func send(_ message: String, sessionID: UUID) throws {
+    public func send(_ message: String, sessionID: String) throws {
         var session = try session(sessionID)
-        if let message = Message(raw: message) {
+        if let message = Message.parse(message) {
             session.messages.append(message)
         }
         guard let data = message.data(using: .utf8) else { return }
@@ -118,19 +126,19 @@ public final class Client {
         })
     }
 
-    public func command(_ command: String, sessionID: UUID) throws {
+    public func command(_ command: String, sessionID: String) throws {
         try send(command+"\n", sessionID: sessionID)
     }
 
-    public func disconnect(sessionID: UUID) throws {
+    public func disconnect(sessionID: String) throws {
         var session = try session(sessionID)
         pool[session.id]?.cancel()
         pool[session.id] = nil
-        session.isConnected = false
+        session.connected = false
         try upsert(session: session)
     }
 
-    private func listen(sessionID: UUID) throws {
+    private func listen(sessionID: String) throws {
         pool[sessionID]?.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] content, _, isComplete, error in
             guard let self else { return }
             Task { @MainActor in
@@ -138,7 +146,7 @@ public final class Client {
                 if let data = content, let message = String(data: data, encoding: .utf8) {
                     let lines = message.components(separatedBy: "\r\n")
                     for line in lines where !line.isEmpty {
-                        if let message = Message(raw: line) {
+                        if let message = Message.parse(line) {
                             session.messages.append(message)
                         }
 
