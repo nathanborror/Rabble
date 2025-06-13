@@ -7,6 +7,7 @@ public final class Client {
     public var sessions: [Session] = []
 
     private var pool: [UUID: NWConnection] = [:]
+    private let sessionsURL = URL.documentsDirectory.appending(path: "sessions.json")
 
     public enum Error: Swift.Error {
         case sessionNotFound
@@ -14,17 +15,33 @@ public final class Client {
 
     public init() {}
 
-    public func restore() throws {
-        let url = URL.documentsDirectory.appending(path: "sessions.json")
-        let data = try Data(contentsOf: url)
-        let sessions = try JSONDecoder().decode([Session].self, from: data)
-        self.sessions = sessions
+    // State management
+
+    public func restore() {
+        do {
+            let data = try Data(contentsOf: sessionsURL)
+            let sessions = try JSONDecoder().decode([Session].self, from: data)
+            self.sessions = sessions
+        } catch {
+            print(error)
+        }
     }
 
-    public func save() throws {
-        let url = URL.documentsDirectory.appending(path: "sessions.json")
-        let data = try JSONEncoder().encode(sessions)
-        try data.write(to: url)
+    public func save() {
+        do {
+            let data = try JSONEncoder().encode(sessions)
+            try data.write(to: sessionsURL)
+        } catch {
+            print(error)
+        }
+    }
+
+    public func reset() {
+        do {
+            try FileManager.default.removeItem(at: sessionsURL)
+        } catch {
+            print(error)
+        }
     }
 
     public func session(_ id: UUID) throws -> Session {
@@ -41,7 +58,7 @@ public final class Client {
         } else {
             sessions.append(session)
         }
-        try save()
+        save()
     }
 
     public func connect(session: Session) {

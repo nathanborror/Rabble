@@ -2,8 +2,8 @@ import SwiftUI
 import RabbleKit
 
 struct ChatView: View {
-    @State private var client = Client()
     @State private var selected: UUID? = nil
+    @Environment(Client.self) var client
     @State private var messageText = ""
     @State private var showingNewConnectionForm = false
 
@@ -82,11 +82,7 @@ struct ChatView: View {
             }
         }
         .onAppear {
-            do {
-                try client.restore()
-            } catch {
-                print(error)
-            }
+            client.restore()
         }
     }
 
