@@ -2,6 +2,7 @@ import Foundation
 
 public struct Message: Codable, Identifiable, Sendable {
     public var id: String
+    public var kind: Kind
     public var prefix: String?
     public var command: Command
     public var params: [String]
@@ -9,8 +10,15 @@ public struct Message: Codable, Identifiable, Sendable {
     public var raw: String
     public var created: Date
 
-    public init(id: String = UUID().uuidString, prefix: String? = nil, command: Command, params: [String] = [], tags: [String : String]? = nil, raw: String = "") {
+    public enum Kind: Codable, Sendable {
+        case server
+        case client
+    }
+
+    public init(id: String = UUID().uuidString, kind: Kind, prefix: String? = nil, command: Command,
+                params: [String] = [], tags: [String : String]? = nil, raw: String = "") {
         self.id = id
+        self.kind = kind
         self.prefix = prefix
         self.command = command
         self.params = params
@@ -18,9 +26,12 @@ public struct Message: Codable, Identifiable, Sendable {
         self.raw = raw
         self.created = .now
     }
+}
 
-    public static func parse(_ raw: String) -> Self? {
-        var rest = raw[...]
+extension Message {
+
+    public static func server(_ input: String) -> Self? {
+        var rest = input[...]
 
         // 1. Parse tags
         var tags: [String: String]? = nil
@@ -59,7 +70,7 @@ public struct Message: Codable, Identifiable, Sendable {
         guard let firstSpace = rest.firstIndex(of: " ") else {
             // Only command, no params
             let command = String(rest)
-            return .init(prefix: prefix, command: .init(command), tags: tags, raw: raw)
+            return .init(kind: .server, prefix: prefix, command: .init(command), tags: tags, raw: input)
         }
         let command = String(rest[..<firstSpace])
         rest = rest[firstSpace...]
@@ -84,6 +95,43 @@ public struct Message: Codable, Identifiable, Sendable {
             params.append(param)
             i = nextSpace
         }
-        return .init(prefix: prefix, command: .init(command), params: params, tags: tags, raw: raw)
+        return .init(kind: .server, prefix: prefix, command: .init(command), params: params, tags: tags, raw: input)
+    }
+
+    static func user(_ input: String) -> Message? {
+        var rest = input[...]
+
+        // Remove leading/trailing whitespace
+        rest = rest.trimmingCharacters(in: .whitespacesAndNewlines)[...]
+        if rest.isEmpty { return nil }
+
+        // 1. Parse command
+        guard let firstSpace = rest.firstIndex(of: " ") else {
+            // Command only, no params
+            let command = String(rest)
+            return .init(kind: .client, command: .init(command), params: [], raw: input)
+        }
+        let command = String(rest[..<firstSpace])
+        rest = rest[firstSpace...]
+
+        // 2. Parse params and trailing (just like IRC spec)
+        var params: [String] = []
+        var i = rest.startIndex
+        while i < rest.endIndex {
+            // Skip spaces
+            while i < rest.endIndex && rest[i] == " " { i = rest.index(after: i) }
+            if i == rest.endIndex { break }
+            if rest[i] == ":" {
+                let trailingStart = rest.index(after: i)
+                let trailing = String(rest[trailingStart...])
+                params.append(trailing)
+                break
+            }
+            let nextSpace = rest[i...].firstIndex(of: " ") ?? rest.endIndex
+            let param = String(rest[i..<nextSpace])
+            params.append(param)
+            i = nextSpace
+        }
+        return .init(kind: .client, command: .init(command), params: params, raw: input)
     }
 }

@@ -7,16 +7,21 @@ struct ChatView: View {
     @State private var selected: String? = nil
     @State private var messageText = ""
     @State private var showingNewConnectionForm = false
+    @State private var showingChannels = false
 
     var body: some View {
         List {
-            if let selected, let session = try? client.session(selected) {
+            if let selected, let session = client.session(selected) {
                 ForEach(session.messages) { message in
-                    Text("prefix: \(message.prefix ?? "nil"), command: \(message.command), params: \(message.params), tags: \(message.tags ?? [:])")
-                        .font(.subheadline)
-                        .fontDesign(.monospaced)
-                        .padding(.horizontal)
-                        .textSelection(.enabled)
+                    VStack(alignment: .leading) {
+                        Text("prefix: \(message.prefix ?? "nil"), command: \(message.command), params: \(message.params), tags: \(message.tags ?? [:])")
+                            .font(.subheadline)
+                        Text(message.raw)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    .fontDesign(.monospaced)
+                    .textSelection(.enabled)
                 }
             }
         }
@@ -39,11 +44,21 @@ struct ChatView: View {
         .sheet(isPresented: $showingNewConnectionForm) {
             NavigationStack {
                 ConnectionForm { session in
-                    client.connect(session: session)
+                    client.connect(session)
                     showingNewConnectionForm = false
                     selected = session.id
                 }
             }
+        }
+        .sheet(isPresented: $showingChannels) {
+            NavigationStack {
+                if let selected, let session = client.session(selected) {
+                    ChannelList(channels: Array(session.channels))
+                } else {
+                    ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
+                }
+            }
+            .frame(width: 600, height: 700)
         }
         .toolbar {
             ToolbarItem {
@@ -62,20 +77,25 @@ struct ChatView: View {
                 }
                 .menuIndicator(.hidden)
             }
-            if let selected, let session = try? client.session(selected) {
+            if let selected, let session = client.session(selected) {
                 ToolbarItem {
                     Button("List Channels", systemImage: "number") {
-                        try? client.command("LIST", sessionID: session.id)
+                        client.send("LIST", sessionID: session.id)
+                    }
+                }
+                ToolbarItem {
+                    Button("List", systemImage: "list.bullet.rectangle") {
+                        showingChannels = true
                     }
                 }
                 ToolbarItem {
                     if session.connected {
                         Button("Disconnect", systemImage: "network.slash") {
-                            try? client.disconnect(sessionID: session.id)
+                            client.disconnect(sessionID: session.id)
                         }
                     } else {
                         Button("Connect", systemImage: "network") {
-                            client.connect(session: session)
+                            client.connect(session)
                         }
                     }
                 }
@@ -88,41 +108,7 @@ struct ChatView: View {
 
     func handleSubmit() {
         guard let selected else { return }
-        do {
-            try client.send("\(messageText)\n", sessionID: selected)
-            messageText = ""
-        } catch {
-            try? client.upsert(message: .init(command: .error("\(error)")), sessionID: selected)
-        }
-    }
-}
-
-struct ConnectionForm: View {
-    @Environment(\.dismiss) var dismiss
-
-    var connect: (Session) -> Void
-
-    @State var session = Session(server: "irc.libera.chat", nickname: "", name: "")
-
-    var body: some View {
-        Form {
-            TextField("Server", text: $session.server)
-            TextField("Port", value: $session.port, format: .number)
-            TextField("Nickname", text: $session.nickname)
-            TextField("Name", text: $session.name)
-        }
-        .formStyle(.grouped)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Done") {
-                    connect(session)
-                }
-            }
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") {
-                    dismiss()
-                }
-            }
-        }
+        client.send(messageText, sessionID: selected)
+        messageText = ""
     }
 }

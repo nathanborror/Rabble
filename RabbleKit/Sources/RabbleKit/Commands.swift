@@ -44,7 +44,9 @@ public enum Command: Codable, Sendable {
     // Numerics
     case numeric(Numeric)
 
-    // Error
+    // Custom
+    case connected
+    case disconnected
     case error(String)
 
     // Fallback

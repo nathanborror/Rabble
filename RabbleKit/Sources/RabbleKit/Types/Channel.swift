@@ -63,3 +63,17 @@ public struct Channel: Identifiable, Codable, Sendable {
         return existing
     }
 }
+
+public struct ChannelRef: Identifiable, Codable, Hashable, Sendable {
+    public var name: String
+    public var users: Int
+    public var topic: String?
+
+    public var id: String { name }
+
+    public init(name: String, users: Int, topic: String? = nil) {
+        self.name = name
+        self.users = users
+        self.topic = topic
+    }
+}

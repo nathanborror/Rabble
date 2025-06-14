@@ -12,6 +12,14 @@ struct RabbleApp: App {
         }
         .commands {
             CommandMenu("Rabble") {
+                Button("Save") {
+                    client.save()
+                }
+                .keyboardShortcut("s", modifiers: .command)
+                Button("Regenerate") {
+                    client.regenerate()
+                }
+                Divider()
                 Button("Reset App") {
                     client.reset()
                 }
