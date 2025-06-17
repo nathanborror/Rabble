@@ -4,9 +4,9 @@ import RabbleKit
 struct ConnectionForm: View {
     @Environment(\.dismiss) var dismiss
 
-    var connect: (Session) -> Void
+    var connect: (IRC.Session) -> Void
 
-    @State var session = Session(server: "irc.zeronode.net", nick: "sketch22", name: "Nathan Borror")
+    @State var session = IRC.Session(server: "irc.zeronode.net", nick: "sketch22", name: "Nathan Borror")
 
     var body: some View {
         Form {

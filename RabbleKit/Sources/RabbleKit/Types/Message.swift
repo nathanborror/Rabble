@@ -1,33 +1,36 @@
 import Foundation
 
-public struct Message: Codable, Identifiable, Sendable {
-    public var id: String
-    public var kind: Kind
-    public var prefix: Prefix?
-    public var command: Command
-    public var params: [String]
-    public var tags: [String: String]?
-    public var created: Date
+extension IRC {
 
-    public enum Kind: Codable, Sendable {
-        case server
-        case client
-    }
+    public struct Message: Codable, Identifiable, Sendable {
+        public var id: String
+        public var kind: Kind
+        public var prefix: Prefix?
+        public var command: Command
+        public var params: [String]
+        public var tags: [String: String]?
+        public var created: Date
 
-    public enum Prefix: Codable, Sendable {
-        case server(String)
-        case user(String)
-        case service(String)
-    }
+        public enum Kind: Codable, Sendable {
+            case server
+            case client
+        }
 
-    public init(id: String = UUID().uuidString, kind: Kind, prefix: Prefix? = nil, command: Command,
-                params: [String] = [], tags: [String : String]? = nil) {
-        self.id = id
-        self.kind = kind
-        self.prefix = prefix
-        self.command = command
-        self.params = params
-        self.tags = tags
-        self.created = .now
+        public enum Prefix: Codable, Sendable {
+            case server(String)
+            case user(String)
+            case service(String)
+        }
+
+        public init(id: String = UUID().uuidString, kind: Kind, prefix: Prefix? = nil, command: Command,
+                    params: [String] = [], tags: [String : String]? = nil) {
+            self.id = id
+            self.kind = kind
+            self.prefix = prefix
+            self.command = command
+            self.params = params
+            self.tags = tags
+            self.created = .now
+        }
     }
 }

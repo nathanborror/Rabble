@@ -1,7 +1,7 @@
 import SwiftUI
 import RabbleKit
 
-extension Message {
+extension IRC.Message {
 
     var render: some View {
         Group {

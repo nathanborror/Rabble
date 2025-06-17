@@ -1,6 +1,6 @@
 import Foundation
 
-func ParseServerMessage(_ input: String) -> Message? {
+func ParseServerMessage(_ input: String) -> IRC.Message? {
     var rest = input[...]
 
     // 1. Parse tags
@@ -76,7 +76,7 @@ func ParseServerMessage(_ input: String) -> Message? {
     )
 }
 
-func ParsePrefix(_ prefix: String?) -> Message.Prefix? {
+func ParsePrefix(_ prefix: String?) -> IRC.Message.Prefix? {
     guard let prefix else {
         return nil
     }

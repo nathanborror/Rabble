@@ -5,7 +5,7 @@ import Network
 @Observable
 public final class Client {
 
-    public var sessions: [Session] = []
+    public var sessions: [IRC.Session] = []
 
     private var pool: [String: NWConnection] = [:]
     private let sessionsURL = URL.documentsDirectory.appending(path: "sessions.json")
@@ -17,7 +17,7 @@ public final class Client {
     public func restore() {
         do {
             let data = try Data(contentsOf: sessionsURL)
-            let sessions = try JSONDecoder().decode([Session].self, from: data)
+            let sessions = try JSONDecoder().decode([IRC.Session].self, from: data)
             self.sessions = sessions
         } catch {
             print(error)
@@ -45,14 +45,14 @@ public final class Client {
 
     // Session state
 
-    public func session(_ id: String) -> Session? {
+    public func session(_ id: String) -> IRC.Session? {
         guard let index = sessions.firstIndex(where: { $0.id == id }) else {
             return nil
         }
         return sessions[index]
     }
 
-    public func upsert(session: Session) {
+    public func upsert(session: IRC.Session) {
         if let index = sessions.firstIndex(where: { $0.id == session.id }) {
             let existing = sessions[index]
             sessions[index] = existing.apply(session)
@@ -83,7 +83,7 @@ public final class Client {
         upsert(session: session)
     }
 
-    public func upsert(join channel: Channel, sessionID: String) {
+    public func upsert(join channel: IRC.Channel, sessionID: String) {
         guard var session = session(sessionID) else { return }
         if let index = session.joined.firstIndex(where: { $0.id == channel.id }) {
             session.joined[index] = channel
@@ -93,7 +93,7 @@ public final class Client {
         upsert(session: session)
     }
 
-    public func upsert(list ref: ChannelRef, sessionID: String) {
+    public func upsert(list ref: IRC.ChannelRef, sessionID: String) {
         guard var session = session(sessionID) else { return }
         if let index = session.list.firstIndex(where: { $0.id == ref.id }) {
             session.list[index] = ref
@@ -105,7 +105,7 @@ public final class Client {
 
     // Session networking
 
-    public func connect(_ session: Session) {
+    public func connect(_ session: IRC.Session) {
         upsert(session: session)
 
         let endpoint = NWEndpoint.hostPort(host: .init(session.server), port: .init(integerLiteral: session.port))
@@ -198,7 +198,7 @@ public final class Client {
         }
     }
 
-    private func apply(message: Message, sessionID: String) {
+    private func apply(message: IRC.Message, sessionID: String) {
         guard case .numeric(let numeric) = message.command else {
             return
         }
@@ -213,7 +213,7 @@ public final class Client {
             guard name != "*" else {
                 return
             }
-            let ref = ChannelRef(name: name, users: users, topic: topic)
+            let ref = IRC.ChannelRef(name: name, users: users, topic: topic)
             upsert(list: ref, sessionID: sessionID)
         default:
             return

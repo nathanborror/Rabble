@@ -5,10 +5,10 @@ struct ChannelList: View {
     @Environment(Client.self) var client
     @Environment(\.dismiss) var dismiss
 
-    @State var session: Session
+    @State var session: IRC.Session
 
     @State private var selected: Set<String> = []
-    @State private var sortOrder = [KeyPathComparator(\ChannelRef.name)]
+    @State private var sortOrder = [KeyPathComparator(\IRC.ChannelRef.name)]
 
     var body: some View {
         Table(session.list, selection: $selected, sortOrder: $sortOrder) {
