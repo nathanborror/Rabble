@@ -4,6 +4,7 @@ import Network
 @MainActor
 @Observable
 public final class Client {
+
     public var sessions: [Session] = []
 
     private var pool: [String: NWConnection] = [:]
@@ -42,13 +43,7 @@ public final class Client {
         }
     }
 
-    public func regenerate() {
-        let sessions = sessions.map { $0.regenerate() }
-        self.sessions = sessions
-        save()
-    }
-
-    // Session management
+    // Session state
 
     public func session(_ id: String) -> Session? {
         guard let index = sessions.firstIndex(where: { $0.id == id }) else {
@@ -66,10 +61,20 @@ public final class Client {
         }
     }
 
-    public func upsert(message: Message, sessionID: String) {
-        guard var session = session(sessionID) else { return }
-        session.messages.append(message)
+    public func upsert(line: String, sessionID: String) {
+
+        // Append line to session
+        guard var session = session(sessionID) else {
+            return
+        }
+        session.log.append(.init(line))
         upsert(session: session)
+
+        // Parse line as message
+        guard let message = ParseServerMessage(line) else {
+            return
+        }
+        apply(message: message, sessionID: sessionID)
     }
 
     public func upsert(connected: Bool, sessionID: String) {
@@ -77,6 +82,28 @@ public final class Client {
         session.connected = connected
         upsert(session: session)
     }
+
+    public func upsert(join channel: Channel, sessionID: String) {
+        guard var session = session(sessionID) else { return }
+        if let index = session.joined.firstIndex(where: { $0.id == channel.id }) {
+            session.joined[index] = channel
+        } else {
+            session.joined.append(channel)
+        }
+        upsert(session: session)
+    }
+
+    public func upsert(list ref: ChannelRef, sessionID: String) {
+        guard var session = session(sessionID) else { return }
+        if let index = session.list.firstIndex(where: { $0.id == ref.id }) {
+            session.list[index] = ref
+        } else {
+            session.list.append(ref)
+        }
+        upsert(session: session)
+    }
+
+    // Session networking
 
     public func connect(_ session: Session) {
         upsert(session: session)
@@ -89,23 +116,22 @@ public final class Client {
                 switch state {
                 case .ready:
                     upsert(connected: true, sessionID: session.id)
-                    upsert(message: .init(kind: .client, command: .connected), sessionID: session.id)
 
                     // TODO: What is the difference between a nickname and a username?
                     let messages = [
-                        "NICK \(session.nickname)",
-                        "USER \(session.nickname) 0 * :\(session.name)",
+                        "NICK \(session.nick)",
+                        "USER \(session.nick) 0 * :\(session.name)",
                     ]
                     for message in messages {
                         send(message, sessionID: session.id)
                     }
                     listen(sessionID: session.id)
                 case .failed(let error):
-                    upsert(message: .init(kind: .client, command: .error("\(error)")), sessionID: session.id)
-                    disconnect(sessionID: session.id)
+                    print(error)
+                    disconnect(session.id)
                 case .cancelled:
                     upsert(connected: false, sessionID: session.id)
-                    disconnect(sessionID: session.id)
+                    disconnect(session.id)
                 default:
                     break
                 }
@@ -114,50 +140,83 @@ public final class Client {
         pool[session.id]?.start(queue: .main)
     }
 
-    public func send(_ input: String, sessionID: String) {
-        let input = input+"\r\n" // required, IRC is a line-oriented protocol
-        if let message = Message.user(input) {
-            upsert(message: message, sessionID: sessionID)
-        }
-        // Send input to server session
-        guard let data = input.data(using: .utf8) else { return }
-        pool[sessionID]?.send(content: data, completion: .contentProcessed { error in
-            guard let error else { return }
-            Task { await self.upsert(message: .init(kind: .client, command: .error("\(error)")), sessionID: sessionID) }
-        })
-    }
-
-    public func disconnect(sessionID: String) {
+    public func disconnect(_ sessionID: String) {
 
         // Update session pool
         pool[sessionID]?.cancel()
         pool[sessionID] = nil
 
         // Update session
-        upsert(message: .init(kind: .client, command: .disconnected), sessionID: sessionID)
         upsert(connected: false, sessionID: sessionID)
     }
 
+    public func send(_ input: String, sessionID: String) {
+
+        // Required, IRC is a line-oriented protocol
+        let input = input+"\r\n"
+
+        // Send input to server session
+        guard let data = input.data(using: .utf8) else { return }
+        pool[sessionID]?.send(content: data, completion: .contentProcessed { error in
+            guard let error else { return }
+            print(error)
+        })
+    }
+
+    // Private
+
     private func listen(sessionID: String) {
-        pool[sessionID]?.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] content, _, isComplete, error in
+        pool[sessionID]?.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
             guard let self else { return }
             Task { @MainActor in
-                if let data = content, let message = String(data: data, encoding: .utf8) {
-                    let lines = message.components(separatedBy: "\r\n")
-                    for line in lines where !line.isEmpty {
-                        if let message = Message.server(line) {
-                            upsert(message: message, sessionID: sessionID)
-                        }
-                        if line.hasPrefix("PING ") { // maintain connection
-                            let payload = line.trimmingPrefix("PING ")
-                            send("PONG \(payload)", sessionID: sessionID)
-                        }
-                    }
-                }
+                handleIncomingData(data, sessionID: sessionID)
                 if error == nil {
                     listen(sessionID: sessionID)
                 }
             }
+        }
+    }
+
+    private var buffer = ""
+
+    func handleIncomingData(_ data: Data?, sessionID: String) {
+        guard let data, let newText = String(data: data, encoding: .utf8) else { return }
+        buffer += newText
+
+        while let range = buffer.range(of: "\r\n") {
+            let line = String(buffer[..<range.lowerBound])
+            buffer = String(buffer[range.upperBound...]) // Remove parsed line + delimiter
+
+            // Upsert new line to session object
+            upsert(line: line, sessionID: sessionID)
+
+            // Respond to periodic PINGs to maintain the connection
+            if line.hasPrefix("PING ") {
+                let payload = line.trimmingPrefix("PING ")
+                send("PONG \(payload)", sessionID: sessionID)
+            }
+        }
+    }
+
+    private func apply(message: Message, sessionID: String) {
+        guard case .numeric(let numeric) = message.command else {
+            return
+        }
+        switch numeric {
+        case .RPL_LIST:
+            guard message.params.count >= 4 else {
+                return
+            }
+            let name = message.params[1]
+            let users = Int(message.params[2]) ?? 0
+            let topic = message.params[3].isEmpty ? nil : message.params[3]
+            guard name != "*" else {
+                return
+            }
+            let ref = ChannelRef(name: name, users: users, topic: topic)
+            upsert(list: ref, sessionID: sessionID)
+        default:
+            return
         }
     }
 }

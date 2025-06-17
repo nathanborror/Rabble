@@ -6,13 +6,13 @@ struct ConnectionForm: View {
 
     var connect: (Session) -> Void
 
-    @State var session = Session(server: "irc.zeronode.net", nickname: "sketch22", name: "Nathan Borror")
+    @State var session = Session(server: "irc.zeronode.net", nick: "sketch22", name: "Nathan Borror")
 
     var body: some View {
         Form {
             TextField("Server", text: $session.server)
             TextField("Port", value: $session.port, format: .number)
-            TextField("Nickname", text: $session.nickname)
+            TextField("Nickname", text: $session.nick)
             TextField("Name", text: $session.name)
         }
         .formStyle(.grouped)

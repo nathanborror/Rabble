@@ -42,6 +42,8 @@ public enum Numeric: UInt16, Codable, CaseIterable, Sendable {
     case RPL_MOTDSTART     = 375
     case RPL_ENDOFMOTD     = 376
 
+    case RPL_HOSTHIDDEN    = 396
+
     // Errors (sample)
     case ERR_NOSUCHNICK    = 401
     case ERR_NOSUCHCHANNEL = 403

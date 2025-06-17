@@ -2,33 +2,50 @@ import SwiftUI
 import RabbleKit
 
 struct ChannelList: View {
+    @Environment(Client.self) var client
     @Environment(\.dismiss) var dismiss
 
-    let channels: [ChannelRef]
+    @State var session: Session
+
+    @State private var selected: Set<String> = []
+    @State private var sortOrder = [KeyPathComparator(\ChannelRef.name)]
 
     var body: some View {
-        List {
-            ForEach(channels) { channel in
-                HStack(alignment: .firstTextBaseline) {
-                    VStack(alignment: .leading) {
-                        Text(channel.name)
-                        if let topic = channel.topic {
-                            Text(topic)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    Spacer()
-                    Text("\(channel.users)")
+        Table(session.list, selection: $selected, sortOrder: $sortOrder) {
+            TableColumn("Name", value: \.name)
+            TableColumn("Users", value: \.users) { channel in
+                Text("\(channel.users)")
+            }
+            .width(50)
+            TableColumn("Topic") { channel in
+                if let topic = channel.topic {
+                    Text(topic)
                 }
             }
         }
+        .contextMenu(forSelectionType: String.self) { names in
+            Button("Join") {
+                handleJoin(names)
+            }
+        } primaryAction: { names in
+            handleJoin(names)
+        }
+        .navigationTitle("Channels")
+        .onChange(of: sortOrder) { _, newSortOrder in
+            session.list.sort(using: newSortOrder)
+        }
         .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Done") {
-                    dismiss()
+            ToolbarItem {
+                Button("List", systemImage: "arrow.clockwise") {
+                    client.send("LIST", sessionID: session.id)
                 }
             }
+        }
+    }
+
+    func handleJoin(_ names: Set<String>) {
+        for name in names {
+            client.send("JOIN \(name)", sessionID: session.id)
         }
     }
 }

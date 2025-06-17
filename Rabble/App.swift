@@ -7,7 +7,7 @@ struct RabbleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ChatView()
+            ConsoleView()
                 .environment(client)
         }
         .commands {
@@ -16,14 +16,22 @@ struct RabbleApp: App {
                     client.save()
                 }
                 .keyboardShortcut("s", modifiers: .command)
-                Button("Regenerate") {
-                    client.regenerate()
-                }
                 Divider()
                 Button("Reset App") {
                     client.reset()
                 }
             }
+        }
+
+        WindowGroup("Channels", id: "channels", for: String.self) { sessionID in
+            NavigationStack {
+                if let sessionID = sessionID.wrappedValue, let session = client.session(sessionID) {
+                    ChannelList(session: session)
+                } else {
+                    ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
+                }
+            }
+            .environment(client)
         }
     }
 }
