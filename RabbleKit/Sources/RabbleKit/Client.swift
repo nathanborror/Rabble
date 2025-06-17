@@ -71,7 +71,7 @@ public final class Client {
         upsert(session: session)
 
         // Parse line as message
-        guard let message = ParseServerMessage(line) else {
+        guard let message = IRC.parseServerMessage(line) else {
             return
         }
         apply(message: message, sessionID: sessionID)
