@@ -3,35 +3,49 @@ import RabbleKit
 
 @main
 struct RabbleApp: App {
-    @State private var client = Client()
+    @State private var state = AppState.shared
 
     var body: some Scene {
         WindowGroup {
-            ConsoleView()
-                .environment(client)
-        }
-        .commands {
-            CommandMenu("Rabble") {
-                Button("Save") {
-                    client.save()
+            NavigationSplitView {
+                List {
+                    ForEach(state.files) { file in
+                        Button(file.name ?? file.path) {
+                            state.selectedFileID = file.id
+                        }
+                    }
                 }
-                .keyboardShortcut("s", modifiers: .command)
-                Divider()
-                Button("Reset App") {
-                    client.reset()
-                }
+            } detail: {
+                SessionView()
+            }
+            .onAppear {
+                Task { await appActive() }
             }
         }
+        .environment(state)
 
-        WindowGroup("Channels", id: "channels", for: String.self) { sessionID in
+        WindowGroup("Channels", id: "channels", for: String.self) { fileID in
             NavigationStack {
-                if let sessionID = sessionID.wrappedValue, let session = client.session(sessionID) {
-                    ChannelList(session: session)
+                if let fileID = fileID.wrappedValue {
+                    ChannelList(fileID: fileID)
                 } else {
                     ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
                 }
             }
-            .environment(client)
         }
+        .environment(state)
+    }
+
+    func appActive() async {
+        do {
+            try await state.ready()
+        } catch {
+            state.log(error: error)
+        }
+    }
+
+    func appReset() async {
+        state.resetAll()
+        await appActive()
     }
 }

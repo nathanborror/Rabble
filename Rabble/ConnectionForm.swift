@@ -2,30 +2,45 @@ import SwiftUI
 import RabbleKit
 
 struct ConnectionForm: View {
+    @Environment(AppState.self) var state
     @Environment(\.dismiss) var dismiss
 
-    var connect: (IRC.Session) -> Void
-
-    @State var session = IRC.Session(server: "irc.zeronode.net", nick: "sketch22", name: "Nathan Borror")
+    @State var server = "irc.zeronode.net"
+    @State var port: UInt16 = 6667
+    @State var nick = "sketch22"
+    @State var name = "Nathan Borror"
 
     var body: some View {
         Form {
-            TextField("Server", text: $session.server)
-            TextField("Port", value: $session.port, format: .number)
-            TextField("Nickname", text: $session.nick)
-            TextField("Name", text: $session.name)
+            TextField("Server", text: $server)
+            TextField("Port", value: $port, format: .number)
+            TextField("Nickname", text: $nick)
+            TextField("Name", text: $name)
         }
         .formStyle(.grouped)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Done") {
-                    connect(session)
+                    handleSubmit()
                 }
             }
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") {
                     dismiss()
                 }
+            }
+        }
+    }
+
+    func handleSubmit() {
+        Task {
+            do {
+                let fileID = try await state.create(server: server, port: port, nick: nick, name: name)
+                state.selectedFileID = fileID
+                try await state.connect(fileID)
+                dismiss()
+            } catch {
+                print(error)
             }
         }
     }

@@ -1,11 +1,10 @@
 import SwiftUI
 import RabbleKit
 
-struct ConsoleView: View {
-    @Environment(Client.self) var client
+struct SessionView: View {
+    @Environment(AppState.self) var state
     @Environment(\.openWindow) var openWindow
 
-    @State private var selected: String? = nil
     @State private var messageText = ""
     @State private var showingNewConnectionForm = false
     @State private var showingChannels = false
@@ -13,8 +12,8 @@ struct ConsoleView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading) {
-                if let selected, let session = client.session(selected) {
-                    ForEach(session.log) { log in
+                if let fileID = state.selectedFileID, let package: IRC = try? state.filePackage(fileID), let logs = package.session?.logs {
+                    ForEach(logs) { log in
                         Text(log.text)
                             .font(.footnote)
                             .fontDesign(.monospaced)
@@ -52,54 +51,31 @@ struct ConsoleView: View {
         }
         .sheet(isPresented: $showingNewConnectionForm) {
             NavigationStack {
-                ConnectionForm { session in
-                    client.connect(session)
-                    showingNewConnectionForm = false
-                    selected = session.id
-                }
+                ConnectionForm()
             }
         }
         .toolbar {
-            if let selected {
+            if let fileID = state.selectedFileID {
                 ToolbarItem {
                     Button("Channels", systemImage: "number") {
-                        openWindow(id: "channels", value: selected)
+                        openWindow(id: "channels", value: fileID)
                     }
                 }
             }
             ToolbarItem {
-                Menu {
-                    Button("New Connection") {
-                        showingNewConnectionForm = true
-                    }
-                    Divider()
-                    Section("Past Sessions") {
-                        ForEach(client.sessions) { session in
-                            Button("\(session.nick)@\(session.server)") {
-                                selected = session.id
-                            }
-                        }
-                    }
-                } label: {
-                    Label("Connect", systemImage: "plus")
+                Button("New Connection", systemImage: "plus") {
+                    showingNewConnectionForm = true
                 }
-                .menuIndicator(.hidden)
             }
-        }
-        .onAppear {
-            client.restore()
         }
         .onDisappear {
-            for session in client.sessions {
-                client.disconnect(session.id)
-            }
-            client.save()
+            print("note implemented: disconnect all connections")
         }
     }
 
     func handleSubmit() {
-        guard let selected else { return }
-        client.send(messageText, sessionID: selected)
+        guard let fileID = state.selectedFileID else { return }
+        state.send(messageText, fileID: fileID)
         messageText = ""
     }
 

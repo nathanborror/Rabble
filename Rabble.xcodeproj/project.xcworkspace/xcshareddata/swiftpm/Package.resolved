@@ -1,0 +1,15 @@
+{
+  "originHash" : "1e4f29cf3ec1e72b9365b44dcd43f3d7c79bf18c34ad2683c7680732a0082cf6",
+  "pins" : [
+    {
+      "identity" : "swift-shared-kit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nathanborror/swift-shared-kit",
+      "state" : {
+        "branch" : "main",
+        "revision" : "3159eb54575d9f8b432bc236f7f46a8d6431d563"
+      }
+    }
+  ],
+  "version" : 3
+}

@@ -12,7 +12,12 @@ let package = Package(
     products: [
         .library(name: "RabbleKit", targets: ["RabbleKit"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/nathanborror/swift-shared-kit", branch: "main"),
+    ],
     targets: [
-        .target(name: "RabbleKit"),
+        .target(name: "RabbleKit", dependencies: [
+            .product(name: "SharedKit", package: "swift-shared-kit"),
+        ]),
     ]
 )

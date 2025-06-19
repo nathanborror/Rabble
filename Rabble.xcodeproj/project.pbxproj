@@ -13,7 +13,8 @@
 		D888DCE22DFD3DA7004DAF72 /* ConnectionForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D888DCE12DFD3DA7004DAF72 /* ConnectionForm.swift */; };
 		D888DCE52DFDC286004DAF72 /* Message+.swift in Sources */ = {isa = PBXBuildFile; fileRef = D888DCE42DFDC286004DAF72 /* Message+.swift */; };
 		D888DCE72E00DB33004DAF72 /* MessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D888DCE62E00DB30004DAF72 /* MessageRow.swift */; };
-		D88F7C192DFA9D5A00B4F1D6 /* ConsoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88F7C182DFA9D5A00B4F1D6 /* ConsoleView.swift */; };
+		D888DCE92E027F3C004DAF72 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D888DCE82E027F3C004DAF72 /* AppState.swift */; };
+		D88F7C192DFA9D5A00B4F1D6 /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88F7C182DFA9D5A00B4F1D6 /* SessionView.swift */; };
 		D88F7C232DFA9E6600B4F1D6 /* RabbleKit in Frameworks */ = {isa = PBXBuildFile; productRef = D88F7C222DFA9E6600B4F1D6 /* RabbleKit */; };
 /* End PBXBuildFile section */
 
@@ -27,7 +28,8 @@
 		D888DCE12DFD3DA7004DAF72 /* ConnectionForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionForm.swift; sourceTree = "<group>"; };
 		D888DCE42DFDC286004DAF72 /* Message+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Message+.swift"; sourceTree = "<group>"; };
 		D888DCE62E00DB30004DAF72 /* MessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRow.swift; sourceTree = "<group>"; };
-		D88F7C182DFA9D5A00B4F1D6 /* ConsoleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleView.swift; sourceTree = "<group>"; };
+		D888DCE82E027F3C004DAF72 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		D88F7C182DFA9D5A00B4F1D6 /* SessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,9 +65,10 @@
 		D877A7402DFA95E800A2BF17 /* Rabble */ = {
 			isa = PBXGroup;
 			children = (
-				D888DCE62E00DB30004DAF72 /* MessageRow.swift */,
 				D877A73F2DFA95E800A2BF17 /* App.swift */,
-				D88F7C182DFA9D5A00B4F1D6 /* ConsoleView.swift */,
+				D888DCE82E027F3C004DAF72 /* AppState.swift */,
+				D888DCE62E00DB30004DAF72 /* MessageRow.swift */,
+				D88F7C182DFA9D5A00B4F1D6 /* SessionView.swift */,
 				D888DCDF2DFD3AF4004DAF72 /* ChannelList.swift */,
 				D888DCE12DFD3DA7004DAF72 /* ConnectionForm.swift */,
 				D888DCE32DFDC27E004DAF72 /* Extensions */,
@@ -171,8 +174,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D88F7C192DFA9D5A00B4F1D6 /* ConsoleView.swift in Sources */,
+				D88F7C192DFA9D5A00B4F1D6 /* SessionView.swift in Sources */,
 				D877A7432DFA95E800A2BF17 /* App.swift in Sources */,
+				D888DCE92E027F3C004DAF72 /* AppState.swift in Sources */,
 				D888DCE72E00DB33004DAF72 /* MessageRow.swift in Sources */,
 				D888DCE02DFD3AF4004DAF72 /* ChannelList.swift in Sources */,
 				D888DCE52DFDC286004DAF72 /* Message+.swift in Sources */,

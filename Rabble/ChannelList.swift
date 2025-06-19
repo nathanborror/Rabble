@@ -2,16 +2,17 @@ import SwiftUI
 import RabbleKit
 
 struct ChannelList: View {
-    @Environment(Client.self) var client
+    @Environment(AppState.self) var state
     @Environment(\.dismiss) var dismiss
 
-    @State var session: IRC.Session
+    let fileID: String
 
+    @State private var channels: [IRC.Session.Channel] = []
     @State private var selected: Set<String> = []
-    @State private var sortOrder = [KeyPathComparator(\IRC.ChannelRef.name)]
+    @State private var sortOrder = [KeyPathComparator(\IRC.Session.Channel.name)]
 
     var body: some View {
-        Table(session.list, selection: $selected, sortOrder: $sortOrder) {
+        Table(channels, selection: $selected, sortOrder: $sortOrder) {
             TableColumn("Name", value: \.name)
             TableColumn("Users", value: \.users) { channel in
                 Text("\(channel.users)")
@@ -32,12 +33,12 @@ struct ChannelList: View {
         }
         .navigationTitle("Channels")
         .onChange(of: sortOrder) { _, newSortOrder in
-            session.list.sort(using: newSortOrder)
+            channels.sort(using: newSortOrder)
         }
         .toolbar {
             ToolbarItem {
                 Button("List", systemImage: "arrow.clockwise") {
-                    client.send("LIST", sessionID: session.id)
+                    state.send("LIST", fileID: fileID)
                 }
             }
         }
@@ -45,7 +46,7 @@ struct ChannelList: View {
 
     func handleJoin(_ names: Set<String>) {
         for name in names {
-            client.send("JOIN \(name)", sessionID: session.id)
+            state.send("JOIN \(name)", fileID: fileID)
         }
     }
 }

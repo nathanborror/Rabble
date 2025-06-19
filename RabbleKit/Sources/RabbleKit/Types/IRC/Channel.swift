@@ -3,9 +3,10 @@ import Foundation
 extension IRC {
 
     public struct Channel: Identifiable, Codable, Sendable {
+        public var sessionID: String
         public var name: String
         public var topic: Topic?
-        public var users: [String: UserRef]
+        public var users: [String: User]
         public var modes: Set<String>
         public var password: String?
         public var limit: Int?
@@ -28,8 +29,18 @@ extension IRC {
             }
         }
 
-        public init(name: String, topic: Topic? = nil, users: [String: UserRef] = [:], modes: Set<String> = [], password: String? = nil,
-                    limit: Int? = nil, bans: Set<String> = [], messages: [Message] = [], created: Date) {
+        public struct User: Codable, Identifiable, Sendable {
+            public var nick: String
+            public var modes: Set<String>
+            public var joined: Date?
+
+            public var id: String { nick }
+        }
+
+        public init(sessionID: String, name: String, topic: Topic? = nil, users: [String: User] = [:],
+                    modes: Set<String> = [], password: String? = nil, limit: Int? = nil, bans: Set<String> = [],
+                    messages: [Message] = [], created: Date) {
+            self.sessionID = sessionID
             self.name = name
             self.topic = topic
             self.users = users
@@ -54,20 +65,6 @@ extension IRC {
             existing.messages = channel.messages
             existing.modified = .now
             return existing
-        }
-    }
-
-    public struct ChannelRef: Identifiable, Codable, Sendable {
-        public var name: String
-        public var users: Int
-        public var topic: String?
-
-        public var id: String { name }
-
-        public init(name: String, users: Int, topic: String? = nil) {
-            self.name = name
-            self.users = users
-            self.topic = topic
         }
     }
 }

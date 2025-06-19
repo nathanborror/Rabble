@@ -1,6 +1,54 @@
 import Foundation
+import SharedKit
 
-public struct IRC {
+public struct IRC: Packagable {
+    public var id: String
+    public var session: Session?
+    public var channels: [Channel]
+
+    public init(id: String = .id, session: Session? = nil, channels: [Channel] = []) {
+        self.id = id
+        self.session = session
+        self.channels = channels
+    }
+
+    // MARK: Packagable
+
+    public static func load(url: URL) throws -> Self {
+        var out = Self(session: nil, channels: [])
+
+        let sessionData = try Data(contentsOf: url.appending(path: "session.json"))
+        out.session = try JSONDecoder().decode(Session.self, from: sessionData)
+
+        let channelURLs = try FileManager.default.contentsOfDirectory(at: url.appending(path: "channels"), includingPropertiesForKeys: nil)
+        for url in channelURLs {
+            let channelData = try Data(contentsOf: url)
+            let channel = try JSONDecoder().decode(Channel.self, from: channelData)
+            out.channels.append(channel)
+        }
+        return out
+    }
+
+    public func write(url: URL) throws -> [(URL, Data)] {
+        var out = [(URL, Data)]()
+
+        // Encode session
+        if let session {
+            let sessionData = try JSONEncoder().encode(session)
+            let sessionURL = url.appending(path: "session.json")
+            out.append((sessionURL, sessionData))
+        }
+
+        // Encode channels
+        for channel in channels {
+            let channelData = try JSONEncoder().encode(channel)
+            let channelURL = url.appending(path: "channels").appending(path: "\(channel.id).json")
+            out.append((channelURL, channelData))
+        }
+        return out
+    }
+
+    // MARK: Parsing
 
     public static func parseServerMessage(_ input: String) -> Message? {
         var rest = input[...]
