@@ -3,16 +3,18 @@ import RabbleKit
 
 struct ChannelList: View {
     @Environment(AppState.self) var state
-    @Environment(IRCSessionModel.self) var model
     @Environment(\.dismiss) var dismiss
 
-    let fileID: String
-
+    @State private var manager: ConnectionManager
     @State private var selected: Set<String> = []
     @State private var sortOrder = [KeyPathComparator(\IRC.Session.Channel.name)]
 
+    init(manager: ConnectionManager) {
+        self.manager = manager
+    }
+
     var body: some View {
-        Table(model.list, selection: $selected, sortOrder: $sortOrder) {
+        Table(manager.list, selection: $selected, sortOrder: $sortOrder) {
             TableColumn("Name", value: \.name)
             TableColumn("Users", value: \.users) { channel in
                 Text("\(channel.users)")
@@ -38,15 +40,19 @@ struct ChannelList: View {
         .toolbar {
             ToolbarItem {
                 Button("List", systemImage: "arrow.clockwise") {
-                    model.send("LIST")
+                    handleList()
                 }
             }
         }
     }
 
+    func handleList() {
+        manager.send("LIST")
+    }
+
     func handleJoin(_ names: Set<String>) {
         for name in names {
-            model.send("JOIN \(name)")
+            manager.send("JOIN \(name)")
         }
     }
 }

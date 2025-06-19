@@ -17,6 +17,7 @@ An experimental IRC client written in pure Swift.
 - [ ] Channel view
 - [ ] Channel message timeline
 - [ ] Some sort of command palette
+- [x] Connection pool
 
 ## File Structure
 

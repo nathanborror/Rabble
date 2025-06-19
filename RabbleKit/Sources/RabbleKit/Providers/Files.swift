@@ -78,8 +78,8 @@ extension File {
         mimetype == .directory
     }
 
-    public var isSession: Bool {
-        (mimetype == .package) && path.hasSuffix("session")
+    public var isIRC: Bool {
+        (mimetype == .package) && path.hasSuffix("irc")
     }
 
     public var isJSON: Bool {

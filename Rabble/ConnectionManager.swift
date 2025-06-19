@@ -4,7 +4,7 @@ import RabbleKit
 
 @Observable
 @MainActor
-final class IRCSessionModel {
+final class ConnectionManager {
 
     var file: File
     var irc: IRC = .init()

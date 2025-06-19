@@ -10,15 +10,15 @@ struct RabbleApp: App {
         WindowGroup {
             NavigationSplitView {
                 List(selection: $state.selectedFileID) {
-                    ForEach(state.files) { file in
-                        NavigationLink(value: file.id) {
-                            Label(file.name ?? file.path, systemImage: "bubble")
+                    ForEach(Array(state.connectionPool.values), id: \.file.id) { connection in
+                        NavigationLink(value: connection.file.id) {
+                            Label(connection.file.name ?? connection.file.path, systemImage: "bubble")
                         }
                     }
                 }
             } detail: {
-                if let fileID = state.selectedFileID, let file = try? state.file(fileID) {
-                    IRCSessionView(file: file)
+                if let fileID = state.selectedFileID, let manager = state.connectionPool[fileID] {
+                    ConnectionView(manager: manager)
                 } else {
                     ContentUnavailableView("No Session", image: "cloud")
                 }
@@ -48,16 +48,16 @@ struct RabbleApp: App {
             }
         }
 
-//        WindowGroup("Channels", id: "channels", for: String.self) { fileID in
-//            NavigationStack {
-//                if let fileID = fileID.wrappedValue {
-//                    ChannelList(fileID: fileID)
-//                } else {
-//                    ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
-//                }
-//            }
-//        }
-//        .environment(state)
+        WindowGroup("Channels", id: "channels", for: String.self) { fileID in
+            NavigationStack {
+                if let fileID = fileID.wrappedValue, let manager = state.connectionPool[fileID] {
+                    ChannelList(manager: manager)
+                } else {
+                    ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
+                }
+            }
+        }
+        .environment(state)
     }
 
     func appActive() async {

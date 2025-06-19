@@ -25,6 +25,7 @@ final class AppState {
     }
 
     var selectedFileID: String? = nil
+    var connectionPool: [String: ConnectionManager] = [:]
 
     private let filesProvider: FilesProvider
     private let logsProvider: LogsProvider
@@ -40,10 +41,6 @@ final class AppState {
     var fileTree: [FileTree] {
         let files = try? API.shared.fileListTree()
         return files ?? []
-    }
-
-    var sessions: [File] {
-        filesProvider.files.filter { $0.isSession }
     }
 
     var logs: [Log] {
@@ -63,11 +60,11 @@ final class AppState {
         async let filesReady: Void = filesProvider.ready()
         async let logsReady: Void = logsProvider.ready()
         _ = try await [filesReady, logsReady]
-    }
 
-    func restore() async throws {
-        try await filesProvider.restore()
-        try await logsProvider.restore()
+        for file in files.filter({ $0.isIRC }) {
+            let manager = ConnectionManager(file: file)
+            connectionPool[file.id] = manager
+        }
     }
 
     func resetAll() {
