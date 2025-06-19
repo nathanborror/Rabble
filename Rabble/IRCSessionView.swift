@@ -1,24 +1,27 @@
 import SwiftUI
 import RabbleKit
 
-struct SessionView: View {
+struct IRCSessionView: View {
     @Environment(AppState.self) var state
     @Environment(\.openWindow) var openWindow
 
+    @State private var model: IRCSessionModel
+
     @State private var messageText = ""
-    @State private var showingNewConnectionForm = false
     @State private var showingChannels = false
+
+    init(file: File) {
+        self.model = .init(file: file)
+    }
 
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading) {
-                if let fileID = state.selectedFileID, let package: IRC = try? state.filePackage(fileID), let logs = package.session?.logs {
-                    ForEach(logs) { log in
-                        Text(log.text)
-                            .font(.footnote)
-                            .fontDesign(.monospaced)
-                            .textSelection(.enabled)
-                    }
+                ForEach(model.logs) { log in
+                    Text(log.text)
+                        .font(.footnote)
+                        .fontDesign(.monospaced)
+                        .textSelection(.enabled)
                 }
             }
             .padding()
@@ -49,22 +52,15 @@ struct SessionView: View {
             }
             .background(.background)
         }
-        .sheet(isPresented: $showingNewConnectionForm) {
-            NavigationStack {
-                ConnectionForm()
-            }
-        }
         .toolbar {
-            if let fileID = state.selectedFileID {
-                ToolbarItem {
-                    Button("Channels", systemImage: "number") {
-                        openWindow(id: "channels", value: fileID)
-                    }
-                }
-            }
+//            ToolbarItem {
+//                Button("Channels", systemImage: "number") {
+//                    openWindow(id: "channels", value: model.file.id)
+//                }
+//            }
             ToolbarItem {
-                Button("New Connection", systemImage: "plus") {
-                    showingNewConnectionForm = true
+                Button("Connect", systemImage: "cloud") {
+                    handleConnect()
                 }
             }
         }
@@ -74,9 +70,18 @@ struct SessionView: View {
     }
 
     func handleSubmit() {
-        guard let fileID = state.selectedFileID else { return }
-        state.send(messageText, fileID: fileID)
+        model.send(messageText)
         messageText = ""
+    }
+
+    func handleConnect() {
+        Task {
+            do {
+                try await model.connect()
+            } catch {
+                print(error)
+            }
+        }
     }
 
 //    static let formatter: DateFormatter = {

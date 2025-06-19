@@ -37,7 +37,6 @@ struct ConnectionForm: View {
             do {
                 let fileID = try await state.create(server: server, port: port, nick: nick, name: name)
                 state.selectedFileID = fileID
-                try await state.connect(fileID)
                 dismiss()
             } catch {
                 print(error)

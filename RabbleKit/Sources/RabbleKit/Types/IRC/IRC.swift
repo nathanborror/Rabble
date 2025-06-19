@@ -40,9 +40,12 @@ public struct IRC: Packagable {
         }
 
         // Encode channels
+        let channelsURL = url.appending(path: "channels")
+        try FileManager.default.createDirectory(at: channelsURL, withIntermediateDirectories: true)
+
         for channel in channels {
             let channelData = try JSONEncoder().encode(channel)
-            let channelURL = url.appending(path: "channels").appending(path: "\(channel.id).json")
+            let channelURL = channelsURL.appending(path: "\(channel.id).json")
             out.append((channelURL, channelData))
         }
         return out
