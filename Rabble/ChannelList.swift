@@ -35,7 +35,7 @@ struct ChannelList: View {
         }
         .navigationTitle("Channels")
 //        .onChange(of: sortOrder) { _, newSortOrder in
-//            channels.sort(using: newSortOrder)
+//            manager.list.sort(using: newSortOrder)
 //        }
         .toolbar {
             ToolbarItem {

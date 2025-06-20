@@ -75,9 +75,26 @@ final class AppState {
 
             // Delete all files
             try FileManager.default.removeItems(at: URL.documentsDirectory)
+
+            // Clear connection pool
+            connectionPool = [:]
+            selectedFileID = nil
         } catch {
             log(error: error)
         }
+    }
+
+    // MARK: - IRC
+
+    func createConnection(server: String, port: UInt16, nick: String, name: String) async throws {
+        let session = IRC.Session(server: server, port: port, nick: nick, name: name)
+        let package = IRC(session: session)
+        let fileID = String.id
+        _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: package)
+
+        let file = try file(fileID)
+        connectionPool[file.id] = ConnectionManager(file: file)
+        selectedFileID = file.id
     }
 
     // MARK: - File Handling
@@ -92,13 +109,6 @@ final class AppState {
 
     func filePackage<T: Packagable>(_ fileID: String) throws -> T {
         return try filesProvider.cachedFilePackage(fileID)
-    }
-
-    func create(server: String, port: UInt16, nick: String, name: String) async throws -> String {
-        let session = IRC.Session(server: server, port: port, nick: nick, name: name)
-        let package = IRC(session: session)
-        let fileID = String.id
-        return try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: package)
     }
 
     private func fileCreate(id: String, filename: String, path: String? = nil, name: String? = nil, mimetype: UTType, package: any Packagable) async throws -> String {

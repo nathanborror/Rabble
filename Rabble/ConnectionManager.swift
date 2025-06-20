@@ -8,9 +8,18 @@ final class ConnectionManager {
 
     var file: File
     var irc: IRC = .init()
+    var selectedChannel = "__console__"
 
     private let state = AppState.shared
     private var connection: NWConnection? = nil
+
+    var hostname: String {
+        irc.session?.server ?? "Unknown"
+    }
+
+    var connected: Bool {
+        connection?.state == .ready
+    }
 
     var logs: [IRC.Session.Log] {
         irc.session?.logs ?? []
@@ -18,6 +27,10 @@ final class ConnectionManager {
 
     var list: [IRC.Session.Channel] {
         irc.session?.list ?? []
+    }
+
+    var channels: [IRC.Channel] {
+        irc.channels
     }
 
     init(file: File) {
@@ -46,15 +59,9 @@ final class ConnectionManager {
         connection?.start(queue: .main)
     }
 
-    func disconnect() async throws {
-
-        // Update session pool
+    func disconnect() {
         connection?.cancel()
         connection = nil
-
-        // Update session
-        irc.session?.connected = false
-        try await API.shared.fileUpdate(file.id, package: irc)
     }
 
     func send(_ input: String) {
@@ -70,11 +77,17 @@ final class ConnectionManager {
         })
     }
 
+    func clear() {
+        irc.session?.logs = []
+    }
+
+    private func handleSave() async throws {
+        try await API.shared.fileUpdate(file.id, package: irc)
+    }
+
     private func handleStateUpdate(state: NWConnection.State) async throws {
         switch state {
         case .ready:
-            irc.session?.connected = true
-
             // TODO: What is the difference between a nickname and a username?
             let messages = [
                 "NICK \(irc.session!.nick)",
@@ -86,14 +99,14 @@ final class ConnectionManager {
             handleListen()
         case .failed(let error):
             print(error)
-            try await disconnect()
+            disconnect()
         case .cancelled:
-            try await disconnect()
+            disconnect()
         default:
             break
         }
 
-        try await API.shared.fileUpdate(file.id, package: irc)
+        try await handleSave()
     }
 
     private func handleListen() {
@@ -118,7 +131,12 @@ final class ConnectionManager {
 
             // Upsert new line to session object
             irc.session?.upsert(log: .init(line))
-            try await API.shared.fileUpdate(file.id, package: irc)
+            try await handleSave()
+
+            // React to line
+            if let message = IRC.parseServerMessage(line) {
+                try await react(message: message)
+            }
 
             // Respond to periodic PINGs to maintain the connection
             if line.hasPrefix("PING ") {
@@ -128,26 +146,32 @@ final class ConnectionManager {
         }
     }
 
-    private func apply(message: IRC.Message) async throws {
-        guard case .numeric(let numeric) = message.command else {
-            return
-        }
-        switch numeric {
-        case .RPL_LIST:
-            guard message.params.count >= 4 else {
-                return
-            }
-            let name = message.params[1]
-            let users = Int(message.params[2]) ?? 0
-            let topic = message.params[3].isEmpty ? nil : message.params[3]
-            guard name != "*" else {
-                return
-            }
+    private func react(message: IRC.Message) async throws {
 
-            irc.session?.upsert(channel: .init(name: name, users: users, topic: topic))
-            try await API.shared.fileUpdate(file.id, package: irc)
+        switch message.command {
+        case .join:
+            irc.upsert(channel: .init(name: message.params[0], created: .now))
+            try await handleSave()
+        case .numeric(let numeric):
+            switch numeric {
+            case .RPL_LIST:
+                guard message.params.count >= 4 else {
+                    return
+                }
+                let name = message.params[1]
+                let users = Int(message.params[2]) ?? 0
+                let topic = message.params[3].isEmpty ? nil : message.params[3]
+                guard name != "*" else {
+                    return
+                }
+
+                irc.session?.upsert(channel: .init(name: name, users: users, topic: topic))
+                try await handleSave()
+            default:
+                return
+            }
         default:
-            return
+            break
         }
     }
 

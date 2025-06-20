@@ -51,6 +51,16 @@ public struct IRC: Packagable {
         return out
     }
 
+    // MARK: Mutations
+
+    public mutating func upsert(channel: Channel) {
+        if let index = channels.firstIndex(where: { $0.id == channel.id }) {
+            channels[index] = channel
+        } else {
+            channels.append(channel)
+        }
+    }
+
     // MARK: Parsing
 
     public static func parseServerMessage(_ input: String) -> Message? {

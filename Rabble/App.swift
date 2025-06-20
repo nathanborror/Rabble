@@ -12,15 +12,36 @@ struct RabbleApp: App {
                 List(selection: $state.selectedFileID) {
                     ForEach(Array(state.connectionPool.values), id: \.file.id) { connection in
                         NavigationLink(value: connection.file.id) {
-                            Label(connection.file.name ?? connection.file.path, systemImage: "bubble")
+                            Label(connection.hostname, systemImage: "apple.terminal")
                         }
                     }
                 }
+            } content: {
+                if let fileID = state.selectedFileID, let manager = state.connectionPool[fileID], !manager.channels.isEmpty {
+                    @Bindable var manager = manager
+                    List(selection: $manager.selectedChannel) {
+                        NavigationLink(value: "__console__") {
+                            Text("Console")
+                        }
+                        ForEach(manager.channels) { channel in
+                            NavigationLink(value: channel.id) {
+                                Text(channel.name)
+                            }
+                        }
+                    }
+                } else {
+                    ContentUnavailableView("No Channels", systemImage: "bubble")
+                }
+
             } detail: {
                 if let fileID = state.selectedFileID, let manager = state.connectionPool[fileID] {
-                    ConnectionView(manager: manager)
+                    if manager.selectedChannel == "__console__" {
+                        ConnectionView(manager: manager)
+                    } else {
+                        ChannelView(manager: manager)
+                    }
                 } else {
-                    ContentUnavailableView("No Session", image: "cloud")
+                    ContentUnavailableView("No Connection", systemImage: "apple.terminal")
                 }
             }
             .sheet(isPresented: $showingNewConnectionForm) {

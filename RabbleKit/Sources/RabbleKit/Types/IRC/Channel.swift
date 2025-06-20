@@ -3,7 +3,6 @@ import Foundation
 extension IRC {
 
     public struct Channel: Identifiable, Codable, Sendable {
-        public var sessionID: String
         public var name: String
         public var topic: Topic?
         public var users: [String: User]
@@ -37,10 +36,8 @@ extension IRC {
             public var id: String { nick }
         }
 
-        public init(sessionID: String, name: String, topic: Topic? = nil, users: [String: User] = [:],
-                    modes: Set<String> = [], password: String? = nil, limit: Int? = nil, bans: Set<String> = [],
-                    messages: [Message] = [], created: Date) {
-            self.sessionID = sessionID
+        public init(name: String, topic: Topic? = nil, users: [String: User] = [:], modes: Set<String> = [],
+                    password: String? = nil, limit: Int? = nil, bans: Set<String> = [], messages: [Message] = [], created: Date) {
             self.name = name
             self.topic = topic
             self.users = users

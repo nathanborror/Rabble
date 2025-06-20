@@ -35,8 +35,7 @@ struct ConnectionForm: View {
     func handleSubmit() {
         Task {
             do {
-                let fileID = try await state.create(server: server, port: port, nick: nick, name: name)
-                state.selectedFileID = fileID
+                try await state.createConnection(server: server, port: port, nick: nick, name: name)
                 dismiss()
             } catch {
                 print(error)

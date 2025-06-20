@@ -7,7 +7,6 @@ struct ConnectionView: View {
 
     @State private var manager: ConnectionManager
     @State private var messageText = ""
-    @State private var showingChannels = false
 
     init(manager: ConnectionManager) {
         self.manager = manager
@@ -16,6 +15,11 @@ struct ConnectionView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading) {
+                if !manager.connected {
+                    Button("Connect to Server") {
+                        handleConnect()
+                    }
+                }
                 ForEach(manager.logs) { log in
                     Text(log.text)
                         .font(.footnote)
@@ -53,13 +57,15 @@ struct ConnectionView: View {
         }
         .toolbar {
             ToolbarItem {
-                Button("Connect", systemImage: "cloud") {
-                    handleConnect()
+                Button("Clear Logs", systemImage: "eraser") {
+                    handleClearLogs()
                 }
             }
-        }
-        .onDisappear {
-            print("note implemented: disconnect all connections")
+            ToolbarItem {
+                Button("Channels", systemImage: "list.dash.header.rectangle") {
+                    handleChannelList()
+                }
+            }
         }
     }
 
@@ -76,6 +82,15 @@ struct ConnectionView: View {
                 print(error)
             }
         }
+    }
+
+    func handleChannelList() {
+        manager.send("LIST")
+        openWindow(id: "channels", value: manager.file.id)
+    }
+
+    func handleClearLogs() {
+        manager.clear()
     }
 
 //    static let formatter: DateFormatter = {

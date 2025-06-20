@@ -9,7 +9,6 @@ extension IRC {
         public var name: String
         public var logs: [Log]
         public var list: [Channel]
-        public var connected: Bool
         public var created: Date
         public var modified: Date
 
@@ -39,14 +38,13 @@ extension IRC {
             }
         }
 
-        public init(server: String, port: UInt16 = 6667, nick: String, name: String, logs: [Log] = [], connected: Bool = false) {
+        public init(server: String, port: UInt16 = 6667, nick: String, name: String, logs: [Log] = []) {
             self.server = server
             self.port = port
             self.nick = nick
             self.name = name
             self.logs = logs
             self.list = []
-            self.connected = connected
             self.created = .now
             self.modified = .now
         }
@@ -59,7 +57,6 @@ extension IRC {
             existing.name = session.name
             existing.logs = session.logs
             existing.list = session.list
-            existing.connected = session.connected
             existing.modified = .now
             return existing
         }
