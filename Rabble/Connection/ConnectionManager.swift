@@ -160,6 +160,7 @@ final class ConnectionManager {
             let channelName = message.params[0]
             irc.upsert(channel: .init(name: channelName, created: .now))
             irc.upsertSession(channel: .init(name: channelName))
+            state.selection = .init(fileID: file.id, channelID: channelName)
             try await handleSave()
         case .privmsg:
             let channelID = message.params[0]
