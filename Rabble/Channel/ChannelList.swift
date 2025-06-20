@@ -14,8 +14,8 @@ struct ChannelList: View {
     var body: some View {
         Table(channels, selection: $selected, sortOrder: $sortOrder) {
             TableColumn("Name", value: \.name)
-            TableColumn("Users", value: \.users) { channel in
-                Text("\(channel.users)")
+            TableColumn("Users") { channel in
+                Text("\(channel.users ?? 0)")
             }
             .width(50)
             TableColumn("Topic") { channel in

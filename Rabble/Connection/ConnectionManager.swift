@@ -157,7 +157,9 @@ final class ConnectionManager {
     private func react(message: IRC.Message) async throws {
         switch message.command {
         case .join:
-            irc.upsert(channel: .init(name: message.params[0], created: .now))
+            let channelName = message.params[0]
+            irc.upsert(channel: .init(name: channelName, created: .now))
+            irc.upsertSession(channel: .init(name: channelName))
             try await handleSave()
         case .privmsg:
             let channelID = message.params[0]
@@ -188,7 +190,10 @@ final class ConnectionManager {
                 }
                 irc.upsertSession(channel: .init(name: name, users: users, topic: topic))
             case .RPL_NAMREPLY:
-                irc.upsert(name: message.params[3], channelID: message.params[2])
+                if let channel = irc.get(channelID: message.params[2]) {
+                    irc.upsert(name: message.params[3], channelID: channel.id)
+                    irc.upsertSession(channel: .init(name: channel.id, users: channel.users.count))
+                }
             default:
                 return
             }

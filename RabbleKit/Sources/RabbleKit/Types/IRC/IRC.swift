@@ -55,7 +55,8 @@ public struct IRC {
 
     public mutating func upsertSession(channel: Session.Channel) {
         if let index = session.list.firstIndex(where: { $0.id == channel.id }) {
-            session.list[index] = channel
+            var existing = session.list[index].apply(channel)
+            session.list[index] = existing
         } else {
             session.list.append(channel)
         }
