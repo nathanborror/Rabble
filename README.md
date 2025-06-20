@@ -34,3 +34,15 @@ An experimental IRC client written in pure Swift.
 └─ ...
 
 IRC sessions are stored as packages which contain files that maintain the state of the session (e.g. configuration, channel history, session logs).
+
+## Local IRC Server
+
+Checkout the latest version of [Ergo](https://github.com/ergochat/ergo) and run the following get get it up and running:
+
+```
+cd ergo
+make
+cp default.yaml ircd.yaml
+./ergo mkcerts
+./ergo run
+```
