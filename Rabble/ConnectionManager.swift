@@ -29,8 +29,8 @@ final class ConnectionManager {
         irc.session?.list ?? []
     }
 
-    var channels: [IRC.Channel] {
-        irc.channels
+    var channels: [String: IRC.Channel] {
+        Dictionary(uniqueKeysWithValues: irc.channels.map { ($0.id, $0) })
     }
 
     init(file: File) {
@@ -75,6 +75,12 @@ final class ConnectionManager {
             guard let error else { return }
             print(error)
         })
+    }
+
+    func leave(_ channelID: String) {
+        send("PART \(channelID)")
+        irc.remove(channelID: channelID)
+        Task { try await handleSave() }
     }
 
     func clear() {
@@ -147,11 +153,13 @@ final class ConnectionManager {
     }
 
     private func react(message: IRC.Message) async throws {
-
         switch message.command {
         case .join:
             irc.upsert(channel: .init(name: message.params[0], created: .now))
             try await handleSave()
+        case .privmsg:
+            let channelID = message.params[0]
+            irc.upsert(message: message, channelID: channelID)
         case .numeric(let numeric):
             switch numeric {
             case .RPL_LIST:

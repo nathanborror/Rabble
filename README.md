@@ -13,11 +13,13 @@ An experimental IRC client written in pure Swift.
 
 - [ ] Show error messages in timeline
 - [ ] Show disconnection messages in timeline
-- [ ] Sidebar to show channels
-- [ ] Channel view
-- [ ] Channel message timeline
+- [x] Sidebar to show channels
+- [x] Channel view
+- [x] Channel message timeline
 - [ ] Some sort of command palette
 - [x] Connection pool
+- [ ] Re-join rooms upon reconnecting
+- [ ] Enable echo-message on every connection
 
 ## File Structure
 

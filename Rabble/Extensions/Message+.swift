@@ -20,6 +20,21 @@ extension IRC.Message {
                     .background(.red)
                     .foregroundStyle(.white)
                     .clipShape(.rect(cornerRadius: 4))
+            case .privmsg:
+                HStack {
+                    if let prefix {
+                        switch prefix {
+                        case .user(let text):
+                            Text(text)
+                                .fontWeight(.semibold)
+                        case .server(let text):
+                            Text(text)
+                        case .service(let text):
+                            Text(text)
+                        }
+                    }
+                    Text(params[1])
+                }
             case .numeric(let numeric):
                 switch numeric {
                 case .RPL_MOTD:

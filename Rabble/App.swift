@@ -17,22 +17,26 @@ struct RabbleApp: App {
                     }
                 }
             } content: {
-                if let fileID = state.selectedFileID, let manager = state.connectionPool[fileID], !manager.channels.isEmpty {
+                if let fileID = state.selectedFileID, let manager = state.connectionPool[fileID] {
                     @Bindable var manager = manager
                     List(selection: $manager.selectedChannel) {
                         NavigationLink(value: "__console__") {
                             Text("Console")
                         }
-                        ForEach(manager.channels) { channel in
+                        ForEach(Array(manager.channels.values)) { channel in
                             NavigationLink(value: channel.id) {
                                 Text(channel.name)
+                            }
+                            .contextMenu {
+                                Button("Leave") {
+                                    manager.leave(channel.id)
+                                }
                             }
                         }
                     }
                 } else {
                     ContentUnavailableView("No Channels", systemImage: "bubble")
                 }
-
             } detail: {
                 if let fileID = state.selectedFileID, let manager = state.connectionPool[fileID] {
                     if manager.selectedChannel == "__console__" {
@@ -44,6 +48,7 @@ struct RabbleApp: App {
                     ContentUnavailableView("No Connection", systemImage: "apple.terminal")
                 }
             }
+            .containerBackground(.background, for: .window)
             .sheet(isPresented: $showingNewConnectionForm) {
                 NavigationStack {
                     ConnectionForm()

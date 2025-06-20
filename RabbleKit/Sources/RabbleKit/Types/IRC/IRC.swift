@@ -61,6 +61,21 @@ public struct IRC: Packagable {
         }
     }
 
+    public mutating func upsert(message: Message, channelID: String) {
+        if let index = channels.firstIndex(where: { $0.id == channelID }) {
+            var channel = channels[index]
+            channel.messages.append(message)
+            channel.modified = .now
+            channels[index] = channel
+        }
+    }
+
+    public mutating func remove(channelID: String) {
+        if let index = channels.firstIndex(where: { $0.id == channelID }) {
+            channels.remove(at: index)
+        }
+    }
+
     // MARK: Parsing
 
     public static func parseServerMessage(_ input: String) -> Message? {
