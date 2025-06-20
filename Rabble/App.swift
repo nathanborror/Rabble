@@ -9,19 +9,32 @@ struct RabbleApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationSplitView {
-                List(selection: $state.selection) {
-                    ForEach(Array(state.connectionPool.values), id: \.file.id) { connection in
-                        DisclosureGroup {
-                            ForEach(Array(connection.channels.values).sorted(by: { $0.name < $1.name })) { channel in
-                                Label(channel.cleanName, systemImage: "number")
-                                    .tag(AppState.Selection(fileID: connection.file.id, channelID: channel.id))
+                VStack {
+                    List(selection: $state.selection) {
+                        ForEach(Array(state.connectionPool.values), id: \.file.id) { connection in
+                            DisclosureGroup {
+                                ForEach(Array(connection.channels.values).sorted(by: { $0.name < $1.name })) { channel in
+                                    Label(channel.cleanName, systemImage: "number")
+                                        .tag(AppState.Selection(fileID: connection.file.id, channelID: channel.id))
+                                }
+                            } label: {
+                                Text(connection.hostname)
+                                    .fontWeight(.semibold)
                             }
-                        } label: {
-                            Text(connection.hostname)
-                                .fontWeight(.semibold)
+                            .tag(AppState.Selection(fileID: connection.file.id, channelID: nil))
                         }
-                        .tag(AppState.Selection(fileID: connection.file.id, channelID: nil))
                     }
+                    Spacer()
+                    HStack {
+                        Button {
+                            showingNewConnectionForm = true
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                        .buttonStyle(.borderless)
+                        Spacer()
+                    }
+                    .padding()
                 }
                 .frame(minWidth: 200)
             } detail: {
@@ -39,13 +52,6 @@ struct RabbleApp: App {
             .sheet(isPresented: $showingNewConnectionForm) {
                 NavigationStack {
                     ConnectionForm()
-                }
-            }
-            .toolbar {
-                ToolbarItem {
-                    Button("New Connection", systemImage: "plus") {
-                        showingNewConnectionForm = true
-                    }
                 }
             }
             .onAppear {
