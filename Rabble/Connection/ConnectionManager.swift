@@ -140,7 +140,7 @@ final class ConnectionManager {
 
             // React to line
             if let message = IRC.parseServerMessage(line) {
-                try await react(message: message)
+                try await handleMessageCommand(message)
             }
 
             // Respond to periodic PINGs to maintain the connection
@@ -154,7 +154,7 @@ final class ConnectionManager {
         }
     }
 
-    private func react(message: IRC.Message) async throws {
+    private func handleMessageCommand(_ message: IRC.Message) async throws {
         switch message.command {
         case .join:
             let channelName = message.params[0]
@@ -178,28 +178,32 @@ final class ConnectionManager {
                 }
             }
         case .numeric(let numeric):
-            switch numeric {
-            case .RPL_LIST:
-                guard message.params.count >= 4 else {
-                    return
-                }
-                let name = message.params[1]
-                let users = Int(message.params[2]) ?? 0
-                let topic = message.params[3].isEmpty ? nil : message.params[3]
-                guard name != "*" else {
-                    return
-                }
-                irc.upsertSession(channel: .init(name: name, users: users, topic: topic))
-            case .RPL_NAMREPLY:
-                if let channel = irc.get(channelID: message.params[2]) {
-                    irc.upsert(name: message.params[3], channelID: channel.id)
-                    irc.upsertSession(channel: .init(name: channel.id, users: channel.users.count))
-                }
-            default:
-                return
-            }
+            try await handleMessageNumeric(message, numeric: numeric)
         default:
             break
+        }
+    }
+
+    private func handleMessageNumeric(_ message: IRC.Message, numeric: IRC.Numeric) async throws {
+        switch numeric {
+        case .RPL_LIST:
+            guard message.params.count >= 4 else {
+                return
+            }
+            let name = message.params[1]
+            let users = Int(message.params[2]) ?? 0
+            let topic = message.params[3].isEmpty ? nil : message.params[3]
+            guard name != "*" else {
+                return
+            }
+            irc.upsertSession(channel: .init(name: name, users: users, topic: topic))
+        case .RPL_NAMREPLY:
+            if let channel = irc.get(channelID: message.params[2]) {
+                irc.upsert(name: message.params[3], channelID: channel.id)
+                irc.upsertSession(channel: .init(name: channel.id, users: channel.users.count))
+            }
+        default:
+            return
         }
     }
 
