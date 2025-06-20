@@ -14,6 +14,10 @@ public struct IRC {
 
     // MARK: Channels
 
+    public func get(channelID: String) -> Channel? {
+        channels.first(where: { $0.id == channelID })
+    }
+
     public mutating func upsert(channel: Channel) {
         if let index = channels.firstIndex(where: { $0.id == channel.id }) {
             let existing = channels[index].apply(channel)
