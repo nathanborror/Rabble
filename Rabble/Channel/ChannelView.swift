@@ -7,6 +7,7 @@ struct ChannelView: View {
 
     @State private var manager: ConnectionManager
     @State private var messageText = ""
+    @State private var showingInspector = true
 
     init(manager: ConnectionManager) {
         self.manager = manager
@@ -48,6 +49,19 @@ struct ChannelView: View {
                 }
             }
             .background(.background)
+        }
+        .toolbar {
+            ToolbarItem {
+                Button("Inspector", systemImage: "sidebar.right") {
+                    showingInspector.toggle()
+                }
+            }
+        }
+        .inspector(isPresented: $showingInspector) {
+            NavigationStack {
+                ChannelMembers(manager: manager)
+            }
+            .inspectorColumnWidth(ideal: 200)
         }
     }
 

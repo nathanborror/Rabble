@@ -17,6 +17,10 @@ final class ConnectionManager {
         irc.session?.server ?? "Unknown"
     }
 
+    var session: IRC.Session? {
+        irc.session
+    }
+
     var connected: Bool {
         connection?.state == .ready
     }
@@ -48,6 +52,8 @@ final class ConnectionManager {
     }
 
     func connect() async throws {
+        clear()
+        
         let endpoint = NWEndpoint.hostPort(host: .init(irc.session!.server), port: .init(integerLiteral: irc.session!.port))
         connection = NWConnection(to: endpoint, using: .tcp)
         connection?.stateUpdateHandler = { [weak self] state in
@@ -85,6 +91,7 @@ final class ConnectionManager {
 
     func clear() {
         irc.session?.logs = []
+        Task { try await handleSave() }
     }
 
     private func handleSave() async throws {
@@ -96,9 +103,12 @@ final class ConnectionManager {
         case .ready:
             // TODO: What is the difference between a nickname and a username?
             let messages = [
+                "CAP LS 302",
+                "CAP REQ :echo-message server-time message-tags",
+                "CAP END",
                 "NICK \(irc.session!.nick)",
-                "USER \(irc.session!.nick) 0 * :\(irc.session!.name)",
-            ]
+                "USER \(irc.session!.username) 0 * :\(irc.session!.name)",
+            ] + irc.channels.map { "JOIN \($0.name)" }
             for message in messages {
                 send(message)
             }
@@ -137,7 +147,6 @@ final class ConnectionManager {
 
             // Upsert new line to session object
             irc.session?.upsert(log: .init(line))
-            try await handleSave()
 
             // React to line
             if let message = IRC.parseServerMessage(line) {
@@ -149,6 +158,9 @@ final class ConnectionManager {
                 let payload = line.trimmingPrefix("PING ")
                 send("PONG \(payload)")
             }
+
+            // Save state
+            try await handleSave()
         }
     }
 
@@ -160,6 +172,18 @@ final class ConnectionManager {
         case .privmsg:
             let channelID = message.params[0]
             irc.upsert(message: message, channelID: channelID)
+        case .cap:
+            if message.params[1] == "LS" && message.params[2] == "*" {
+                let capabilities = message.params[3].split(separator: " ").map(String.init)
+                for cap in capabilities {
+                    irc.session?.capabilities[cap] = false
+                }
+            } else if message.params[1] == "LS" {
+                let capabilities = message.params[2].split(separator: " ").map(String.init)
+                for cap in capabilities {
+                    irc.session?.capabilities[cap] = false
+                }
+            }
         case .numeric(let numeric):
             switch numeric {
             case .RPL_LIST:
@@ -172,9 +196,10 @@ final class ConnectionManager {
                 guard name != "*" else {
                     return
                 }
-
                 irc.session?.upsert(channel: .init(name: name, users: users, topic: topic))
-                try await handleSave()
+            case .RPL_NAMREPLY:
+                //let status = message.params[1]
+                irc.upsert(name: message.params[3], channelID: message.params[2])
             default:
                 return
             }

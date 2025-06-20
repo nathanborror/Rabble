@@ -66,6 +66,11 @@ struct ConnectionView: View {
                     handleChannelList()
                 }
             }
+            ToolbarItem {
+                Button("Info", systemImage: "info.circle") {
+                    handleChannelInfo()
+                }
+            }
         }
     }
 
@@ -87,6 +92,10 @@ struct ConnectionView: View {
     func handleChannelList() {
         manager.send("LIST")
         openWindow(id: "channels", value: manager.file.id)
+    }
+
+    func handleChannelInfo() {
+        openWindow(id: "connection", value: manager.file.id)
     }
 
     func handleClearLogs() {

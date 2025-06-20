@@ -5,16 +5,18 @@ struct ConnectionForm: View {
     @Environment(AppState.self) var state
     @Environment(\.dismiss) var dismiss
 
-    @State var server = "irc.zeronode.net"
+    @State var server = "localhost"
     @State var port: UInt16 = 6667
     @State var nick = "sketch22"
+    @State var username = "nathanborror"
     @State var name = "Nathan Borror"
 
     var body: some View {
         Form {
             TextField("Server", text: $server)
             TextField("Port", value: $port, format: .number)
-            TextField("Nickname", text: $nick)
+            TextField("Nick", text: $nick)
+            TextField("Username", text: $username)
             TextField("Name", text: $name)
         }
         .formStyle(.grouped)
@@ -35,7 +37,7 @@ struct ConnectionForm: View {
     func handleSubmit() {
         Task {
             do {
-                try await state.createConnection(server: server, port: port, nick: nick, name: name)
+                try await state.createConnection(server: server, port: port, nick: nick, username: username, name: name)
                 dismiss()
             } catch {
                 print(error)

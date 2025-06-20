@@ -34,6 +34,53 @@ extension IRC {
             public var joined: Date?
 
             public var id: String { nick }
+
+            public init(nick: String, modes: Set<String>, joined: Date? = nil) {
+                self.modes = []
+                self.nick = nick
+                self.joined = joined
+
+                /// # Founder
+                /// This prefix shows that the given user is the ‘founder’ of the current channel and has full moderation control over it – ie, they are
+                /// considered to ‘own’ that channel by the network. This prefix is typically only used on networks that have the concept of client accounts,
+                /// and ownership of channels by those accounts.
+                if nick.hasPrefix("~") {
+                    self.nick = String(nick.trimmingPrefix("~"))
+                    self.modes.insert("+q")
+                }
+
+                /// # Protected
+                /// Users with this mode cannot be kicked and cannot have this mode removed by other protected users. In some software, they may
+                /// perform actions that operators can, but at a higher privilege level than operators. This prefix is typically only used on networks that have
+                /// the concept of client accounts, and ownership of channels by those accounts.
+                if nick.hasPrefix("&") {
+                    self.nick = String(nick.trimmingPrefix("&"))
+                    self.modes.insert("+a")
+                }
+
+                /// # Operator
+                /// Users with this mode may perform channel moderation tasks such as kicking users, applying channel modes, and set other users to
+                /// operator (or lower) status.
+                if nick.hasPrefix("@") {
+                    self.nick = String(nick.trimmingPrefix("@"))
+                    self.modes.insert("+o")
+                }
+
+                /// # Halfop
+                /// Users with this mode may perform channel moderation tasks, but at a lower privilege level than operators. Which channel moderation
+                /// tasks they can and cannot perform varies with server software and configuration.
+                if nick.hasPrefix("%") {
+                    self.nick = String(nick.trimmingPrefix("%"))
+                    self.modes.insert("+h")
+                }
+
+                /// # Voice
+                /// Users with this mode may send messages to a channel that is moderated.
+                if nick.hasPrefix("+") {
+                    self.nick = String(nick.trimmingPrefix("+"))
+                    self.modes.insert("+v")
+                }
+            }
         }
 
         public init(name: String, topic: Topic? = nil, users: [String: User] = [:], modes: Set<String> = [],
@@ -59,7 +106,7 @@ extension IRC {
             existing.password = channel.password
             existing.limit = channel.limit
             existing.bans = channel.bans
-            existing.messages = channel.messages
+            existing.messages += channel.messages
             existing.modified = .now
             return existing
         }

@@ -23,7 +23,7 @@ struct RabbleApp: App {
                         NavigationLink(value: "__console__") {
                             Text("Console")
                         }
-                        ForEach(Array(manager.channels.values)) { channel in
+                        ForEach(Array(manager.channels.values).sorted(by: { $0.name < $1.name })) { channel in
                             NavigationLink(value: channel.id) {
                                 Text(channel.name)
                             }
@@ -77,13 +77,24 @@ struct RabbleApp: App {
         WindowGroup("Channels", id: "channels", for: String.self) { fileID in
             NavigationStack {
                 if let fileID = fileID.wrappedValue, let manager = state.connectionPool[fileID] {
-                    ChannelList(manager: manager)
+                    ChannelList(manager: manager, channels: manager.list)
                 } else {
                     ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
                 }
             }
         }
         .environment(state)
+        .defaultSize(width: 500, height: 600)
+
+        WindowGroup("Connection Info", id: "connection", for: String.self) { fileID in
+            if let fileID = fileID.wrappedValue, let manager = state.connectionPool[fileID] {
+                ConnectionInfo(manager: manager)
+            } else {
+                ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
+            }
+        }
+        .environment(state)
+        .defaultSize(width: 350, height: 500)
     }
 
     func appActive() async {

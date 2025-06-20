@@ -5,16 +5,14 @@ struct ChannelList: View {
     @Environment(AppState.self) var state
     @Environment(\.dismiss) var dismiss
 
-    @State private var manager: ConnectionManager
+    let manager: ConnectionManager
+    let channels: [IRC.Session.Channel]
+
     @State private var selected: Set<String> = []
     @State private var sortOrder = [KeyPathComparator(\IRC.Session.Channel.name)]
 
-    init(manager: ConnectionManager) {
-        self.manager = manager
-    }
-
     var body: some View {
-        Table(manager.list, selection: $selected, sortOrder: $sortOrder) {
+        Table(channels, selection: $selected, sortOrder: $sortOrder) {
             TableColumn("Name", value: \.name)
             TableColumn("Users", value: \.users) { channel in
                 Text("\(channel.users)")

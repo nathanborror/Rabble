@@ -86,8 +86,8 @@ final class AppState {
 
     // MARK: - IRC
 
-    func createConnection(server: String, port: UInt16, nick: String, name: String) async throws {
-        let session = IRC.Session(server: server, port: port, nick: nick, name: name)
+    func createConnection(server: String, port: UInt16, nick: String, username: String, name: String) async throws {
+        let session = IRC.Session(server: server, port: port, nick: nick, username: username, name: name)
         let package = IRC(session: session)
         let fileID = String.id
         _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: package)
