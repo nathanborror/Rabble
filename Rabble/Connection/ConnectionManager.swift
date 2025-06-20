@@ -7,14 +7,13 @@ import RabbleKit
 final class ConnectionManager {
 
     var file: File
-    var irc: IRC = .init()
-    var selectedChannel = "__console__"
+    var irc: IRC
 
     private let state = AppState.shared
     private var connection: NWConnection? = nil
 
     var hostname: String {
-        irc.session?.server ?? "Unknown"
+        irc.session.server
     }
 
     var session: IRC.Session? {
@@ -26,35 +25,26 @@ final class ConnectionManager {
     }
 
     var logs: [IRC.Session.Log] {
-        irc.session?.logs ?? []
+        irc.session.logs
     }
 
     var list: [IRC.Session.Channel] {
-        irc.session?.list ?? []
+        irc.session.list
     }
 
     var channels: [String: IRC.Channel] {
         Dictionary(uniqueKeysWithValues: irc.channels.map { ($0.id, $0) })
     }
 
-    init(file: File) {
+    init(file: File) throws {
         self.file = file
-        self.read()
-    }
-
-    func read() {
-        do {
-            let irc: IRC = try state.filePackage(file.id)
-            self.irc = irc
-        } catch {
-            print(error)
-        }
+        self.irc = try state.filePackage(file.id)
     }
 
     func connect() async throws {
         clear()
         
-        let endpoint = NWEndpoint.hostPort(host: .init(irc.session!.server), port: .init(integerLiteral: irc.session!.port))
+        let endpoint = NWEndpoint.hostPort(host: .init(irc.session.server), port: .init(integerLiteral: irc.session.port))
         connection = NWConnection(to: endpoint, using: .tcp)
         connection?.stateUpdateHandler = { [weak self] state in
             guard let self else { return }
@@ -90,7 +80,7 @@ final class ConnectionManager {
     }
 
     func clear() {
-        irc.session?.logs = []
+        irc.session.logs = []
         Task { try await handleSave() }
     }
 
@@ -106,8 +96,8 @@ final class ConnectionManager {
                 "CAP LS 302",
                 "CAP REQ :echo-message server-time message-tags",
                 "CAP END",
-                "NICK \(irc.session!.nick)",
-                "USER \(irc.session!.username) 0 * :\(irc.session!.name)",
+                "NICK \(irc.session.nick)",
+                "USER \(irc.session.username) 0 * :\(irc.session.name)",
             ] + irc.channels.map { "JOIN \($0.name)" }
             for message in messages {
                 send(message)
@@ -146,7 +136,7 @@ final class ConnectionManager {
             incomingDataBuffer = String(incomingDataBuffer[range.upperBound...]) // Remove parsed line + delimiter
 
             // Upsert new line to session object
-            irc.session?.upsert(log: .init(line))
+            irc.upsertSession(log: .init(line))
 
             // React to line
             if let message = IRC.parseServerMessage(line) {
@@ -176,12 +166,12 @@ final class ConnectionManager {
             if message.params[1] == "LS" && message.params[2] == "*" {
                 let capabilities = message.params[3].split(separator: " ").map(String.init)
                 for cap in capabilities {
-                    irc.session?.capabilities[cap] = false
+                    irc.session.capabilities[cap] = false
                 }
             } else if message.params[1] == "LS" {
                 let capabilities = message.params[2].split(separator: " ").map(String.init)
                 for cap in capabilities {
-                    irc.session?.capabilities[cap] = false
+                    irc.session.capabilities[cap] = false
                 }
             }
         case .numeric(let numeric):
@@ -196,9 +186,8 @@ final class ConnectionManager {
                 guard name != "*" else {
                     return
                 }
-                irc.session?.upsert(channel: .init(name: name, users: users, topic: topic))
+                irc.upsertSession(channel: .init(name: name, users: users, topic: topic))
             case .RPL_NAMREPLY:
-                //let status = message.params[1]
                 irc.upsert(name: message.params[3], channelID: message.params[2])
             default:
                 return

@@ -68,18 +68,3 @@ extension IRC {
         }
     }
 }
-
-extension IRC.Session {
-
-    public mutating func upsert(log: Log) {
-        logs.append(log)
-    }
-
-    public mutating func upsert(channel: Channel) {
-        if let index = list.firstIndex(where: { $0.id == channel.id }) {
-            list[index] = channel
-        } else {
-            list.append(channel)
-        }
-    }
-}

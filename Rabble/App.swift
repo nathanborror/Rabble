@@ -9,40 +9,27 @@ struct RabbleApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationSplitView {
-                List(selection: $state.selectedFileID) {
+                List(selection: $state.selection) {
                     ForEach(Array(state.connectionPool.values), id: \.file.id) { connection in
-                        NavigationLink(value: connection.file.id) {
-                            Label(connection.hostname, systemImage: "apple.terminal")
+                        DisclosureGroup {
+                            ForEach(Array(connection.channels.values).sorted(by: { $0.name < $1.name })) { channel in
+                                Label(channel.cleanName, systemImage: "number")
+                                    .tag(AppState.Selection(fileID: connection.file.id, channelID: channel.id))
+                            }
+                        } label: {
+                            Text(connection.hostname)
+                                .fontWeight(.semibold)
                         }
+                        .tag(AppState.Selection(fileID: connection.file.id, channelID: nil))
                     }
                 }
-            } content: {
-                if let fileID = state.selectedFileID, let manager = state.connectionPool[fileID] {
-                    @Bindable var manager = manager
-                    List(selection: $manager.selectedChannel) {
-                        NavigationLink(value: "__console__") {
-                            Text("Console")
-                        }
-                        ForEach(Array(manager.channels.values).sorted(by: { $0.name < $1.name })) { channel in
-                            NavigationLink(value: channel.id) {
-                                Text(channel.name)
-                            }
-                            .contextMenu {
-                                Button("Leave") {
-                                    manager.leave(channel.id)
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    ContentUnavailableView("No Channels", systemImage: "bubble")
-                }
+                .frame(minWidth: 200)
             } detail: {
-                if let fileID = state.selectedFileID, let manager = state.connectionPool[fileID] {
-                    if manager.selectedChannel == "__console__" {
-                        ConnectionView(manager: manager)
-                    } else {
+                if let fileID = state.selection?.fileID, let manager = state.connectionPool[fileID] {
+                    if state.selection?.channelID != nil {
                         ChannelView(manager: manager)
+                    } else {
+                        ConnectionView(manager: manager)
                     }
                 } else {
                     ContentUnavailableView("No Connection", systemImage: "apple.terminal")

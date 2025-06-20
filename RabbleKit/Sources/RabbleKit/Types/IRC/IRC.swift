@@ -1,57 +1,18 @@
 import Foundation
 import SharedKit
 
-public struct IRC: Packagable {
+public struct IRC {
     public var id: String
-    public var session: Session?
+    public var session: Session
     public var channels: [Channel]
 
-    public init(id: String = .id, session: Session? = nil, channels: [Channel] = []) {
+    public init(id: String = .id, session: Session, channels: [Channel] = []) {
         self.id = id
         self.session = session
         self.channels = channels
     }
 
-    // MARK: Packagable
-
-    public static func load(url: URL) throws -> Self {
-        var out = Self(session: nil, channels: [])
-
-        let sessionData = try Data(contentsOf: url.appending(path: "session.json"))
-        out.session = try JSONDecoder().decode(Session.self, from: sessionData)
-
-        let channelURLs = try FileManager.default.contentsOfDirectory(at: url.appending(path: "channels"), includingPropertiesForKeys: nil)
-        for url in channelURLs {
-            let channelData = try Data(contentsOf: url)
-            let channel = try JSONDecoder().decode(Channel.self, from: channelData)
-            out.channels.append(channel)
-        }
-        return out
-    }
-
-    public func write(url: URL) throws -> [(URL, Data)] {
-        var out = [(URL, Data)]()
-
-        // Encode session
-        if let session {
-            let sessionData = try JSONEncoder().encode(session)
-            let sessionURL = url.appending(path: "session.json")
-            out.append((sessionURL, sessionData))
-        }
-
-        // Encode channels
-        let channelsURL = url.appending(path: "channels")
-        try FileManager.default.createDirectory(at: channelsURL, withIntermediateDirectories: true)
-
-        for channel in channels {
-            let channelData = try JSONEncoder().encode(channel)
-            let channelURL = channelsURL.appending(path: "\(channel.id).json")
-            out.append((channelURL, channelData))
-        }
-        return out
-    }
-
-    // MARK: Mutations
+    // MARK: Channels
 
     public mutating func upsert(channel: Channel) {
         if let index = channels.firstIndex(where: { $0.id == channel.id }) {
@@ -83,6 +44,20 @@ public struct IRC: Packagable {
     public mutating func remove(channelID: String) {
         if let index = channels.firstIndex(where: { $0.id == channelID }) {
             channels.remove(at: index)
+        }
+    }
+
+    // MARK: Session
+
+    public mutating func upsertSession(log: Session.Log) {
+        session.logs.append(log)
+    }
+
+    public mutating func upsertSession(channel: Session.Channel) {
+        if let index = session.list.firstIndex(where: { $0.id == channel.id }) {
+            session.list[index] = channel
+        } else {
+            session.list.append(channel)
         }
     }
 
@@ -204,4 +179,41 @@ public struct IRC: Packagable {
     private static let knownServices: Set<String> = [
         "NickServ", "ChanServ", "MemoServ", "OperServ", "BotServ", "HostServ", "HelpServ", "Global"
     ]
+}
+
+extension IRC: Packagable {
+
+    public static func load(url: URL) throws -> Self {
+        let sessionData = try Data(contentsOf: url.appending(path: "session.json"))
+        let session = try JSONDecoder().decode(Session.self, from: sessionData)
+
+        let channelURLs = try FileManager.default.contentsOfDirectory(at: url.appending(path: "channels"), includingPropertiesForKeys: nil)
+        var channels: [Channel] = []
+        for url in channelURLs {
+            let channelData = try Data(contentsOf: url)
+            let channel = try JSONDecoder().decode(Channel.self, from: channelData)
+            channels.append(channel)
+        }
+        return .init(session: session, channels: channels)
+    }
+
+    public func write(url: URL) throws -> [(URL, Data)] {
+        var out = [(URL, Data)]()
+
+        // Encode session
+        let sessionData = try JSONEncoder().encode(session)
+        let sessionURL = url.appending(path: "session.json")
+        out.append((sessionURL, sessionData))
+
+        // Encode channels
+        let channelsURL = url.appending(path: "channels")
+        try FileManager.default.createDirectory(at: channelsURL, withIntermediateDirectories: true)
+
+        for channel in channels {
+            let channelData = try JSONEncoder().encode(channel)
+            let channelURL = channelsURL.appending(path: "\(channel.id).json")
+            out.append((channelURL, channelData))
+        }
+        return out
+    }
 }

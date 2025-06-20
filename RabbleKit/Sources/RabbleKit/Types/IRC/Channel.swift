@@ -112,3 +112,10 @@ extension IRC {
         }
     }
 }
+
+extension IRC.Channel {
+
+    public var cleanName: String {
+        String(name.trimmingPrefix("#"))
+    }
+}

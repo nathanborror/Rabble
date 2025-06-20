@@ -24,7 +24,12 @@ final class AppState {
         }
     }
 
-    var selectedFileID: String? = nil
+    struct Selection: Hashable {
+        let fileID: String
+        let channelID: String?
+    }
+
+    var selection: Selection? = nil
     var connectionPool: [String: ConnectionManager] = [:]
 
     private let filesProvider: FilesProvider
@@ -62,7 +67,7 @@ final class AppState {
         _ = try await [filesReady, logsReady]
 
         for file in files.filter({ $0.isIRC }) {
-            let manager = ConnectionManager(file: file)
+            let manager = try ConnectionManager(file: file)
             connectionPool[file.id] = manager
         }
     }
@@ -78,7 +83,7 @@ final class AppState {
 
             // Clear connection pool
             connectionPool = [:]
-            selectedFileID = nil
+            selection = nil
         } catch {
             log(error: error)
         }
@@ -93,8 +98,8 @@ final class AppState {
         _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: package)
 
         let file = try file(fileID)
-        connectionPool[file.id] = ConnectionManager(file: file)
-        selectedFileID = file.id
+        connectionPool[file.id] = try ConnectionManager(file: file)
+        selection = .init(fileID: file.id, channelID: nil)
     }
 
     // MARK: - File Handling

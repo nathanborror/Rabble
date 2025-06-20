@@ -7,7 +7,7 @@ struct ChannelView: View {
 
     @State private var manager: ConnectionManager
     @State private var messageText = ""
-    @State private var showingInspector = true
+    @State private var showingInspector = false
 
     init(manager: ConnectionManager) {
         self.manager = manager
@@ -16,7 +16,7 @@ struct ChannelView: View {
     var body: some View {
         ScrollView {
             LazyVStack {
-                if manager.selectedChannel != "__console__", let channel = manager.channels[manager.selectedChannel] {
+                if let channelID = state.selection?.channelID, let channel = manager.channels[channelID] {
                     ForEach(channel.messages) { message in
                         message.render
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -66,8 +66,8 @@ struct ChannelView: View {
     }
 
     func handleSubmit() {
-        guard manager.selectedChannel != "__console__" else { return }
-        guard let channel = manager.channels[manager.selectedChannel] else { return }
+        guard let channelID = state.selection?.channelID else { return }
+        guard let channel = manager.channels[channelID] else { return }
 
         manager.send("PRIVMSG \(channel.name) :\(messageText)")
         messageText = ""
