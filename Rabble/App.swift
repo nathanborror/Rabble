@@ -2,7 +2,7 @@ import SwiftUI
 import RabbleKit
 
 @main
-struct RabbleApp: App {
+struct MainApp: App {
     @State private var state = AppState.shared
     @State private var showingNewConnectionForm = false
     
