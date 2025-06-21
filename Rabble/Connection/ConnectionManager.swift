@@ -93,11 +93,13 @@ final class ConnectionManager {
         case .ready:
             // TODO: What is the difference between a nickname and a username?
             let messages = [
-                "CAP LS 302",
-                "CAP REQ :echo-message server-time message-tags",
-                "CAP END",
-                "NICK \(irc.session.nick)",
+                "NICK \(irc.session.nick)_",
                 "USER \(irc.session.username) 0 * :\(irc.session.name)",
+                "PRIVMSG NickServ :IDENTIFY buoyant",
+                "NICK \(irc.session.nick)",
+                "CAP LS 302",
+                "CAP REQ :echo-message server-time message-tags chathistory batch labeled-response",
+                "CAP END",
             ] + irc.channels.map { "JOIN \($0.name)" }
             for message in messages {
                 send(message)
