@@ -91,17 +91,41 @@ final class ConnectionManager {
     private func handleStateUpdate(state: NWConnection.State) async throws {
         switch state {
         case .ready:
-            // TODO: What is the difference between a nickname and a username?
-            let messages = [
-                "NICK \(irc.session.nick)_",
-                "USER \(irc.session.username) 0 * :\(irc.session.name)",
-                "PRIVMSG NickServ :IDENTIFY buoyant",
-                "NICK \(irc.session.nick)",
+            var messages = [String]()
+
+            // Request capabilities
+            messages += [
                 "CAP LS 302",
-                "CAP REQ :echo-message server-time message-tags chathistory batch labeled-response",
+                "CAP REQ :echo-message server-time message-tags batch labeled-response sasl", // chathistory
                 "CAP END",
-            ] + irc.channels.map { "JOIN \($0.name)" }
+            ]
+
+            // Establish connection with identity
+            messages += [
+                "NICK \(irc.session.nick)",
+                "USER \(irc.session.username) 0 * :\(irc.session.name)",
+            ]
+
+//            // Authentication (sasl)
+//            let auth = "\0\(irc.session.username)\0\(irc.session.password ?? "")".data(using: .utf8)!
+//            messages += [
+//                "AUTHENTICATE PLAIN",
+//                "AUTHENTICATE \(auth.base64EncodedString())",
+//            ]
+
+//            // Authentication (non-sasl)
+//            if let password = irc.session.password {
+//                messages += [
+//                    "PRIVMSG NickServ :IDENTIFY \(password)",
+//                    "NICK \(irc.session.nick)",
+//                ]
+//            }
+
+            // Rejoin channels
+            messages += irc.channels.map { "JOIN \($0.name)" }
+
             for message in messages {
+                print(message)
                 send(message)
             }
             handleListen()

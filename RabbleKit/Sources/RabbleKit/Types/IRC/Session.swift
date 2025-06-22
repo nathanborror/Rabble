@@ -7,6 +7,7 @@ extension IRC {
         public var port: UInt16
         public var nick: String
         public var username: String
+        public var password: String?
         public var name: String
         public var logs: [Log]
         public var list: [Channel]
@@ -48,11 +49,12 @@ extension IRC {
             }
         }
 
-        public init(server: String, port: UInt16 = 6667, nick: String, username: String, name: String, logs: [Log] = []) {
+        public init(server: String, port: UInt16 = 6667, nick: String, username: String, password: String? = nil, name: String, logs: [Log] = []) {
             self.server = server
             self.port = port
             self.nick = nick
             self.username = username
+            self.password = password
             self.name = name
             self.logs = logs
             self.list = []
@@ -67,6 +69,7 @@ extension IRC {
             existing.port = session.port
             existing.nick = session.nick
             existing.username = session.username
+            existing.password = session.password
             existing.name = session.name
             existing.logs = session.logs
             existing.list = session.list
