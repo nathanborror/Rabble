@@ -13,10 +13,15 @@ struct ChannelView: View {
         self.manager = manager
     }
 
+    var channel: IRC.Channel? {
+        guard let channelID = state.selection?.channelID else { return nil }
+        return manager.channels[channelID]
+    }
+
     var body: some View {
         ScrollView {
             LazyVStack {
-                if let channelID = state.selection?.channelID, let channel = manager.channels[channelID] {
+                if let channel {
                     ForEach(channel.messages) { message in
                         message.render
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -25,6 +30,8 @@ struct ChannelView: View {
             }
             .padding()
         }
+        .navigationTitle(channel?.cleanName ?? "Unknown Channel")
+        .navigationSubtitle("\(channel?.users.count ?? 0) users")
         .safeAreaInset(edge: .bottom) {
             VStack(alignment: .leading, spacing: 0) {
                 Divider()

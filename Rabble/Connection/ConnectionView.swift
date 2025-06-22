@@ -29,6 +29,8 @@ struct ConnectionView: View {
             }
             .padding()
         }
+        .navigationTitle(manager.hostname)
+        .navigationSubtitle("\(manager.list.count) channels")
         .background(.background)
         .safeAreaInset(edge: .bottom) {
             VStack(alignment: .leading, spacing: 0) {
