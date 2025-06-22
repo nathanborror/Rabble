@@ -4,39 +4,12 @@ import RabbleKit
 @main
 struct MainApp: App {
     @State private var state = AppState.shared
-    @State private var showingNewConnectionForm = false
     
     var body: some Scene {
         WindowGroup {
             NavigationSplitView {
-                VStack {
-                    List(selection: $state.selection) {
-                        ForEach(Array(state.connectionPool.values), id: \.file.id) { connection in
-                            DisclosureGroup {
-                                ForEach(Array(connection.channels.values).sorted(by: { $0.name < $1.name })) { channel in
-                                    Label(channel.cleanName, systemImage: "number")
-                                        .tag(AppState.Selection(fileID: connection.file.id, channelID: channel.id))
-                                }
-                            } label: {
-                                Text(connection.hostname)
-                                    .fontWeight(.semibold)
-                            }
-                            .tag(AppState.Selection(fileID: connection.file.id, channelID: nil))
-                        }
-                    }
-                    Spacer()
-                    HStack {
-                        Button {
-                            showingNewConnectionForm = true
-                        } label: {
-                            Image(systemName: "plus")
-                        }
-                        .buttonStyle(.borderless)
-                        Spacer()
-                    }
-                    .padding()
-                }
-                .frame(minWidth: 200)
+                ConnectionSidebar()
+                    .frame(minWidth: 200)
             } detail: {
                 if let fileID = state.selection?.fileID, let manager = state.connectionPool[fileID] {
                     if state.selection?.channelID != nil {
@@ -49,11 +22,7 @@ struct MainApp: App {
                 }
             }
             .containerBackground(.background, for: .window)
-            .sheet(isPresented: $showingNewConnectionForm) {
-                NavigationStack {
-                    ConnectionForm()
-                }
-            }
+            
             .onAppear {
                 Task { await appActive() }
             }
