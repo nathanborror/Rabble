@@ -161,20 +161,27 @@ final class ConnectionManager {
             let line = String(incomingDataBuffer[..<range.lowerBound])
             incomingDataBuffer = String(incomingDataBuffer[range.upperBound...]) // Remove parsed line + delimiter
 
-            // Respond to periodic PINGs to maintain the connection
-            if line.hasPrefix("PING ") {
-                let payload = line.trimmingPrefix("PING ")
-                send("PONG \(payload)")
+            guard let message = IRC.parseServerMessage(line) else {
                 return
+            }
+
+            // Respond to periodic PINGs to maintain the connection
+            switch message.command {
+            case .ping:
+                let pong = "PONG \(message.params[0])"
+                send(pong)
+                print(line)
+                print(pong)
+                return
+            default:
+                break
             }
 
             // Upsert new line to session object
             irc.upsertSession(log: .init(line))
 
-            // React to line
-            if let message = IRC.parseServerMessage(line) {
-                try await handleMessageCommand(message)
-            }
+            // Handle command
+            try await handleMessageCommand(message)
 
             // Save state
             try await handleSave()
