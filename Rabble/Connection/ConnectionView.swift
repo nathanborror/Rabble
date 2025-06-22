@@ -7,6 +7,7 @@ struct ConnectionView: View {
 
     @State private var manager: ConnectionManager
     @State private var messageText = ""
+    @State private var scrollPosition = ScrollPosition()
 
     init(manager: ConnectionManager) {
         self.manager = manager
@@ -25,10 +26,12 @@ struct ConnectionView: View {
                         .font(.footnote)
                         .fontDesign(.monospaced)
                         .textSelection(.enabled)
+                        .scrollTargetLayout()
                 }
             }
             .padding()
         }
+        .scrollPosition($scrollPosition, anchor: .bottom)
         .navigationTitle(manager.hostname)
         .navigationSubtitle("\(manager.list.count) channels")
         .background(.background)
@@ -73,6 +76,12 @@ struct ConnectionView: View {
                     handleChannelInfo()
                 }
             }
+        }
+        .onChange(of: manager.logs.count) { _, _ in
+            scrollPosition.scrollTo(edge: .bottom)
+        }
+        .onAppear {
+            scrollPosition.scrollTo(edge: .bottom)
         }
     }
 
