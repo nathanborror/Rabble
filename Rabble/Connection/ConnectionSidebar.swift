@@ -40,7 +40,7 @@ struct ConnectionRow: View {
 
     let manager: ConnectionManager
 
-    @State var isExpanded = false
+    @State var isExpanded = true
 
     var body: some View {
         HStack(spacing: 4) {
