@@ -66,7 +66,7 @@ struct ConnectionRow: View {
 
                     Text(channel.cleanName)
                 }
-                .padding(.leading, 16+4)
+                .padding(.leading, 16)
                 .tag(AppState.Selection(fileID: manager.file.id, channelID: channel.id))
             }
         }
