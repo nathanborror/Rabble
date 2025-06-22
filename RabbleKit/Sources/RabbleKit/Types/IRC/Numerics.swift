@@ -12,6 +12,8 @@ extension IRC {
         case RPL_ISUPPORT      = 005
         case RPL_BOUNCE        = 010
 
+        case RPL_UMODEIS       = 221
+
         case RPL_LUSERCLIENT   = 251
         case RPL_LUSEROP       = 252
         case RPL_LUSERUNKNOWN  = 253
