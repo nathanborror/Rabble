@@ -16,11 +16,6 @@ struct ConnectionView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading) {
-                if !manager.connected {
-                    Button("Connect to Server") {
-                        handleConnect()
-                    }
-                }
                 ForEach(manager.logs) { log in
                     Text(log.text)
                         .font(.footnote)
@@ -36,29 +31,9 @@ struct ConnectionView: View {
         .navigationSubtitle("\(manager.list.count) channels")
         .background(.background)
         .safeAreaInset(edge: .bottom) {
-            VStack(alignment: .leading, spacing: 0) {
-                Divider()
-                HStack(alignment: .bottom) {
-                    TextField("Message", text: $messageText, axis: .vertical)
-                        .textFieldStyle(.plain)
-                        .padding()
-                        .onSubmit {
-                            handleSubmit()
-                        }
-
-                    Button {
-                        handleSubmit()
-                    } label: {
-                        Image(systemName: "arrow.up")
-                            .padding(8)
-                            .background(.blue, in: .circle)
-                            .foregroundStyle(.white)
-                            .padding(8)
-                    }
-                    .buttonStyle(.plain)
-                }
+            MessageField(text: $messageText, manager: manager) {
+                handleSubmit()
             }
-            .background(.background)
         }
         .toolbar {
             ToolbarItem {

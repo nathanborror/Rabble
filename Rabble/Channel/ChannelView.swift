@@ -36,29 +36,9 @@ struct ChannelView: View {
         .navigationTitle(channel?.cleanName ?? "Unknown Channel")
         .navigationSubtitle("\(channel?.users.count ?? 0) users")
         .safeAreaInset(edge: .bottom) {
-            VStack(alignment: .leading, spacing: 0) {
-                Divider()
-                HStack(alignment: .bottom) {
-                    TextField("Message", text: $messageText, axis: .vertical)
-                        .textFieldStyle(.plain)
-                        .padding()
-                        .onSubmit {
-                            handleSubmit()
-                        }
-
-                    Button {
-                        handleSubmit()
-                    } label: {
-                        Image(systemName: "arrow.up")
-                            .padding(8)
-                            .background(.blue, in: .circle)
-                            .foregroundStyle(.white)
-                            .padding(8)
-                    }
-                    .buttonStyle(.plain)
-                }
+            MessageField(text: $messageText, manager: manager) {
+                handleSubmit()
             }
-            .background(.background)
         }
         .toolbar {
             ToolbarItem {

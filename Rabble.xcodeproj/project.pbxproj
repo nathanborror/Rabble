@@ -12,6 +12,7 @@
 		D87529222E05B166005C45C8 /* ConnectionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529212E05B166005C45C8 /* ConnectionInfo.swift */; };
 		D87529242E05C478005C45C8 /* ChannelMembers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529232E05C478005C45C8 /* ChannelMembers.swift */; };
 		D87529262E077915005C45C8 /* ConnectionSidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529252E077915005C45C8 /* ConnectionSidebar.swift */; };
+		D87529282E078E77005C45C8 /* MessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529272E078E77005C45C8 /* MessageField.swift */; };
 		D877A7412DFA95E800A2BF17 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D877A73C2DFA95E800A2BF17 /* Assets.xcassets */; };
 		D877A7432DFA95E800A2BF17 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = D877A73F2DFA95E800A2BF17 /* App.swift */; };
 		D888DCE02DFD3AF4004DAF72 /* ChannelList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D888DCDF2DFD3AF4004DAF72 /* ChannelList.swift */; };
@@ -29,6 +30,7 @@
 		D87529212E05B166005C45C8 /* ConnectionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionInfo.swift; sourceTree = "<group>"; };
 		D87529232E05C478005C45C8 /* ChannelMembers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMembers.swift; sourceTree = "<group>"; };
 		D87529252E077915005C45C8 /* ConnectionSidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionSidebar.swift; sourceTree = "<group>"; };
+		D87529272E078E77005C45C8 /* MessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageField.swift; sourceTree = "<group>"; };
 		D877A72D2DFA95D900A2BF17 /* Rabble.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rabble.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D877A73C2DFA95E800A2BF17 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D877A73E2DFA95E800A2BF17 /* Rabble.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Rabble.entitlements; sourceTree = "<group>"; };
@@ -58,6 +60,7 @@
 			isa = PBXGroup;
 			children = (
 				D888DCE62E00DB30004DAF72 /* MessageRow.swift */,
+				D87529272E078E77005C45C8 /* MessageField.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -214,6 +217,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D87529262E077915005C45C8 /* ConnectionSidebar.swift in Sources */,
+				D87529282E078E77005C45C8 /* MessageField.swift in Sources */,
 				D88F7C192DFA9D5A00B4F1D6 /* ConnectionView.swift in Sources */,
 				D877A7432DFA95E800A2BF17 /* App.swift in Sources */,
 				D888DCE92E027F3C004DAF72 /* AppState.swift in Sources */,
