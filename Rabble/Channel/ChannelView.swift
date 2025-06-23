@@ -72,7 +72,12 @@ struct ChannelView: View {
         guard let channelID = state.selection?.channelID else { return }
         guard let channel = manager.channels[channelID] else { return }
 
-        manager.send("PRIVMSG \(channel.name) :\(messageText)")
+        if messageText.hasPrefix("/topic") {
+            let topic = messageText.trimmingPrefix("/topic ")
+            manager.send("TOPIC \(channel.name) :\(topic)")
+        } else {
+            manager.send("PRIVMSG \(channel.name) :\(messageText)")
+        }
         messageText = ""
     }
 }
