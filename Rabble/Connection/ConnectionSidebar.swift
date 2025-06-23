@@ -55,6 +55,19 @@ struct ConnectionRow: View {
 
             Text("\(manager.irc.session.nick)@\(manager.irc.session.server)")
                 .fontWeight(.semibold)
+
+            Spacer()
+
+            if !manager.connected {
+                Button {
+                    Task { try await manager.connect() }
+                } label: {
+                    Image(systemName: "bolt.horizontal.fill")
+                        .imageScale(.small)
+                }
+                .foregroundStyle(.tertiary)
+                .buttonStyle(.borderless)
+            }
         }
 
         if isExpanded {
