@@ -53,7 +53,7 @@ struct ConnectionRow: View {
             .foregroundStyle(.secondary)
             .buttonStyle(.borderless)
 
-            Text(manager.hostname)
+            Text("\(manager.irc.session.nick)@\(manager.irc.session.server)")
                 .fontWeight(.semibold)
         }
 

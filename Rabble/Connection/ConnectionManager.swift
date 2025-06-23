@@ -12,10 +12,6 @@ final class ConnectionManager {
     private let state = AppState.shared
     private var connection: NWConnection? = nil
 
-    var hostname: String {
-        irc.session.server
-    }
-
     var session: IRC.Session? {
         irc.session
     }

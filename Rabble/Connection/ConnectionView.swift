@@ -35,7 +35,7 @@ struct ConnectionView: View {
                     .padding()
             }
         }
-        .navigationTitle(manager.hostname)
+        .navigationTitle("\(manager.irc.session.nick)@\(manager.irc.session.server)")
         .navigationSubtitle("\(manager.list.count) channels")
         .safeAreaInset(edge: .bottom) {
             MessageField(text: $messageText, manager: manager) {
