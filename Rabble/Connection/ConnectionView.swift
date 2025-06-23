@@ -14,22 +14,29 @@ struct ConnectionView: View {
     }
 
     var body: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading) {
-                ForEach(manager.logs) { message in
-                    Text(message.raw)
-                        .font(.footnote)
-                        .fontDesign(.monospaced)
-                        .textSelection(.enabled)
-                        .scrollTargetLayout()
+        ZStack(alignment: .topTrailing) {
+            ScrollView {
+                LazyVStack(alignment: .leading) {
+                    ForEach(manager.logs) { message in
+                        Text(message.raw)
+                            .font(.footnote)
+                            .fontDesign(.monospaced)
+                            .textSelection(.enabled)
+                            .scrollTargetLayout()
+                    }
                 }
+                .padding()
             }
-            .padding()
+            .scrollPosition($scrollPosition, anchor: .bottom)
+            .background(.background)
+
+            if let motd = manager.session?.motd {
+                StickyView(title: "MOTD", text: motd, expanded: true)
+                    .padding()
+            }
         }
-        .scrollPosition($scrollPosition, anchor: .bottom)
         .navigationTitle(manager.hostname)
         .navigationSubtitle("\(manager.list.count) channels")
-        .background(.background)
         .safeAreaInset(edge: .bottom) {
             MessageField(text: $messageText, manager: manager) {
                 handleSubmit()

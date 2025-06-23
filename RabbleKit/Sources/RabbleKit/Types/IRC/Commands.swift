@@ -1,7 +1,8 @@
 import Foundation
+
 extension IRC {
     
-    public enum Command: Codable, Sendable {
+    public enum Command: Codable, Equatable, Sendable {
 
         // Connection and registration
         case pass

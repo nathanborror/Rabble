@@ -20,19 +20,26 @@ struct ChannelView: View {
     }
 
     var body: some View {
-        ScrollView {
-            LazyVStack {
-                if let channel {
-                    ForEach(channel.messages) { message in
-                        message.render
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .scrollTargetLayout()
+        ZStack(alignment: .topTrailing) {
+            ScrollView {
+                LazyVStack {
+                    if let channel {
+                        ForEach(channel.messages) { message in
+                            message.render
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .scrollTargetLayout()
+                        }
                     }
                 }
+                .padding()
             }
-            .padding()
+            .scrollPosition($scrollPosition, anchor: .bottom)
+
+            if let topic = channel?.topic {
+                StickyView(title: "Topic", text: topic.message, expanded: true)
+                    .padding()
+            }
         }
-        .scrollPosition($scrollPosition, anchor: .bottom)
         .navigationTitle(channel?.cleanName ?? "Unknown Channel")
         .navigationSubtitle("\(channel?.users.count ?? 0) users")
         .safeAreaInset(edge: .bottom) {

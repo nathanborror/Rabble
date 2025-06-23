@@ -24,8 +24,19 @@ final class ConnectionManager {
         connection?.state == .ready
     }
 
+    /// Returns a filtered list of log messages excluding pings and certain numerics
     var logs: [IRC.Message] {
-        irc.session.logs
+        irc.session.logs.map {
+            if $0.command == .ping {
+                return nil
+            }
+            if case .numeric(let numeric) = $0.command {
+                if numeric == .RPL_MOTD {
+                    return nil
+                }
+            }
+            return $0
+        }.compactMap { $0 }
     }
 
     var list: [IRC.Session.Channel] {
