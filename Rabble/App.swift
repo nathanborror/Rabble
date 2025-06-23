@@ -12,10 +12,12 @@ struct MainApp: App {
                     .frame(minWidth: 200)
             } detail: {
                 if let fileID = state.selection?.fileID, let manager = state.connectionPool[fileID] {
-                    if state.selection?.channelID != nil {
+                    if let channelID = state.selection?.channelID {
                         ChannelView(manager: manager)
+                            .id(fileID+channelID)
                     } else {
                         ConnectionView(manager: manager)
+                            .id(fileID)
                     }
                 } else {
                     ContentUnavailableView("No Connection", systemImage: "apple.terminal")
