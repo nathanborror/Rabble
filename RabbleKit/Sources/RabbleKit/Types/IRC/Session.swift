@@ -9,23 +9,12 @@ extension IRC {
         public var username: String
         public var password: String?
         public var name: String
-        public var logs: [Log]
+        public var motd: String?
+        public var logs: [Message]
         public var list: [Channel]
         public var capabilities: [String: Bool]
         public var created: Date
         public var modified: Date
-
-        public struct Log: Codable, Identifiable, Sendable {
-            public var id: String
-            public var text: String
-            public var created: Date
-
-            public init(_ text: String) {
-                self.id = UUID().uuidString
-                self.text = text
-                self.created = .now
-            }
-        }
 
         public struct Channel: Identifiable, Codable, Sendable {
             public var name: String
@@ -49,13 +38,15 @@ extension IRC {
             }
         }
 
-        public init(server: String, port: UInt16 = 6667, nick: String, username: String, password: String? = nil, name: String, logs: [Log] = []) {
+        public init(server: String, port: UInt16 = 6667, nick: String, username: String, password: String? = nil,
+                    name: String, motd: String? = nil, logs: [Message] = []) {
             self.server = server
             self.port = port
             self.nick = nick
             self.username = username
             self.password = password
             self.name = name
+            self.motd = motd
             self.logs = logs
             self.list = []
             self.capabilities = [:]
@@ -71,6 +62,7 @@ extension IRC {
             existing.username = session.username
             existing.password = session.password
             existing.name = session.name
+            existing.motd = session.motd
             existing.logs = session.logs
             existing.list = session.list
             existing.capabilities = session.capabilities

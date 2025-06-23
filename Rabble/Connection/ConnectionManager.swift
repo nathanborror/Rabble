@@ -24,7 +24,7 @@ final class ConnectionManager {
         connection?.state == .ready
     }
 
-    var logs: [IRC.Session.Log] {
+    var logs: [IRC.Message] {
         irc.session.logs
     }
 
@@ -185,15 +185,12 @@ final class ConnectionManager {
             case .ping:
                 let pong = "PONG \(message.params[0])"
                 send(pong)
-                print(line)
-                print(pong)
-                return
             default:
                 break
             }
 
             // Upsert new line to session object
-            irc.upsertSession(log: .init(line))
+            irc.upsertSession(log: message)
 
             // Handle command
             try await handleMessageCommand(message)
@@ -255,10 +252,20 @@ final class ConnectionManager {
                 channel.topic = .init(message: message.params[2])
                 irc.upsert(channel: channel)
             }
+
+        // MOTD
+        case .RPL_MOTDSTART:
+            motdBuffer = ""
+        case .RPL_MOTD:
+            motdBuffer += message.params[1].trimmingPrefix("- ") + "\n"
+        case .RPL_ENDOFMOTD:
+            irc.session.motd = motdBuffer
+            try await handleSave()
         default:
             return
         }
     }
 
     private var incomingDataBuffer = ""
+    private var motdBuffer = ""
 }

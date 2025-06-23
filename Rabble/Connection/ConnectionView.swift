@@ -16,8 +16,8 @@ struct ConnectionView: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading) {
-                ForEach(manager.logs) { log in
-                    Text(log.text)
+                ForEach(manager.logs) { message in
+                    Text(message.raw)
                         .font(.footnote)
                         .fontDesign(.monospaced)
                         .textSelection(.enabled)

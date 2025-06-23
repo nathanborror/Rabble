@@ -53,7 +53,7 @@ public struct IRC {
 
     // MARK: Session
 
-    public mutating func upsertSession(log: Session.Log) {
+    public mutating func upsertSession(log: Message) {
         session.logs.append(log)
     }
 
@@ -110,7 +110,9 @@ public struct IRC {
                 kind: .server,
                 prefix: IRC.parsePrefix(prefix),
                 command: .init(command),
-                tags: tags            )
+                tags: tags,
+                raw: input
+            )
         }
         let command = String(rest[..<firstSpace])
         rest = rest[firstSpace...]
@@ -140,7 +142,8 @@ public struct IRC {
             prefix: IRC.parsePrefix(prefix),
             command: .init(command),
             params: params,
-            tags: tags
+            tags: tags,
+            raw: input
         )
     }
 

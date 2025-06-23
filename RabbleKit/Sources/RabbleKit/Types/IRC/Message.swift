@@ -9,6 +9,7 @@ extension IRC {
         public var command: Command
         public var params: [String]
         public var tags: [String: String]?
+        public var raw: String
         public var created: Date
 
         public enum Kind: Codable, Sendable {
@@ -23,13 +24,14 @@ extension IRC {
         }
 
         public init(id: String = UUID().uuidString, kind: Kind, prefix: Prefix? = nil, command: Command,
-                    params: [String] = [], tags: [String : String]? = nil) {
+                    params: [String] = [], tags: [String : String]? = nil, raw: String) {
             self.id = id
             self.kind = kind
             self.prefix = prefix
             self.command = command
             self.params = params
             self.tags = tags
+            self.raw = raw
             self.created = .now
         }
     }
