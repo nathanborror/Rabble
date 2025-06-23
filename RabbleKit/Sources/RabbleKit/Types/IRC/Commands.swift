@@ -44,8 +44,6 @@ extension IRC {
         case account
 
         // Custom
-        case connected
-        case disconnected
         case error(String)
 
         // Fallback
