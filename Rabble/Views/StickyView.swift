@@ -40,12 +40,12 @@ struct StickyView: View {
                 }
             }
             .cornerRadius(4)
-            .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 0)
-            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 10)
+            .shadow(color: .black.opacity(0.5), radius: 0.5, x: 0, y: 0)
+            .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 5)
 
             Spacer(minLength: 0)
         }
-        .frame(minWidth: 200, maxWidth: 500, maxHeight: 400)
+        .frame(minWidth: 200, maxWidth: 500, maxHeight: 300)
     }
 }
 
