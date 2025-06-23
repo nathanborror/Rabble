@@ -18,10 +18,10 @@ extension IRC {
 
         public struct Topic: Codable, Sendable {
             public var message: String
-            public var author: String
-            public var created: Date
+            public var author: String?
+            public var created: Date?
 
-            public init(message: String, author: String, created: Date) {
+            public init(message: String, author: String? = nil, created: Date? = nil) {
                 self.message = message
                 self.author = author
                 self.created = created

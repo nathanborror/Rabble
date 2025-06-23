@@ -27,18 +27,22 @@ extension IRC {
         case RPL_WHOISUSER     = 311
         case RPL_WHOISSERVER   = 312
         case RPL_WHOISOPERATOR = 313
+        case RPL_ENDOFWHO      = 315
         case RPL_ENDOFWHOIS    = 318
         case RPL_WHOISCHANNELS = 319
 
-        // Channel listing
+        // Channels
         case RPL_LISTSTART     = 321
         case RPL_LIST          = 322
         case RPL_LISTEND       = 323
+        case RPL_CHANNELMODEIS = 324
+        case RPL_CREATIONTIME  = 329
 
         case RPL_TOPIC         = 332
         case RPL_TOPICWHOTIME  = 333
 
         // Names listing
+        case RPL_WHOREPLY      = 352
         case RPL_NAMREPLY      = 353
         case RPL_ENDOFNAMES    = 366
 

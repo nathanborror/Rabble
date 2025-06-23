@@ -73,6 +73,18 @@ final class ConnectionManager {
         })
     }
 
+    func join(_ channelID: String) {
+        let messages = [
+            "JOIN \(channelID)",
+            "WHO \(channelID)",
+            "MODE \(channelID)",
+            //"CHATHISTORY LATEST \(channelID) * 20",
+        ]
+        for message in messages {
+            send(message)
+        }
+    }
+
     func leave(_ channelID: String) {
         send("PART \(channelID)")
         irc.remove(channelID: channelID)
@@ -121,13 +133,16 @@ final class ConnectionManager {
 //                ]
 //            }
 
-            // Rejoin channels
-            messages += irc.channels.map { "JOIN \($0.name)" }
-
             for message in messages {
                 print(message)
                 send(message)
             }
+
+            // Rejoin channels
+            for channel in irc.channels {
+                join(channel.id)
+            }
+
             handleListen()
         case .failed(let error):
             print(error)
@@ -234,6 +249,11 @@ final class ConnectionManager {
             if let channel = irc.get(channelID: message.params[2]) {
                 irc.upsert(name: message.params[3], channelID: channel.id)
                 irc.upsertSession(channel: .init(name: channel.id, users: channel.users.count))
+            }
+        case .RPL_TOPIC:
+            if var channel = irc.get(channelID: message.params[1]) {
+                channel.topic = .init(message: message.params[2])
+                irc.upsert(channel: channel)
             }
         default:
             return
