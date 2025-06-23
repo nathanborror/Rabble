@@ -235,6 +235,8 @@ final class ConnectionManager {
             }
         case .numeric(let numeric):
             try await handleMessageNumeric(message, numeric: numeric)
+        case .topic:
+            setTopic(message.params[1], channelID: message.params[0])
         default:
             break
         }
@@ -259,10 +261,7 @@ final class ConnectionManager {
                 irc.upsertSession(channel: .init(name: channel.id, users: channel.users.count))
             }
         case .RPL_TOPIC:
-            if var channel = irc.get(channelID: message.params[1]) {
-                channel.topic = .init(message: message.params[2])
-                irc.upsert(channel: channel)
-            }
+            setTopic(message.params[2], channelID: message.params[1])
 
         // MOTD
         case .RPL_MOTDSTART:
@@ -275,6 +274,12 @@ final class ConnectionManager {
         default:
             return
         }
+    }
+
+    private func setTopic(_ topic: String, channelID: String) {
+        guard var channel = irc.get(channelID: channelID) else { return }
+        channel.topic = .init(message: topic)
+        irc.upsert(channel: channel)
     }
 
     private var incomingDataBuffer = ""
