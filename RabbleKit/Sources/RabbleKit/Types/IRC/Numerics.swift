@@ -2,75 +2,120 @@ import Foundation
 
 extension IRC {
 
-    public enum Numeric: UInt16, Codable, CaseIterable, Sendable {
+    public enum Numeric: Codable, CaseIterable, Sendable {
 
         // Connection welcome and MOTD
-        case RPL_WELCOME       = 001
-        case RPL_YOURHOST      = 002
-        case RPL_CREATED       = 003
-        case RPL_MYINFO        = 004
-        case RPL_ISUPPORT      = 005
-        case RPL_BOUNCE        = 010
+        case RPL_WELCOME
+        case RPL_YOURHOST
+        case RPL_CREATED
+        case RPL_MYINFO
+        case RPL_ISUPPORT
+        case RPL_BOUNCE
 
-        case RPL_UMODEIS       = 221
+        case RPL_UMODEIS
 
-        case RPL_LUSERCLIENT   = 251
-        case RPL_LUSEROP       = 252
-        case RPL_LUSERUNKNOWN  = 253
-        case RPL_LUSERCHANNELS = 254
-        case RPL_LUSERME       = 255
+        case RPL_LUSERCLIENT
+        case RPL_LUSEROP
+        case RPL_LUSERUNKNOWN
+        case RPL_LUSERCHANNELS
+        case RPL_LUSERME
 
-        case RPL_LOCALUSERS    = 265
-        case RPL_GLOBALUSERS   = 266
+        case RPL_LOCALUSERS
+        case RPL_GLOBALUSERS
 
         // Whois/Whowas/Who
-        case RPL_WHOISUSER     = 311
-        case RPL_WHOISSERVER   = 312
-        case RPL_WHOISOPERATOR = 313
-        case RPL_ENDOFWHO      = 315
-        case RPL_ENDOFWHOIS    = 318
-        case RPL_WHOISCHANNELS = 319
+        case RPL_WHOISUSER
+        case RPL_WHOISSERVER
+        case RPL_WHOISOPERATOR
+        case RPL_ENDOFWHO
+        case RPL_ENDOFWHOIS
+        case RPL_WHOISCHANNELS
 
         // Channels
-        case RPL_LISTSTART     = 321
-        case RPL_LIST          = 322
-        case RPL_LISTEND       = 323
-        case RPL_CHANNELMODEIS = 324
-        case RPL_CREATIONTIME  = 329
+        case RPL_LISTSTART
+        case RPL_LIST
+        case RPL_LISTEND
+        case RPL_CHANNELMODEIS
+        case RPL_CREATIONTIME
 
-        case RPL_TOPIC         = 332
-        case RPL_TOPICWHOTIME  = 333
+        case RPL_TOPIC
+        case RPL_TOPICWHOTIME
 
         // Names listing
-        case RPL_WHOREPLY      = 352
-        case RPL_NAMREPLY      = 353
-        case RPL_ENDOFNAMES    = 366
+        case RPL_WHOREPLY
+        case RPL_NAMREPLY
+        case RPL_ENDOFNAMES
 
-        case RPL_MOTD          = 372
-        case RPL_MOTDSTART     = 375
-        case RPL_ENDOFMOTD     = 376
+        case RPL_MOTD
+        case RPL_MOTDSTART
+        case RPL_ENDOFMOTD
 
-        case RPL_HOSTHIDDEN    = 396
+        case RPL_HOSTHIDDEN
 
         // Errors (sample)
-        case ERR_NOSUCHNICK    = 401
-        case ERR_NOSUCHCHANNEL = 403
-        case ERR_NOTONCHANNEL  = 442
+        case ERR_NOSUCHNICK
+        case ERR_NOSUCHCHANNEL
+        case ERR_NOTONCHANNEL
 
-        // ...add more as needed
-
-        case UNKNOWN = 0
-
-        public init(_ string: String) {
+        public init?(_ string: String) {
             guard let code = UInt16(string) else {
-                self = .UNKNOWN
-                return
+                return nil
             }
-            self = Numeric(rawValue: code) ?? .UNKNOWN
-        }
+            switch code {
+            case 001: self = .RPL_WELCOME
+            case 002: self = .RPL_YOURHOST
+            case 003: self = .RPL_CREATED
+            case 004: self = .RPL_MYINFO
+            case 005: self = .RPL_ISUPPORT
+            case 010: self = .RPL_BOUNCE
 
-        public var code: String {
-            String(format: "%03d", rawValue)
+            case 221: self = .RPL_UMODEIS
+
+            case 251: self = .RPL_LUSERCLIENT
+            case 252: self = .RPL_LUSEROP
+            case 253: self = .RPL_LUSERUNKNOWN
+            case 254: self = .RPL_LUSERCHANNELS
+            case 255: self = .RPL_LUSERME
+
+            case 265: self = .RPL_LOCALUSERS
+            case 266: self = .RPL_GLOBALUSERS
+
+            // Whois/Whowas/Who
+            case 311: self = .RPL_WHOISUSER
+            case 312: self = .RPL_WHOISSERVER
+            case 313: self = .RPL_WHOISOPERATOR
+            case 315: self = .RPL_ENDOFWHO
+            case 318: self = .RPL_ENDOFWHOIS
+            case 319: self = .RPL_WHOISCHANNELS
+
+            // Channels
+            case 321: self = .RPL_LISTSTART
+            case 322: self = .RPL_LIST
+            case 323: self = .RPL_LISTEND
+            case 324: self = .RPL_CHANNELMODEIS
+            case 329: self = .RPL_CREATIONTIME
+
+            case 332: self = .RPL_TOPIC
+            case 333: self = .RPL_TOPICWHOTIME
+
+            // Names listing
+            case 352: self = .RPL_WHOREPLY
+            case 353: self = .RPL_NAMREPLY
+            case 366: self = .RPL_ENDOFNAMES
+
+            case 372: self = .RPL_MOTD
+            case 375: self = .RPL_MOTDSTART
+            case 376: self = .RPL_ENDOFMOTD
+
+            case 396: self = .RPL_HOSTHIDDEN
+
+            // Errors (sample)
+            case 401: self = .ERR_NOSUCHNICK
+            case 403: self = .ERR_NOSUCHCHANNEL
+            case 442: self = .ERR_NOTONCHANNEL
+            default:
+                return nil
+            }
         }
     }
 }

@@ -10,18 +10,18 @@ extension IRC {
         case user
         case oper
         case quit
-        case join
+        case join(channel: String)
         case part
 
         // Messaging
-        case privmsg
+        case privmsg(channel: String, message: String)
         case notice
         case ping
         case pong
 
         // Channel and user management
         case mode
-        case topic
+        case topic(channel: String, message: String)
         case names
         case list
         case invite
@@ -43,9 +43,6 @@ extension IRC {
         case authenticate
         case account
 
-        // Numerics
-        case numeric(Numeric)
-
         // Custom
         case connected
         case disconnected
@@ -54,7 +51,7 @@ extension IRC {
         // Fallback
         case unknown(String)
 
-        public init(_ command: String) {
+        public init?(_ command: String, params: [String]) {
             let lower = command.lowercased()
             switch lower {
             case "pass":    self = .pass
@@ -62,14 +59,17 @@ extension IRC {
             case "user":    self = .user
             case "oper":    self = .oper
             case "quit":    self = .quit
-            case "join":    self = .join
+            case "join":
+                self = .join(channel: params[0])
             case "part":    self = .part
-            case "privmsg": self = .privmsg
+            case "privmsg":
+                self = .privmsg(channel: params[0], message: params[1])
             case "notice":  self = .notice
             case "ping":    self = .ping
             case "pong":    self = .pong
             case "mode":    self = .mode
-            case "topic":   self = .topic
+            case "topic":
+                self = .topic(channel: params[0], message: params[1])
             case "names":   self = .names
             case "list":    self = .list
             case "invite":  self = .invite
@@ -87,11 +87,7 @@ extension IRC {
             case "account": self = .account
             case "authenticate": self = .authenticate
             default:
-                if command.count == 3, command.allSatisfy({ $0.isNumber }) {
-                    self = .numeric(.init(command))
-                } else {
-                    self = .unknown(command)
-                }
+                return nil
             }
         }
     }

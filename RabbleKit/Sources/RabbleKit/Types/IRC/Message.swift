@@ -6,7 +6,8 @@ extension IRC {
         public var id: String
         public var kind: Kind
         public var prefix: Prefix?
-        public var command: Command
+        public var numeric: Numeric?
+        public var command: Command?
         public var params: [String]
         public var tags: [String: String]?
         public var raw: String
@@ -23,11 +24,12 @@ extension IRC {
             case service(String)
         }
 
-        public init(id: String = UUID().uuidString, kind: Kind, prefix: Prefix? = nil, command: Command,
-                    params: [String] = [], tags: [String : String]? = nil, raw: String) {
+        public init(id: String = UUID().uuidString, kind: Kind, prefix: Prefix? = nil, numeric: Numeric? = nil,
+                    command: Command? = nil, params: [String] = [], tags: [String : String]? = nil, raw: String) {
             self.id = id
             self.kind = kind
             self.prefix = prefix
+            self.numeric = numeric
             self.command = command
             self.params = params
             self.tags = tags

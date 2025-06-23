@@ -35,23 +35,6 @@ extension IRC.Message {
                     }
                     Text(params[1])
                 }
-            case .numeric(let numeric):
-                switch numeric {
-                case .RPL_MOTD:
-                    Text(params[1])
-                case .RPL_MOTDSTART:
-                    Text("<MOTD>").foregroundStyle(.secondary)
-                case .RPL_ENDOFMOTD:
-                    Text("</MOTD>").foregroundStyle(.secondary)
-                case .UNKNOWN:
-                    Text("\(self)")
-                        .foregroundStyle(.red)
-                default:
-                    Text("not handled")
-                }
-            case .unknown:
-                Text("unknown")
-                    .foregroundStyle(.red)
             default:
                 Text("nil")
             }

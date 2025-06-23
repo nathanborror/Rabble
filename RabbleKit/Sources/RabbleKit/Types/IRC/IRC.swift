@@ -101,20 +101,20 @@ public struct IRC {
             }
         }
 
-        // 3. Parse command
+        // 3. Parse instruction with no params
         rest = rest.drop(while: { $0 == " " }) // remove leading spaces
         guard let firstSpace = rest.firstIndex(of: " ") else {
-            // Only command, no params
-            let command = String(rest)
+            let value = String(rest)
             return .init(
                 kind: .server,
                 prefix: IRC.parsePrefix(prefix),
-                command: .init(command),
+                numeric: .init(value),
+                command: .init(value, params: []),
                 tags: tags,
                 raw: input
             )
         }
-        let command = String(rest[..<firstSpace])
+        let instruction = String(rest[..<firstSpace])
         rest = rest[firstSpace...]
 
         // 4. Parse params (middle and trailing)
@@ -140,7 +140,8 @@ public struct IRC {
         return .init(
             kind: .server,
             prefix: IRC.parsePrefix(prefix),
-            command: .init(command),
+            numeric: .init(instruction),
+            command: .init(instruction, params: params),
             params: params,
             tags: tags,
             raw: input

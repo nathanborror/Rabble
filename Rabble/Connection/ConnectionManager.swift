@@ -30,10 +30,8 @@ final class ConnectionManager {
             if $0.command == .ping {
                 return nil
             }
-            if case .numeric(let numeric) = $0.command {
-                if numeric == .RPL_MOTD {
-                    return nil
-                }
+            if $0.numeric == .RPL_MOTD {
+                return nil
             }
             return $0
         }.compactMap { $0 }
@@ -203,8 +201,9 @@ final class ConnectionManager {
             // Upsert new line to session object
             irc.upsertSession(log: message)
 
-            // Handle command
+            // Handle command and numeric
             try await handleMessageCommand(message)
+            try await handleMessageNumeric(message)
 
             // Save state
             try await handleSave()
@@ -213,14 +212,12 @@ final class ConnectionManager {
 
     private func handleMessageCommand(_ message: IRC.Message) async throws {
         switch message.command {
-        case .join:
-            let channelName = message.params[0]
-            irc.upsert(channel: .init(name: channelName, created: .now))
-            irc.upsertSession(channel: .init(name: channelName))
+        case .join(let channel):
+            irc.upsert(channel: .init(name: channel, created: .now))
+            irc.upsertSession(channel: .init(name: channel))
             try await handleSave()
-        case .privmsg:
-            let channelID = message.params[0]
-            irc.upsert(message: message, channelID: channelID)
+        case .privmsg(let channel, _):
+            irc.upsert(message: message, channelID: channel)
         case .cap:
             if message.params[1] == "LS" && message.params[2] == "*" {
                 let capabilities = message.params[3].split(separator: " ").map(String.init)
@@ -233,17 +230,15 @@ final class ConnectionManager {
                     irc.session.capabilities[cap] = false
                 }
             }
-        case .numeric(let numeric):
-            try await handleMessageNumeric(message, numeric: numeric)
-        case .topic:
-            setTopic(message.params[1], channelID: message.params[0])
+        case .topic(let channel, let message):
+            setTopic(message, channelID: channel)
         default:
             break
         }
     }
 
-    private func handleMessageNumeric(_ message: IRC.Message, numeric: IRC.Numeric) async throws {
-        switch numeric {
+    private func handleMessageNumeric(_ message: IRC.Message) async throws {
+        switch message.numeric {
         case .RPL_LIST:
             guard message.params.count >= 4 else {
                 return
