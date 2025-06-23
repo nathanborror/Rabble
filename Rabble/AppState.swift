@@ -99,8 +99,12 @@ final class AppState {
         _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: package)
 
         let file = try file(fileID)
-        connectionPool[file.id] = try ConnectionManager(file: file)
+        let manager = try ConnectionManager(file: file)
+        connectionPool[file.id] = manager
         selection = .init(fileID: file.id, channelID: nil)
+
+        // Connect to server
+        try await manager.connect()
     }
 
     // MARK: - File Handling
