@@ -109,26 +109,20 @@ final class ConnectionManager {
                 "CAP END",
             ]
 
-            // Establish connection with identity
+            // Authenticate (sasl)
+            if let password = irc.session.password {
+                let auth = "\0\(irc.session.nick)\0\(password)".data(using: .utf8)!
+                messages += [
+                    "AUTHENTICATE PLAIN",
+                    "AUTHENTICATE \(auth.base64EncodedString())",
+                ]
+            }
+
+            // Establish identity
             messages += [
                 "NICK \(irc.session.nick)",
-                "USER \(irc.session.username) 0 * :\(irc.session.name)",
+                "USER \(irc.session.nick) 0 * :\(irc.session.name)",
             ]
-
-//            // Authentication (sasl)
-//            let auth = "\0\(irc.session.username)\0\(irc.session.password ?? "")".data(using: .utf8)!
-//            messages += [
-//                "AUTHENTICATE PLAIN",
-//                "AUTHENTICATE \(auth.base64EncodedString())",
-//            ]
-
-//            // Authentication (non-sasl)
-//            if let password = irc.session.password {
-//                messages += [
-//                    "PRIVMSG NickServ :IDENTIFY \(password)",
-//                    "NICK \(irc.session.nick)",
-//                ]
-//            }
 
             for message in messages {
                 print(message)
