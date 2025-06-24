@@ -105,7 +105,7 @@ final class ConnectionManager {
             // Request capabilities
             messages += [
                 "CAP LS 302",
-                "CAP REQ :echo-message server-time message-tags batch labeled-response sasl", // chathistory
+                "CAP REQ :draft/chathistory echo-message server-time message-tags batch labeled-response sasl",
                 "CAP END",
             ]
 

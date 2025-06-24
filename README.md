@@ -18,8 +18,9 @@ An experimental IRC client written in pure Swift.
 - [x] Channel message timeline
 - [ ] Some sort of command palette
 - [x] Connection pool
-- [ ] Re-join rooms upon reconnecting
-- [ ] Enable echo-message on every connection
+- [x] Re-join rooms upon reconnecting
+- [x] Enable echo-message on every connection
+- [ ] Show notices in channels
 
 ## File Structure
 
@@ -45,4 +46,29 @@ make
 cp default.yaml ircd.yaml
 ./ergo mkcerts
 ./ergo run
+```
+
+## Helpful sequences
+
+### Registering Account
+
+```
+PRIVMSG NickServ :REGISTER <password> <email>
+PRIVMSG NickServ :IDENTIFY <nick> <password>
+```
+
+### Registering Channel
+
+Register a channel and grant yourself auto-operator status upon joining. Must be authenticated.
+
+```
+PRIVMSG ChanServ :REGISTER #channel <password> "<description>"
+PRIVMSG ChanServ :SET #channel MLOCK +nt
+PRIVMSG ChanServ :FLAGS #channel <nick> +Ao
+```
+
+### Retrieving Channel History
+
+```
+CHATHISTORY LATEST #channel * 20
 ```
