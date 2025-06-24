@@ -22,7 +22,7 @@ struct ChannelView: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             ScrollView {
-                LazyVStack {
+                LazyVStack(spacing: 4) {
                     if let channel {
                         ForEach(channel.messages) { message in
                             message.render

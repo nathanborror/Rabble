@@ -26,6 +26,7 @@ struct StickyView: View {
                 }
                 .padding(8)
                 .background(Color(hex: "#FBEB61"))
+                .foregroundStyle(.black)
 
                 if expanded {
                     ScrollView {

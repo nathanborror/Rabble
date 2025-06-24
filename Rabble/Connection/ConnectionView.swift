@@ -31,7 +31,7 @@ struct ConnectionView: View {
             .background(.background)
 
             if let motd = manager.session?.motd {
-                StickyView(title: "MOTD", text: motd, expanded: true)
+                StickyView(title: "MOTD", text: motd, expanded: false)
                     .padding()
             }
         }
