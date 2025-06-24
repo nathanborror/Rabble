@@ -49,7 +49,9 @@ struct MessageField: View {
                     Button("Reconnect") {
                         Task { try await manager.connect() }
                     }
+                    #if os(macOS)
                     .buttonStyle(.link)
+                    #endif
                     .padding()
                     Spacer()
                 }

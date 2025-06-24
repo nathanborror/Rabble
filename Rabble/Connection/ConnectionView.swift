@@ -36,7 +36,9 @@ struct ConnectionView: View {
             }
         }
         .navigationTitle("\(manager.irc.session.nick)@\(manager.irc.session.server)")
+        #if os(macOS)
         .navigationSubtitle("\(manager.list.count) channels")
+        #endif
         .safeAreaInset(edge: .bottom) {
             MessageField(text: $messageText, manager: manager) {
                 handleSubmit()

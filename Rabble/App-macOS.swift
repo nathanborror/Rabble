@@ -24,7 +24,6 @@ struct MainApp: App {
                 }
             }
             .containerBackground(.background, for: .window)
-            
             .onAppear {
                 Task { await appActive() }
             }

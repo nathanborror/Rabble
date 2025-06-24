@@ -41,7 +41,9 @@ struct ChannelView: View {
             }
         }
         .navigationTitle(channel?.cleanName ?? "Unknown Channel")
+        #if os(macOS)
         .navigationSubtitle("\(channel?.users.count ?? 0) users")
+        #endif
         .safeAreaInset(edge: .bottom) {
             MessageField(text: $messageText, manager: manager) {
                 handleSubmit()
