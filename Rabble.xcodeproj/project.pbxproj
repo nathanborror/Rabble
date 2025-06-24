@@ -95,7 +95,6 @@
 			children = (
 				D877A7402DFA95E800A2BF17 /* Rabble */,
 				D877A7452DFA966000A2BF17 /* RabbleKit */,
-				D88F7C212DFA9E6600B4F1D6 /* Frameworks */,
 				D877A72E2DFA95D900A2BF17 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -137,13 +136,6 @@
 				D888DCE42DFDC286004DAF72 /* Message+.swift */,
 			);
 			path = Extensions;
-			sourceTree = "<group>";
-		};
-		D88F7C212DFA9E6600B4F1D6 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
