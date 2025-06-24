@@ -22,15 +22,7 @@ final class ConnectionManager {
 
     /// Returns a filtered list of log messages excluding pings and certain numerics
     var logs: [IRC.Message] {
-        irc.session.logs.map {
-            if $0.command == .ping {
-                return nil
-            }
-            if $0.numeric == .RPL_MOTD {
-                return nil
-            }
-            return $0
-        }.compactMap { $0 }
+        irc.session.logs
     }
 
     var list: [IRC.Session.Channel] {
@@ -154,6 +146,8 @@ final class ConnectionManager {
             disconnect()
         case .cancelled:
             disconnect()
+        case .preparing:
+            print("preparing")
         default:
             break
         }
@@ -208,11 +202,13 @@ final class ConnectionManager {
 
     private func handleMessageCommand(_ message: IRC.Message) async throws {
         switch message.command {
-        case .join(let channel):
+        case let .join(channel):
             irc.upsert(channel: .init(name: channel, created: .now))
             irc.upsertSession(channel: .init(name: channel))
             try await handleSave()
-        case .privmsg(let channel, _):
+        case let .part(channel, _):
+            irc.remove(channelID: channel)
+        case let .privmsg(channel, _):
             irc.upsert(message: message, channelID: channel)
         case .cap:
             if message.params[1] == "LS" && message.params[2] == "*" {
@@ -226,7 +222,7 @@ final class ConnectionManager {
                     irc.session.capabilities[cap] = false
                 }
             }
-        case .topic(let channel, let message):
+        case let .topic(channel, message):
             setTopic(message, channelID: channel)
         default:
             break
@@ -246,10 +242,14 @@ final class ConnectionManager {
                 return
             }
             irc.upsertSession(channel: .init(name: name, users: users, topic: topic))
-        case .RPL_NAMREPLY:
-            if let channel = irc.get(channelID: message.params[2]) {
-                irc.upsert(name: message.params[3], channelID: channel.id)
+        case let .RPL_NAMREPLY(_, _, channel, nicks):
+            if let channel = irc.get(channelID: channel) {
+                irc.upsert(names: nicks, channelID: channel.id)
                 irc.upsertSession(channel: .init(name: channel.id, users: channel.users.count))
+            }
+        case let .RPL_WHOREPLY(_, channel, _, _, _, nick, _, _):
+            if let channel = irc.get(channelID: channel) {
+                irc.upsert(names: [nick], channelID: channel.id)
             }
         case .RPL_TOPIC:
             setTopic(message.params[2], channelID: message.params[1])
@@ -257,8 +257,8 @@ final class ConnectionManager {
         // MOTD
         case .RPL_MOTDSTART:
             motdBuffer = ""
-        case .RPL_MOTD:
-            motdBuffer += message.params[1].trimmingPrefix("- ") + "\n"
+        case .RPL_MOTD(_, let message):
+            motdBuffer += message.trimmingPrefix("- ") + "\n"
         case .RPL_ENDOFMOTD:
             irc.session.motd = motdBuffer
             try await handleSave()

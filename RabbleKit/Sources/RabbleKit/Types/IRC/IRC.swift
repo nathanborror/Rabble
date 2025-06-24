@@ -27,10 +27,12 @@ public struct IRC {
         }
     }
 
-    public mutating func upsert(name: String, channelID: String) {
+    public mutating func upsert(names: [String], channelID: String) {
         if let index = channels.firstIndex(where: { $0.id == channelID }) {
             var existing = channels[index]
-            existing.users[name] = .init(nick: name, modes: [])
+            for name in names {
+                existing.users[name] = .init(nick: name, modes: [])
+            }
             existing.modified = .now
             channels[index] = existing
         }
@@ -108,7 +110,7 @@ public struct IRC {
             return .init(
                 kind: .server,
                 prefix: IRC.parsePrefix(prefix),
-                numeric: .init(value),
+                numeric: .init(value, params: []),
                 command: .init(value, params: []),
                 tags: tags,
                 raw: input
@@ -140,7 +142,7 @@ public struct IRC {
         return .init(
             kind: .server,
             prefix: IRC.parsePrefix(prefix),
-            numeric: .init(instruction),
+            numeric: .init(instruction, params: params),
             command: .init(instruction, params: params),
             params: params,
             tags: tags,
