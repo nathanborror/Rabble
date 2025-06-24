@@ -21,6 +21,9 @@ An experimental IRC client written in pure Swift.
 - [x] Re-join rooms upon reconnecting
 - [x] Enable echo-message on every connection
 - [ ] Show notices in channels
+- [ ] Store base64 token instead of raw password
+- [ ] Figure out nick registration
+- [ ] Figure out channel registration
 
 ## File Structure
 
