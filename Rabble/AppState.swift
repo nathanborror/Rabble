@@ -68,8 +68,12 @@ final class AppState {
 
         for file in files.filter({ $0.isIRC }) {
             let server: IRCServer = try filePackage(file.id)
-            let session = IRCServerSession(fileID: file.id, server: server)
-            sessionPool[file.id] = session
+            switch server.config.kind {
+            case .network:
+                sessionPool[file.id] = IRCServerSession(fileID: file.id, server: server)
+            case .simulation:
+                sessionPool[file.id] = IRCSimulationSession(fileID: file.id, server: server)
+            }
         }
     }
 
@@ -98,9 +102,9 @@ final class AppState {
 
     // MARK: - IRC
 
-    func createServer(_ server: String, port: UInt16, nick: String, username: String, password: String, name: String) async throws {
+    func createServer(_ kind: IRCConfig.Kind, server: String, port: UInt16, nick: String, username: String, password: String, name: String) async throws {
         let password: String? = password.isEmpty ? nil : password
-        let config = IRCConfig(server: server, port: port, nick: nick, username: username, password: password, name: name)
+        let config = IRCConfig(kind: kind, server: server, port: port, nick: nick, username: username, password: password, name: name)
         let server = IRCServer(config: config)
         let fileID = String.id
         _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: server)

@@ -1,6 +1,7 @@
 import Foundation
 
 public struct IRCConfig: Codable, Sendable {
+    public var kind: Kind
     public var server: String
     public var port: UInt16
     public var nick: String
@@ -13,6 +14,11 @@ public struct IRCConfig: Codable, Sendable {
     public var capabilities: [String: Bool]
     public var created: Date
     public var modified: Date
+
+    public enum Kind: Codable, Sendable {
+        case network
+        case simulation
+    }
 
     public struct Channel: Identifiable, Codable, Sendable {
         public var name: String
@@ -36,8 +42,9 @@ public struct IRCConfig: Codable, Sendable {
         }
     }
 
-    public init(server: String, port: UInt16 = 6667, nick: String, username: String, password: String? = nil,
-                name: String, motd: String? = nil, logs: [IRCMessage] = []) {
+    public init(kind: Kind = .network, server: String, port: UInt16 = 6667, nick: String, username: String,
+                password: String? = nil, name: String, motd: String? = nil, logs: [IRCMessage] = []) {
+        self.kind = kind
         self.server = server
         self.port = port
         self.nick = nick
@@ -54,6 +61,7 @@ public struct IRCConfig: Codable, Sendable {
 
     public func apply(_ config: IRCConfig) -> IRCConfig {
         var existing = self
+        existing.kind = config.kind
         existing.server = config.server
         existing.port = config.port
         existing.nick = config.nick
