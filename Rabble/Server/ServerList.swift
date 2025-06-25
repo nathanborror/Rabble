@@ -1,10 +1,8 @@
 import SwiftUI
 import RabbleKit
 
-struct ServerSidebar: View {
+struct ServerList: View {
     @Environment(AppState.self) var state
-
-    @State private var showingServerForm = false
 
     var body: some View {
         @Bindable var state = state
@@ -29,7 +27,7 @@ struct ServerSidebar: View {
             Spacer()
             HStack {
                 Button {
-                    showingServerForm = true
+                    state.showingServerForm = true
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -37,11 +35,6 @@ struct ServerSidebar: View {
                 Spacer()
             }
             .padding()
-        }
-        .sheet(isPresented: $showingServerForm) {
-            NavigationStack {
-                ServerForm()
-            }
         }
     }
 }
@@ -89,6 +82,7 @@ struct ServerRow: View {
                         .foregroundStyle(.secondary)
 
                     Text(channel.cleanName)
+                        .fontDesign(.monospaced)
                 }
                 .padding(.leading, 16)
                 .tag(AppState.Selection(fileID: session.fileID, channelID: channel.id))

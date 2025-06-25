@@ -11,11 +11,11 @@ struct MessageView: View {
                 if let prefix = message.prefix {
                     switch prefix {
                     case let .user(nick, _, _):
-                        PrivMsgUserView(nick: nick, text: text)
+                        PrivMsgUserView(nick: nick, text: text, timestamp: message.created)
                     case .server(let nick):
-                        PrivMsgServerView(nick: nick, text: text)
+                        PrivMsgServerView(nick: nick, text: text, timestamp: message.created)
                     case .service(let nick):
-                        PrivMsgServiceView(nick: nick, text: text)
+                        PrivMsgServiceView(nick: nick, text: text, timestamp: message.created)
                     }
                 } else {
                     Text(message.raw)
@@ -38,9 +38,12 @@ struct MessageView: View {
 struct PrivMsgUserView: View {
     let nick: String
     let text: String
+    let timestamp: Date
 
     var body: some View {
         HStack {
+            Text(timestamp, format: .dateTime)
+                .foregroundStyle(.tertiary)
             Text(nick+":")
                 .fontWeight(.semibold)
             Text(text)
@@ -52,9 +55,12 @@ struct PrivMsgUserView: View {
 struct PrivMsgServerView: View {
     let nick: String
     let text: String
+    let timestamp: Date
 
     var body: some View {
         HStack {
+            Text(timestamp, format: .dateTime)
+                .foregroundStyle(.tertiary)
             Text(nick+":")
                 .fontWeight(.semibold)
                 .foregroundStyle(.blue)
@@ -67,9 +73,12 @@ struct PrivMsgServerView: View {
 struct PrivMsgServiceView: View {
     let nick: String
     let text: String
+    let timestamp: Date
 
     var body: some View {
         HStack {
+            Text(timestamp, format: .dateTime)
+                .foregroundStyle(.tertiary)
             Text(nick+":")
                 .fontWeight(.semibold)
                 .foregroundStyle(.green)

@@ -15,12 +15,14 @@ struct StickyView: View {
                     Text(title)
                         .font(.system(.subheadline, design: .monospaced))
                         .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
                     Spacer()
                     Button {
                         expanded.toggle()
                     } label: {
                         Image(systemName: "inset.filled.topthird.square")
                             .imageScale(.small)
+                            .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.borderless)
                 }

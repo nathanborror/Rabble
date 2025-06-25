@@ -7,8 +7,7 @@ import RabbleKit
 final class ServerViewModel {
 
     var session: IRCSession
-
-    private let state = AppState.shared
+    var draft: String = ""
 
     var config: IRCConfig {
         session.server.config
@@ -28,5 +27,10 @@ final class ServerViewModel {
 
     init(session: IRCSession) {
         self.session = session
+    }
+
+    func submit() {
+        session.send(draft)
+        draft = ""
     }
 }

@@ -11,8 +11,8 @@
 		D875291E2E04DDFC005C45C8 /* ChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D875291D2E04DDFC005C45C8 /* ChannelView.swift */; };
 		D87529222E05B166005C45C8 /* ServerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529212E05B166005C45C8 /* ServerInfo.swift */; };
 		D87529242E05C478005C45C8 /* ChannelMembers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529232E05C478005C45C8 /* ChannelMembers.swift */; };
-		D87529262E077915005C45C8 /* ServerSidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529252E077915005C45C8 /* ServerSidebar.swift */; };
-		D87529282E078E77005C45C8 /* MessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529272E078E77005C45C8 /* MessageField.swift */; };
+		D87529262E077915005C45C8 /* ServerList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529252E077915005C45C8 /* ServerList.swift */; };
+		D87529282E078E77005C45C8 /* ChannelMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529272E078E77005C45C8 /* ChannelMessageField.swift */; };
 		D875292A2E09B245005C45C8 /* StickyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529292E09B245005C45C8 /* StickyView.swift */; };
 		D87529302E0A7571005C45C8 /* App-iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D875292F2E0A7571005C45C8 /* App-iOS.swift */; platformFilter = ios; };
 		D877A7412DFA95E800A2BF17 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D877A73C2DFA95E800A2BF17 /* Assets.xcassets */; };
@@ -36,6 +36,8 @@
 		D8EDE8D12E0C80BA0084805C /* ServiceDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8BE2E0C80BA0084805C /* ServiceDefaults.swift */; };
 		D8EDE8D22E0C80BA0084805C /* InstructionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8B82E0C80BA0084805C /* InstructionView.swift */; };
 		D8EDE8D52E0C81CC0084805C /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8D42E0C81CC0084805C /* LocationManager.swift */; };
+		D8EDE8D72E0C9D6A0084805C /* ChannelViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8D62E0C9D6A0084805C /* ChannelViewModel.swift */; };
+		D8EDE8D92E0CA1E50084805C /* ServerMessageField.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8D82E0CA1E50084805C /* ServerMessageField.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,8 +45,8 @@
 		D875291D2E04DDFC005C45C8 /* ChannelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelView.swift; sourceTree = "<group>"; };
 		D87529212E05B166005C45C8 /* ServerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerInfo.swift; sourceTree = "<group>"; };
 		D87529232E05C478005C45C8 /* ChannelMembers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMembers.swift; sourceTree = "<group>"; };
-		D87529252E077915005C45C8 /* ServerSidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerSidebar.swift; sourceTree = "<group>"; };
-		D87529272E078E77005C45C8 /* MessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageField.swift; sourceTree = "<group>"; };
+		D87529252E077915005C45C8 /* ServerList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerList.swift; sourceTree = "<group>"; };
+		D87529272E078E77005C45C8 /* ChannelMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMessageField.swift; sourceTree = "<group>"; };
 		D87529292E09B245005C45C8 /* StickyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickyView.swift; sourceTree = "<group>"; };
 		D875292F2E0A7571005C45C8 /* App-iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "App-iOS.swift"; sourceTree = "<group>"; };
 		D87529312E0A780B005C45C8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -71,6 +73,8 @@
 		D8EDE8C32E0C80BA0084805C /* SettingsView-iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView-iOS.swift"; sourceTree = "<group>"; };
 		D8EDE8C42E0C80BA0084805C /* SettingsView-macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView-macOS.swift"; sourceTree = "<group>"; };
 		D8EDE8D42E0C81CC0084805C /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		D8EDE8D62E0C9D6A0084805C /* ChannelViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelViewModel.swift; sourceTree = "<group>"; };
+		D8EDE8D82E0CA1E50084805C /* ServerMessageField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMessageField.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,7 +94,6 @@
 			children = (
 				D8EDE8B22E0BBA460084805C /* MessageView.swift */,
 				D888DCE62E00DB30004DAF72 /* MessageRow.swift */,
-				D87529272E078E77005C45C8 /* MessageField.swift */,
 				D87529292E09B245005C45C8 /* StickyView.swift */,
 			);
 			path = Views;
@@ -103,7 +106,8 @@
 				D88F7C182DFA9D5A00B4F1D6 /* ServerView.swift */,
 				D888DCE12DFD3DA7004DAF72 /* ServerForm.swift */,
 				D87529212E05B166005C45C8 /* ServerInfo.swift */,
-				D87529252E077915005C45C8 /* ServerSidebar.swift */,
+				D87529252E077915005C45C8 /* ServerList.swift */,
+				D8EDE8D82E0CA1E50084805C /* ServerMessageField.swift */,
 			);
 			path = Server;
 			sourceTree = "<group>";
@@ -111,9 +115,11 @@
 		D87529202E05ACC2005C45C8 /* Channel */ = {
 			isa = PBXGroup;
 			children = (
-				D888DCDF2DFD3AF4004DAF72 /* ChannelList.swift */,
+				D8EDE8D62E0C9D6A0084805C /* ChannelViewModel.swift */,
 				D875291D2E04DDFC005C45C8 /* ChannelView.swift */,
 				D87529232E05C478005C45C8 /* ChannelMembers.swift */,
+				D888DCDF2DFD3AF4004DAF72 /* ChannelList.swift */,
+				D87529272E078E77005C45C8 /* ChannelMessageField.swift */,
 			);
 			path = Channel;
 			sourceTree = "<group>";
@@ -285,8 +291,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D87529302E0A7571005C45C8 /* App-iOS.swift in Sources */,
-				D87529262E077915005C45C8 /* ServerSidebar.swift in Sources */,
-				D87529282E078E77005C45C8 /* MessageField.swift in Sources */,
+				D87529262E077915005C45C8 /* ServerList.swift in Sources */,
+				D87529282E078E77005C45C8 /* ChannelMessageField.swift in Sources */,
 				D88F7C192DFA9D5A00B4F1D6 /* ServerView.swift in Sources */,
 				D877A7432DFA95E800A2BF17 /* App-macOS.swift in Sources */,
 				D888DCE92E027F3C004DAF72 /* AppState.swift in Sources */,
@@ -299,6 +305,7 @@
 				D888DCE02DFD3AF4004DAF72 /* ChannelList.swift in Sources */,
 				D8EDE8B32E0BBA460084805C /* MessageView.swift in Sources */,
 				D875292A2E09B245005C45C8 /* StickyView.swift in Sources */,
+				D8EDE8D92E0CA1E50084805C /* ServerMessageField.swift in Sources */,
 				D8EDE8C62E0C80BA0084805C /* PermissionsView.swift in Sources */,
 				D8EDE8C72E0C80BA0084805C /* ServiceForm.swift in Sources */,
 				D8EDE8C92E0C80BA0084805C /* InstructionForm.swift in Sources */,
@@ -306,6 +313,7 @@
 				D8EDE8CB2E0C80BA0084805C /* SettingsView-macOS.swift in Sources */,
 				D8EDE8CC2E0C80BA0084805C /* PermissionList.swift in Sources */,
 				D8EDE8CD2E0C80BA0084805C /* PermissionForm.swift in Sources */,
+				D8EDE8D72E0C9D6A0084805C /* ChannelViewModel.swift in Sources */,
 				D8EDE8CE2E0C80BA0084805C /* ServiceManager.swift in Sources */,
 				D8EDE8D02E0C80BA0084805C /* ServiceView.swift in Sources */,
 				D8EDE8D12E0C80BA0084805C /* ServiceDefaults.swift in Sources */,

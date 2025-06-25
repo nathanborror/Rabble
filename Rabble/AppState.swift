@@ -31,6 +31,7 @@ final class AppState {
 
     var selection: Selection? = nil
     var sessionPool: [String: IRCSession] = [:]
+    var showingServerForm = false
 
     private let filesProvider: FilesProvider
     private let logsProvider: LogsProvider
@@ -59,10 +60,7 @@ final class AppState {
     private init() {
         self.filesProvider = .shared
         self.logsProvider = .shared
-
         logger.info("🍱 \(URL.documentsDirectory.path())")
-
-        Task { try await ready() }
     }
 
     func ready() async throws {

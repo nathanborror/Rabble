@@ -5,78 +5,58 @@ struct ChannelView: View {
     @Environment(AppState.self) var state
     @Environment(\.openWindow) var openWindow
 
-    let session: IRCSession
-
-    @State private var messageText = ""
-    @State private var showingInspector = false
+    @State private var viewModel: ChannelViewModel
     @State private var scrollPosition = ScrollPosition()
 
-    var channel: IRCChannel? {
-        guard let channelID = state.selection?.channelID else { return nil }
-        return try? session.channel(channelID)
+    init(channelID: String, session: IRCSession) {
+        self.viewModel = .init(channelID: channelID, session: session)
     }
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
             ScrollView {
                 VStack(spacing: 4) {
-                    if let channel {
-                        ForEach(channel.messages) { message in
-                            MessageView(message: message)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .scrollTargetLayout()
-                        }
+                    ForEach(viewModel.messages) { message in
+                        MessageView(message: message)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .scrollTargetLayout()
                     }
                 }
                 .padding()
             }
             .scrollPosition($scrollPosition, anchor: .bottom)
 
-            if let topic = channel?.topic {
+            if let topic = viewModel.channel?.topic {
                 StickyView(title: "Topic", text: topic.message, expanded: true)
                     .padding()
             }
         }
-        .navigationTitle(channel?.cleanName ?? "Unknown Channel")
+        .navigationTitle("#" + (viewModel.channel?.cleanName ?? "unknown"))
         #if os(macOS)
-        .navigationSubtitle("\(channel?.users.count ?? 0) users")
+        .navigationSubtitle("\(viewModel.channel?.users.count ?? 0) users")
         #endif
         .safeAreaInset(edge: .bottom) {
-            MessageField(session: session, text: $messageText) {
-                handleSubmit()
-            }
+            ChannelMessageField()
+                .environment(viewModel)
         }
         .toolbar {
             ToolbarItem {
                 Button("Inspector", systemImage: "sidebar.right") {
-                    showingInspector.toggle()
+                    viewModel.showingInspector.toggle()
                 }
             }
         }
-        .inspector(isPresented: $showingInspector) {
+        .inspector(isPresented: $viewModel.showingInspector) {
             NavigationStack {
-                ChannelMembers(session: session)
+                ChannelMembers(session: viewModel.session)
             }
             .inspectorColumnWidth(ideal: 200)
         }
-        .onChange(of: session.server.config.logs.count) { _, _ in
+        .onChange(of: viewModel.messages.count) { _, _ in
             scrollPosition.scrollTo(edge: .bottom)
         }
         .onAppear {
             scrollPosition.scrollTo(edge: .bottom)
         }
-    }
-
-    func handleSubmit() {
-        guard let channelID = state.selection?.channelID else { return }
-        guard let channel = try? session.channel(channelID) else { return }
-
-        if messageText.hasPrefix("/topic") {
-            let topic = messageText.trimmingPrefix("/topic ")
-            session.send("TOPIC \(channel.name) :\(topic)")
-        } else {
-            session.send("PRIVMSG \(channel.name) :\(messageText)")
-        }
-        messageText = ""
     }
 }

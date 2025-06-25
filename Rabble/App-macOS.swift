@@ -4,16 +4,21 @@ import RabbleKit
 @main
 struct MainApp: App {
     @State private var state = AppState.shared
-    
+
     var body: some Scene {
         WindowGroup {
             NavigationSplitView {
-                ServerSidebar()
+                ServerList()
                     .frame(minWidth: 200)
+                    .sheet(isPresented: $state.showingServerForm) {
+                        NavigationStack {
+                            ServerForm()
+                        }
+                    }
             } detail: {
                 if let fileID = state.selection?.fileID, let session = state.sessionPool[fileID] {
                     if let channelID = state.selection?.channelID {
-                        ChannelView(session: session)
+                        ChannelView(channelID: channelID, session: session)
                             .id(fileID+channelID)
                     } else {
                         ServerView(session: session)
@@ -31,6 +36,11 @@ struct MainApp: App {
         .environment(state)
         .commands {
             CommandMenu("Rabble") {
+                Button("New Server") {
+                    state.showingServerForm = true
+                }
+                .keyboardShortcut("n", modifiers: .command)
+                Divider()
                 Button("Reset All Data") {
                     state.resetAll()
                 }

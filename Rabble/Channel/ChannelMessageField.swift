@@ -1,20 +1,19 @@
 import SwiftUI
 import RabbleKit
 
-struct MessageField: View {
-    let session: IRCSession
-    @Binding var text: String
-    let submit: () -> Void
+struct ChannelMessageField: View {
+    @Environment(ChannelViewModel.self) var viewModel
 
     @State private var history: [String] = []
     @State private var historyIndex: Int? = nil
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         VStack(alignment: .leading, spacing: 0) {
             Divider()
             HStack(alignment: .bottom) {
-                if session.isConnected {
-                    TextField("Message", text: $text, axis: .vertical)
+                if viewModel.session.isConnected {
+                    TextField("Message", text: $viewModel.draft, axis: .vertical)
                         .onKeyPress { press in
                             switch press.key {
                             case .upArrow:
@@ -42,11 +41,11 @@ struct MessageField: View {
                             .padding(8)
                     }
                     .buttonStyle(.plain)
-                    .disabled(text.isEmpty)
+                    .disabled(viewModel.draft.isEmpty)
                 } else {
                     Spacer()
                     Button("Reconnect") {
-                        Task { try await session.connect() }
+                        Task { try await viewModel.session.connect() }
                     }
                     #if os(macOS)
                     .buttonStyle(.link)
@@ -60,10 +59,10 @@ struct MessageField: View {
     }
 
     func handleSubmit() {
-        history.append(text)
+        history.append(viewModel.draft)
         historyIndex = nil
 
-        submit()
+        viewModel.submit()
     }
 
     func handleHistoryBackward() {
@@ -73,17 +72,17 @@ struct MessageField: View {
         } else {
             historyIndex = history.count - 1
         }
-        text = history[historyIndex!]
+        viewModel.draft = history[historyIndex!]
     }
 
     func handleHistoryForward() {
         guard let index = historyIndex else { return }
         if index < (history.count - 1) {
             historyIndex = index + 1
-            text = history[historyIndex!]
+            viewModel.draft = history[historyIndex!]
         } else {
             historyIndex = nil
-            text = ""
+            viewModel.draft = ""
         }
     }
 }

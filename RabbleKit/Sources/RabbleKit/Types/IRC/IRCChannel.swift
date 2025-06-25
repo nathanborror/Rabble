@@ -105,7 +105,7 @@ public struct IRCChannel: Identifiable, Codable, Sendable {
         existing.password = channel.password
         existing.limit = channel.limit
         existing.bans = channel.bans
-        existing.messages = channel.messages
+        existing.messages = mergeUnique(existing.messages, channel.messages).sorted { $0.created < $1.created }
         existing.modified = .now
         return existing
     }
@@ -116,4 +116,17 @@ extension IRCChannel {
     public var cleanName: String {
         String(name.trimmingPrefix("#"))
     }
+}
+
+func mergeUnique<T: Identifiable>(_ list1: [T], _ list2: [T]) -> [T] {
+    var seen: [T.ID: T] = [:]
+
+    for item in list2 {
+        seen[item.id] = item
+    }
+    for item in list1 {
+        seen[item.id] = item // overwrites list2's item if id matches
+    }
+
+    return Array(seen.values)
 }

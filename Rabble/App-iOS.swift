@@ -8,11 +8,11 @@ struct MainApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationSplitView {
-                ServerSidebar()
+                ServerList()
             } detail: {
                 if let fileID = state.selection?.fileID, let session = state.sessionPool[fileID] {
                     if let channelID = state.selection?.channelID {
-                        ChannelView(session: session)
+                        ChannelView(channelID: channelID, session: session)
                             .id(fileID+channelID)
                     } else {
                         ServerView(session: session)

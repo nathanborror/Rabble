@@ -6,7 +6,6 @@ struct ServerView: View {
     @Environment(\.openWindow) var openWindow
 
     @State private var viewModel: ServerViewModel
-    @State private var messageText = ""
     @State private var scrollPosition = ScrollPosition()
 
     init(session: IRCSession) {
@@ -40,9 +39,8 @@ struct ServerView: View {
         .navigationSubtitle("\(viewModel.list.count) channels")
         #endif
         .safeAreaInset(edge: .bottom) {
-            MessageField(session: viewModel.session, text: $messageText) {
-                handleSubmit()
-            }
+            ServerMessageField()
+                .environment(viewModel)
         }
         .toolbar {
             ToolbarItem {
@@ -69,11 +67,6 @@ struct ServerView: View {
         }
     }
 
-    func handleSubmit() {
-        viewModel.session.send(messageText)
-        messageText = ""
-    }
-
     func handleConnect() {
         Task {
             do {
@@ -96,12 +89,5 @@ struct ServerView: View {
     func handleClearLogs() {
         viewModel.session.clearLogs()
     }
-
-//    static let formatter: DateFormatter = {
-//        let out = DateFormatter()
-//        out.dateFormat = "yyyy-MM-dd hh:mma"
-//        out.locale = Locale(identifier: "en_US_POSIX")
-//        return out
-//    }()
 }
 
