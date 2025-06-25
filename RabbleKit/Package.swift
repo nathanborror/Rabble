@@ -14,10 +14,14 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/nathanborror/swift-shared-kit", branch: "main"),
+        .package(url: "https://github.com/nathanborror/swift-gen-kit", branch: "main"),
+        .package(url: "https://github.com/cezheng/Fuzi", from: "3.1.0"),
     ],
     targets: [
         .target(name: "RabbleKit", dependencies: [
             .product(name: "SharedKit", package: "swift-shared-kit"),
+            .product(name: "GenKit", package: "swift-gen-kit"),
+            .product(name: "Fuzi", package: "Fuzi"),
         ]),
     ]
 )

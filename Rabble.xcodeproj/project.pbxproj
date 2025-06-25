@@ -24,6 +24,18 @@
 		D88F7C192DFA9D5A00B4F1D6 /* ServerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88F7C182DFA9D5A00B4F1D6 /* ServerView.swift */; };
 		D88F7C232DFA9E6600B4F1D6 /* RabbleKit in Frameworks */ = {isa = PBXBuildFile; productRef = D88F7C222DFA9E6600B4F1D6 /* RabbleKit */; };
 		D8EDE8B32E0BBA460084805C /* MessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8B22E0BBA460084805C /* MessageView.swift */; };
+		D8EDE8C62E0C80BA0084805C /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8BC2E0C80BA0084805C /* PermissionsView.swift */; };
+		D8EDE8C72E0C80BA0084805C /* ServiceForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8BF2E0C80BA0084805C /* ServiceForm.swift */; };
+		D8EDE8C92E0C80BA0084805C /* InstructionForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8B72E0C80BA0084805C /* InstructionForm.swift */; };
+		D8EDE8CA2E0C80BA0084805C /* SettingsView-iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8C32E0C80BA0084805C /* SettingsView-iOS.swift */; };
+		D8EDE8CB2E0C80BA0084805C /* SettingsView-macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8C42E0C80BA0084805C /* SettingsView-macOS.swift */; };
+		D8EDE8CC2E0C80BA0084805C /* PermissionList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8BB2E0C80BA0084805C /* PermissionList.swift */; };
+		D8EDE8CD2E0C80BA0084805C /* PermissionForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8BA2E0C80BA0084805C /* PermissionForm.swift */; };
+		D8EDE8CE2E0C80BA0084805C /* ServiceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8C02E0C80BA0084805C /* ServiceManager.swift */; };
+		D8EDE8D02E0C80BA0084805C /* ServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8C12E0C80BA0084805C /* ServiceView.swift */; };
+		D8EDE8D12E0C80BA0084805C /* ServiceDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8BE2E0C80BA0084805C /* ServiceDefaults.swift */; };
+		D8EDE8D22E0C80BA0084805C /* InstructionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8B82E0C80BA0084805C /* InstructionView.swift */; };
+		D8EDE8D52E0C81CC0084805C /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDE8D42E0C81CC0084805C /* LocationManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +59,18 @@
 		D888DCE82E027F3C004DAF72 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		D88F7C182DFA9D5A00B4F1D6 /* ServerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerView.swift; sourceTree = "<group>"; };
 		D8EDE8B22E0BBA460084805C /* MessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageView.swift; sourceTree = "<group>"; };
+		D8EDE8B72E0C80BA0084805C /* InstructionForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionForm.swift; sourceTree = "<group>"; };
+		D8EDE8B82E0C80BA0084805C /* InstructionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionView.swift; sourceTree = "<group>"; };
+		D8EDE8BA2E0C80BA0084805C /* PermissionForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionForm.swift; sourceTree = "<group>"; };
+		D8EDE8BB2E0C80BA0084805C /* PermissionList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionList.swift; sourceTree = "<group>"; };
+		D8EDE8BC2E0C80BA0084805C /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
+		D8EDE8BE2E0C80BA0084805C /* ServiceDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDefaults.swift; sourceTree = "<group>"; };
+		D8EDE8BF2E0C80BA0084805C /* ServiceForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceForm.swift; sourceTree = "<group>"; };
+		D8EDE8C02E0C80BA0084805C /* ServiceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceManager.swift; sourceTree = "<group>"; };
+		D8EDE8C12E0C80BA0084805C /* ServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceView.swift; sourceTree = "<group>"; };
+		D8EDE8C32E0C80BA0084805C /* SettingsView-iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView-iOS.swift"; sourceTree = "<group>"; };
+		D8EDE8C42E0C80BA0084805C /* SettingsView-macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView-macOS.swift"; sourceTree = "<group>"; };
+		D8EDE8D42E0C81CC0084805C /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,7 +143,9 @@
 				D875292F2E0A7571005C45C8 /* App-iOS.swift */,
 				D875291F2E05ACB7005C45C8 /* Server */,
 				D87529202E05ACC2005C45C8 /* Channel */,
+				D8EDE8C52E0C80BA0084805C /* Settings */,
 				D875291C2E04CC4B005C45C8 /* Views */,
+				D8EDE8D32E0C81B80084805C /* Shared */,
 				D877A7442DFA95EA00A2BF17 /* Support */,
 			);
 			path = Rabble;
@@ -133,6 +159,56 @@
 				D877A73C2DFA95E800A2BF17 /* Assets.xcassets */,
 			);
 			path = Support;
+			sourceTree = "<group>";
+		};
+		D8EDE8B92E0C80BA0084805C /* Instructions */ = {
+			isa = PBXGroup;
+			children = (
+				D8EDE8B72E0C80BA0084805C /* InstructionForm.swift */,
+				D8EDE8B82E0C80BA0084805C /* InstructionView.swift */,
+			);
+			path = Instructions;
+			sourceTree = "<group>";
+		};
+		D8EDE8BD2E0C80BA0084805C /* Permissions */ = {
+			isa = PBXGroup;
+			children = (
+				D8EDE8BA2E0C80BA0084805C /* PermissionForm.swift */,
+				D8EDE8BB2E0C80BA0084805C /* PermissionList.swift */,
+				D8EDE8BC2E0C80BA0084805C /* PermissionsView.swift */,
+			);
+			path = Permissions;
+			sourceTree = "<group>";
+		};
+		D8EDE8C22E0C80BA0084805C /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				D8EDE8BE2E0C80BA0084805C /* ServiceDefaults.swift */,
+				D8EDE8BF2E0C80BA0084805C /* ServiceForm.swift */,
+				D8EDE8C02E0C80BA0084805C /* ServiceManager.swift */,
+				D8EDE8C12E0C80BA0084805C /* ServiceView.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		D8EDE8C52E0C80BA0084805C /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				D8EDE8B92E0C80BA0084805C /* Instructions */,
+				D8EDE8BD2E0C80BA0084805C /* Permissions */,
+				D8EDE8C22E0C80BA0084805C /* Services */,
+				D8EDE8C32E0C80BA0084805C /* SettingsView-iOS.swift */,
+				D8EDE8C42E0C80BA0084805C /* SettingsView-macOS.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		D8EDE8D32E0C81B80084805C /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				D8EDE8D42E0C81CC0084805C /* LocationManager.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -214,6 +290,7 @@
 				D88F7C192DFA9D5A00B4F1D6 /* ServerView.swift in Sources */,
 				D877A7432DFA95E800A2BF17 /* App-macOS.swift in Sources */,
 				D888DCE92E027F3C004DAF72 /* AppState.swift in Sources */,
+				D8EDE8D52E0C81CC0084805C /* LocationManager.swift in Sources */,
 				D87529222E05B166005C45C8 /* ServerInfo.swift in Sources */,
 				D875291E2E04DDFC005C45C8 /* ChannelView.swift in Sources */,
 				D875291B2E046C98005C45C8 /* ServerViewModel.swift in Sources */,
@@ -222,6 +299,17 @@
 				D888DCE02DFD3AF4004DAF72 /* ChannelList.swift in Sources */,
 				D8EDE8B32E0BBA460084805C /* MessageView.swift in Sources */,
 				D875292A2E09B245005C45C8 /* StickyView.swift in Sources */,
+				D8EDE8C62E0C80BA0084805C /* PermissionsView.swift in Sources */,
+				D8EDE8C72E0C80BA0084805C /* ServiceForm.swift in Sources */,
+				D8EDE8C92E0C80BA0084805C /* InstructionForm.swift in Sources */,
+				D8EDE8CA2E0C80BA0084805C /* SettingsView-iOS.swift in Sources */,
+				D8EDE8CB2E0C80BA0084805C /* SettingsView-macOS.swift in Sources */,
+				D8EDE8CC2E0C80BA0084805C /* PermissionList.swift in Sources */,
+				D8EDE8CD2E0C80BA0084805C /* PermissionForm.swift in Sources */,
+				D8EDE8CE2E0C80BA0084805C /* ServiceManager.swift in Sources */,
+				D8EDE8D02E0C80BA0084805C /* ServiceView.swift in Sources */,
+				D8EDE8D12E0C80BA0084805C /* ServiceDefaults.swift in Sources */,
+				D8EDE8D22E0C80BA0084805C /* InstructionView.swift in Sources */,
 				D888DCE22DFD3DA7004DAF72 /* ServerForm.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

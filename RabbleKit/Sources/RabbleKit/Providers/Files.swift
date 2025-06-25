@@ -78,6 +78,10 @@ extension File {
         mimetype == .directory
     }
 
+    public var isInstruction: Bool {
+        isJSON && path.hasSuffix("instruction")
+    }
+
     public var isIRC: Bool {
         (mimetype == .package) && path.hasSuffix("irc")
     }

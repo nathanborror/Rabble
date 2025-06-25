@@ -58,6 +58,12 @@ struct MainApp: App {
         }
         .environment(state)
         .defaultSize(width: 350, height: 500)
+
+        Settings {
+            PreferencesView()
+                .frame(minWidth: 600)
+        }
+        .environment(state)
     }
 
     func appActive() async {

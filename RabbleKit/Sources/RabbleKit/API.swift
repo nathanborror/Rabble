@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import SharedKit
+import GenKit
 
 @MainActor @Observable
 public final class API {
@@ -136,5 +137,42 @@ extension API {
 
     public func fileDelete(_ fileID: String) async throws {
         try await filesProvider.cacheFileDelete(fileID)
+    }
+}
+
+// MARK: - Services
+
+extension API {
+
+    public func preferredChatService() throws -> (ChatService, Model) {
+        let service = try get(serviceID: config.serviceChatDefault, config: config)
+        let model = try get(modelID: service.preferredChatModel, service: service)
+        return (try service.chatService(session: session), model)
+    }
+
+    public func preferredImageService() throws -> (ImageService, Model) {
+        let service = try get(serviceID: config.serviceImageDefault, config: config)
+        let model = try get(modelID: service.preferredImageModel, service: service)
+        return (try service.imageService(session: session), model)
+    }
+
+    public func preferredSummarizationService() throws -> (ChatService, Model) {
+        let service = try get(serviceID: config.serviceSummarizationDefault, config: config)
+        let model = try get(modelID: service.preferredSummarizationModel, service: service)
+        return (try service.summarizationService(session: session), model)
+    }
+
+    public func get(serviceID: String?, config: Config) throws -> Service {
+        guard let service = config.services.first(where: { $0.id == serviceID }) else {
+            throw Error.missingService
+        }
+        return service
+    }
+
+    public func get(modelID: String?, service: Service) throws -> Model {
+        guard let model = service.models.first(where: { $0.id == modelID }) else {
+            throw Error.missingModel
+        }
+        return model
     }
 }

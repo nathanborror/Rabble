@@ -48,6 +48,10 @@ final class AppState {
         return files ?? []
     }
 
+    var instructions: [File] {
+        filesProvider.files.filter { $0.isInstruction }
+    }
+    
     var logs: [Log] {
         logsProvider.logs
     }
