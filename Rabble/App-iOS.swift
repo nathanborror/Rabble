@@ -8,18 +8,18 @@ struct MainApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationSplitView {
-                ConnectionSidebar()
+                ServerSidebar()
             } detail: {
-                if let fileID = state.selection?.fileID, let manager = state.connectionPool[fileID] {
+                if let fileID = state.selection?.fileID, let session = state.sessionPool[fileID] {
                     if let channelID = state.selection?.channelID {
-                        ChannelView(manager: manager)
+                        ChannelView(session: session)
                             .id(fileID+channelID)
                     } else {
-                        ConnectionView(manager: manager)
+                        ServerView(session: session)
                             .id(fileID)
                     }
                 } else {
-                    ContentUnavailableView("No Connection", systemImage: "apple.terminal")
+                    ContentUnavailableView("No Servers", systemImage: "apple.terminal")
                 }
             }
             .onAppear {

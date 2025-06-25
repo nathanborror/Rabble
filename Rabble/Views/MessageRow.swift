@@ -2,14 +2,13 @@ import SwiftUI
 import RabbleKit
 
 struct MessageRow: View {
-    let message: IRC.Message
+    let message: IRCMessage
 
     @State private var showingDetails = false
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
-            message.render
-                .font(.subheadline)
+            MessageView(message: message)
             Spacer()
             Button {
                 showingDetails.toggle()

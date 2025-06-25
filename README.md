@@ -24,6 +24,7 @@ An experimental IRC client written in pure Swift.
 - [ ] Store base64 token instead of raw password
 - [ ] Figure out nick registration
 - [ ] Figure out channel registration
+- [ ] Packagable write() needs to remove files
 
 ## File Structure
 

@@ -1,24 +1,35 @@
 import SwiftUI
 import RabbleKit
 
-struct ConnectionSidebar: View {
+struct ServerSidebar: View {
     @Environment(AppState.self) var state
 
-    @State private var showingNewConnectionForm = false
-    
+    @State private var showingServerForm = false
+
     var body: some View {
         @Bindable var state = state
         VStack {
             List(selection: $state.selection) {
-                ForEach(Array(state.connectionPool.values), id: \.file.id) { manager in
-                    ConnectionRow(manager: manager)
-                        .tag(AppState.Selection(fileID: manager.file.id, channelID: nil))
+                ForEach(Array(state.sessionPool.values), id: \.fileID) { session in
+                    ServerRow(session: session)
+                        .tag(AppState.Selection(fileID: session.fileID, channelID: nil))
+                }
+            }
+            .contextMenu(forSelectionType: AppState.Selection.self) { selections in
+                if let selection = selections.first, let session = state.sessionPool[selection.fileID], let channelID = selection.channelID {
+                    Button("Get Info") {
+                        session.sendChannelInfo(channelID)
+                    }
+                    Divider()
+                    Button("Leave") {
+                        session.sendChannelPart(channelID)
+                    }
                 }
             }
             Spacer()
             HStack {
                 Button {
-                    showingNewConnectionForm = true
+                    showingServerForm = true
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -27,18 +38,18 @@ struct ConnectionSidebar: View {
             }
             .padding()
         }
-        .sheet(isPresented: $showingNewConnectionForm) {
+        .sheet(isPresented: $showingServerForm) {
             NavigationStack {
-                ConnectionForm()
+                ServerForm()
             }
         }
     }
 }
 
-struct ConnectionRow: View {
+struct ServerRow: View {
     @Environment(AppState.self) var state
 
-    let manager: ConnectionManager
+    let session: IRCSession
 
     @State var isExpanded = true
 
@@ -53,14 +64,14 @@ struct ConnectionRow: View {
             .foregroundStyle(.secondary)
             .buttonStyle(.borderless)
 
-            Text("\(manager.irc.session.nick)@\(manager.irc.session.server)")
+            Text("\(session.server.config.nick)@\(session.server.config.server)")
                 .fontWeight(.semibold)
 
             Spacer()
 
-            if !manager.connected {
+            if !session.isConnected {
                 Button {
-                    Task { try await manager.connect() }
+                    Task { try await session.connect() }
                 } label: {
                     Image(systemName: "bolt.horizontal.fill")
                         .imageScale(.small)
@@ -71,7 +82,7 @@ struct ConnectionRow: View {
         }
 
         if isExpanded {
-            ForEach(Array(manager.channels.values).sorted(by: { $0.name < $1.name })) { channel in
+            ForEach(session.server.channels.sorted(by: { $0.name < $1.name })) { channel in
                 HStack(spacing: 0) {
                     Image(systemName: "number")
                         .frame(width: 16, height: 16)
@@ -80,7 +91,7 @@ struct ConnectionRow: View {
                     Text(channel.cleanName)
                 }
                 .padding(.leading, 16)
-                .tag(AppState.Selection(fileID: manager.file.id, channelID: channel.id))
+                .tag(AppState.Selection(fileID: session.fileID, channelID: channel.id))
             }
         }
     }

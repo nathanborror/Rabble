@@ -8,19 +8,19 @@ struct MainApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationSplitView {
-                ConnectionSidebar()
+                ServerSidebar()
                     .frame(minWidth: 200)
             } detail: {
-                if let fileID = state.selection?.fileID, let manager = state.connectionPool[fileID] {
+                if let fileID = state.selection?.fileID, let session = state.sessionPool[fileID] {
                     if let channelID = state.selection?.channelID {
-                        ChannelView(manager: manager)
+                        ChannelView(session: session)
                             .id(fileID+channelID)
                     } else {
-                        ConnectionView(manager: manager)
+                        ServerView(session: session)
                             .id(fileID)
                     }
                 } else {
-                    ContentUnavailableView("No Connection", systemImage: "apple.terminal")
+                    ContentUnavailableView("No Server", systemImage: "apple.terminal")
                 }
             }
             .containerBackground(.background, for: .window)
@@ -39,8 +39,8 @@ struct MainApp: App {
 
         WindowGroup("Channels", id: "channels", for: String.self) { fileID in
             NavigationStack {
-                if let fileID = fileID.wrappedValue, let manager = state.connectionPool[fileID] {
-                    ChannelList(manager: manager, channels: manager.list)
+                if let fileID = fileID.wrappedValue, let session = state.sessionPool[fileID] {
+                    ChannelList(session: session)
                 } else {
                     ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
                 }
@@ -49,9 +49,9 @@ struct MainApp: App {
         .environment(state)
         .defaultSize(width: 500, height: 600)
 
-        WindowGroup("Connection Info", id: "connection", for: String.self) { fileID in
-            if let fileID = fileID.wrappedValue, let manager = state.connectionPool[fileID] {
-                ConnectionInfo(manager: manager)
+        WindowGroup("Server Info", id: "server", for: String.self) { fileID in
+            if let fileID = fileID.wrappedValue, let session = state.sessionPool[fileID] {
+                ServerInfo(session: session)
             } else {
                 ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
             }

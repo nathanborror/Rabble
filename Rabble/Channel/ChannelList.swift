@@ -5,14 +5,13 @@ struct ChannelList: View {
     @Environment(AppState.self) var state
     @Environment(\.dismiss) var dismiss
 
-    let manager: ConnectionManager
-    let channels: [IRC.Session.Channel]
+    let session: IRCSession
 
     @State private var selected: Set<String> = []
-    @State private var sortOrder = [KeyPathComparator(\IRC.Session.Channel.name)]
+    @State private var sortOrder = [KeyPathComparator(\IRCConfig.Channel.name)]
 
     var body: some View {
-        Table(channels, selection: $selected, sortOrder: $sortOrder) {
+        Table(session.server.config.list, selection: $selected, sortOrder: $sortOrder) {
             TableColumn("Name", value: \.name)
             TableColumn("Users") { channel in
                 Text("\(channel.users ?? 0)")
@@ -45,12 +44,13 @@ struct ChannelList: View {
     }
 
     func handleList() {
-        manager.send("LIST")
+        session.send("LIST")
     }
 
     func handleJoin(_ names: Set<String>) {
         for name in names {
-            manager.send("JOIN \(name)")
+            session.sendChannelJoin(name)
+            state.selection = .init(fileID: session.fileID, channelID: name)
         }
     }
 }

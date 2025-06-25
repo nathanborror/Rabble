@@ -1,15 +1,15 @@
 import SwiftUI
 import RabbleKit
 
-struct ConnectionForm: View {
+struct ServerForm: View {
     @Environment(AppState.self) var state
     @Environment(\.dismiss) var dismiss
 
     @State var server = "localhost"
     @State var port: UInt16 = 6667
     @State var nick = "sketch22"
-    @State var username = "nathanborror"
-    @State var password = ""
+    @State var username = "sketch22"
+    @State var password = "buoyant"
     @State var name = "Nathan Borror"
 
     var body: some View {
@@ -21,11 +21,12 @@ struct ConnectionForm: View {
                 .textContentType(.username)
             TextField("Username", text: $username)
                 .textContentType(.username)
-            TextField("Password", text: $password)
+            SecureField("Password", text: $password)
                 .textContentType(.password)
             TextField("Name", text: $name)
                 .textContentType(.name)
         }
+        .navigationTitle("Server Form")
         .formStyle(.grouped)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
@@ -44,7 +45,7 @@ struct ConnectionForm: View {
     func handleSubmit() {
         Task {
             do {
-                try await state.createConnection(server: server, port: port, nick: nick, username: username, password: password, name: name)
+                try await state.createServer(server, port: port, nick: nick, username: username, password: password, name: name)
                 dismiss()
             } catch {
                 print(error)

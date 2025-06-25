@@ -1,23 +1,23 @@
 import SwiftUI
 import RabbleKit
 
-struct ConnectionView: View {
+struct ServerView: View {
     @Environment(AppState.self) var state
     @Environment(\.openWindow) var openWindow
 
-    @State private var manager: ConnectionManager
+    @State private var viewModel: ServerViewModel
     @State private var messageText = ""
     @State private var scrollPosition = ScrollPosition()
 
-    init(manager: ConnectionManager) {
-        self.manager = manager
+    init(session: IRCSession) {
+        self.viewModel = .init(session: session)
     }
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
             ScrollView {
-                LazyVStack(alignment: .leading) {
-                    ForEach(manager.logs) { message in
+                VStack(alignment: .leading) {
+                    ForEach(viewModel.logs) { message in
                         Text(message.raw)
                             .font(.footnote)
                             .fontDesign(.monospaced)
@@ -30,17 +30,17 @@ struct ConnectionView: View {
             .scrollPosition($scrollPosition, anchor: .bottom)
             .background(.background)
 
-            if let motd = manager.session?.motd {
+            if let motd = viewModel.config.motd {
                 StickyView(title: "MOTD", text: motd, expanded: false)
                     .padding()
             }
         }
-        .navigationTitle("\(manager.irc.session.nick)@\(manager.irc.session.server)")
+        .navigationTitle("\(viewModel.config.nick)@\(viewModel.config.server)")
         #if os(macOS)
-        .navigationSubtitle("\(manager.list.count) channels")
+        .navigationSubtitle("\(viewModel.list.count) channels")
         #endif
         .safeAreaInset(edge: .bottom) {
-            MessageField(text: $messageText, manager: manager) {
+            MessageField(session: viewModel.session, text: $messageText) {
                 handleSubmit()
             }
         }
@@ -61,7 +61,7 @@ struct ConnectionView: View {
                 }
             }
         }
-        .onChange(of: manager.logs.count) { _, _ in
+        .onChange(of: viewModel.logs.count) { _, _ in
             scrollPosition.scrollTo(edge: .bottom)
         }
         .onAppear {
@@ -70,14 +70,14 @@ struct ConnectionView: View {
     }
 
     func handleSubmit() {
-        manager.send(messageText)
+        viewModel.session.send(messageText)
         messageText = ""
     }
 
     func handleConnect() {
         Task {
             do {
-                try await manager.connect()
+                try await viewModel.session.connect()
             } catch {
                 print(error)
             }
@@ -85,16 +85,16 @@ struct ConnectionView: View {
     }
 
     func handleChannelList() {
-        manager.send("LIST")
-        openWindow(id: "channels", value: manager.file.id)
+        viewModel.session.send("LIST")
+        openWindow(id: "channels", value: viewModel.session.fileID)
     }
 
     func handleChannelInfo() {
-        openWindow(id: "connection", value: manager.file.id)
+        openWindow(id: "server", value: viewModel.session.fileID)
     }
 
     func handleClearLogs() {
-        manager.clear()
+        viewModel.session.clearLogs()
     }
 
 //    static let formatter: DateFormatter = {

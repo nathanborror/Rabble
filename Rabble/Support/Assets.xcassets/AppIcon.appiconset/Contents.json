@@ -1,6 +1,12 @@
 {
   "images" : [
     {
+      "filename" : "Icon.png",
+      "idiom" : "universal",
+      "platform" : "ios",
+      "size" : "1024x1024"
+    },
+    {
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "16x16"
@@ -26,26 +32,31 @@
       "size" : "128x128"
     },
     {
+      "filename" : "MacIcon@256 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "128x128"
     },
     {
+      "filename" : "MacIcon@256.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "256x256"
     },
     {
+      "filename" : "MacIcon@512 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "256x256"
     },
     {
+      "filename" : "MacIcon@512.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "512x512"
     },
     {
+      "filename" : "MacIcon@1024.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "512x512"

@@ -1,21 +1,20 @@
 import SwiftUI
 import RabbleKit
 
-struct ConnectionInfo: View {
+struct ServerInfo: View {
     @Environment(AppState.self) var state
+    @Environment(ServerViewModel.self) var viewModel
     @Environment(\.openURL) var openURL
 
-    let manager: ConnectionManager
+    let session: IRCSession
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                if let session = manager.session {
-                    info("Server", value: session.server)
-                    info("Nick", value: session.nick)
-                    info("Name", value: session.name)
-                    info("Capabilities", value: Array(session.capabilities.keys).joined(separator: ", "))
-                }
+                info("Server", value: session.server.config.server)
+                info("Nick", value: session.server.config.nick)
+                info("Name", value: session.server.config.name)
+                info("Capabilities", value: Array(session.server.config.capabilities.keys).joined(separator: ", "))
             }
             .padding()
         }

@@ -2,9 +2,8 @@ import SwiftUI
 import RabbleKit
 
 struct MessageField: View {
+    let session: IRCSession
     @Binding var text: String
-
-    let manager: ConnectionManager
     let submit: () -> Void
 
     @State private var history: [String] = []
@@ -14,7 +13,7 @@ struct MessageField: View {
         VStack(alignment: .leading, spacing: 0) {
             Divider()
             HStack(alignment: .bottom) {
-                if manager.connected {
+                if session.isConnected {
                     TextField("Message", text: $text, axis: .vertical)
                         .onKeyPress { press in
                             switch press.key {
@@ -47,7 +46,7 @@ struct MessageField: View {
                 } else {
                     Spacer()
                     Button("Reconnect") {
-                        Task { try await manager.connect() }
+                        Task { try await session.connect() }
                     }
                     #if os(macOS)
                     .buttonStyle(.link)

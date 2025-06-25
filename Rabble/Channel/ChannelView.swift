@@ -5,27 +5,24 @@ struct ChannelView: View {
     @Environment(AppState.self) var state
     @Environment(\.openWindow) var openWindow
 
-    @State private var manager: ConnectionManager
+    let session: IRCSession
+
     @State private var messageText = ""
     @State private var showingInspector = false
     @State private var scrollPosition = ScrollPosition()
 
-    init(manager: ConnectionManager) {
-        self.manager = manager
-    }
-
-    var channel: IRC.Channel? {
+    var channel: IRCChannel? {
         guard let channelID = state.selection?.channelID else { return nil }
-        return manager.channels[channelID]
+        return try? session.channel(channelID)
     }
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
             ScrollView {
-                LazyVStack(spacing: 4) {
+                VStack(spacing: 4) {
                     if let channel {
                         ForEach(channel.messages) { message in
-                            message.render
+                            MessageView(message: message)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .scrollTargetLayout()
                         }
@@ -45,7 +42,7 @@ struct ChannelView: View {
         .navigationSubtitle("\(channel?.users.count ?? 0) users")
         #endif
         .safeAreaInset(edge: .bottom) {
-            MessageField(text: $messageText, manager: manager) {
+            MessageField(session: session, text: $messageText) {
                 handleSubmit()
             }
         }
@@ -58,11 +55,11 @@ struct ChannelView: View {
         }
         .inspector(isPresented: $showingInspector) {
             NavigationStack {
-                ChannelMembers(manager: manager)
+                ChannelMembers(session: session)
             }
             .inspectorColumnWidth(ideal: 200)
         }
-        .onChange(of: manager.logs.count) { _, _ in
+        .onChange(of: session.server.config.logs.count) { _, _ in
             scrollPosition.scrollTo(edge: .bottom)
         }
         .onAppear {
@@ -72,13 +69,13 @@ struct ChannelView: View {
 
     func handleSubmit() {
         guard let channelID = state.selection?.channelID else { return }
-        guard let channel = manager.channels[channelID] else { return }
+        guard let channel = try? session.channel(channelID) else { return }
 
         if messageText.hasPrefix("/topic") {
             let topic = messageText.trimmingPrefix("/topic ")
-            manager.send("TOPIC \(channel.name) :\(topic)")
+            session.send("TOPIC \(channel.name) :\(topic)")
         } else {
-            manager.send("PRIVMSG \(channel.name) :\(messageText)")
+            session.send("PRIVMSG \(channel.name) :\(messageText)")
         }
         messageText = ""
     }

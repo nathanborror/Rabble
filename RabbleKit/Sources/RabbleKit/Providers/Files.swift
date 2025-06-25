@@ -97,7 +97,7 @@ public struct FileTree: Identifiable, Codable, Hashable, Sendable {
     }
 }
 
-public protocol Packagable: Sendable {
+public protocol Packagable {
     static func load(url: URL) throws -> Self
     func write(url: URL) throws -> [(URL, Data)]
 }

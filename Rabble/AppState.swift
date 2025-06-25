@@ -30,7 +30,7 @@ final class AppState {
     }
 
     var selection: Selection? = nil
-    var connectionPool: [String: ConnectionManager] = [:]
+    var sessionPool: [String: IRCSession] = [:]
 
     private let filesProvider: FilesProvider
     private let logsProvider: LogsProvider
@@ -67,13 +67,20 @@ final class AppState {
         _ = try await [filesReady, logsReady]
 
         for file in files.filter({ $0.isIRC }) {
-            let manager = try ConnectionManager(file: file)
-            connectionPool[file.id] = manager
+            let server: IRCServer = try filePackage(file.id)
+            let session = IRCServerSession(fileID: file.id, server: server)
+            sessionPool[file.id] = session
         }
     }
 
     func resetAll() {
         do {
+
+            // Disconnect all sessions
+            for (_, session) in sessionPool {
+                session.disconnect()
+            }
+
             // Reset providers
             filesProvider.reset()
             logsProvider.reset()
@@ -81,8 +88,8 @@ final class AppState {
             // Delete all files
             try FileManager.default.removeItems(at: URL.documentsDirectory)
 
-            // Clear connection pool
-            connectionPool = [:]
+            // Clear session pool
+            sessionPool = [:]
             selection = nil
         } catch {
             log(error: error)
@@ -91,20 +98,19 @@ final class AppState {
 
     // MARK: - IRC
 
-    func createConnection(server: String, port: UInt16, nick: String, username: String, password: String, name: String) async throws {
+    func createServer(_ server: String, port: UInt16, nick: String, username: String, password: String, name: String) async throws {
         let password: String? = password.isEmpty ? nil : password
-        let session = IRC.Session(server: server, port: port, nick: nick, username: username, password: password, name: name)
-        let package = IRC(session: session)
+        let config = IRCConfig(server: server, port: port, nick: nick, username: username, password: password, name: name)
+        let server = IRCServer(config: config)
         let fileID = String.id
-        _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: package)
+        _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: server)
 
-        let file = try file(fileID)
-        let manager = try ConnectionManager(file: file)
-        connectionPool[file.id] = manager
-        selection = .init(fileID: file.id, channelID: nil)
+        let session = IRCServerSession(fileID: fileID, server: server)
+        sessionPool[fileID] = session
+        selection = .init(fileID: fileID, channelID: nil)
 
         // Connect to server
-        try await manager.connect()
+        try await session.connect()
     }
 
     // MARK: - File Handling
