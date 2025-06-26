@@ -105,7 +105,7 @@ public struct IRCChannel: Identifiable, Codable, Sendable {
         existing.password = channel.password
         existing.limit = channel.limit
         existing.bans = channel.bans
-        existing.messages = mergeUnique(existing.messages, channel.messages).sorted { $0.created < $1.created }
+        existing.messages = mergeUnique(existing.messages, channel.messages)
         existing.modified = .now
         return existing
     }
