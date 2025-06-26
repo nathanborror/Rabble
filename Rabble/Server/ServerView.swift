@@ -24,15 +24,21 @@ struct ServerView: View {
                             .scrollTargetLayout()
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
             }
             .scrollPosition($scrollPosition, anchor: .bottom)
             .background(.background)
 
-            if let motd = viewModel.config.motd {
-                StickyView(title: "MOTD", text: motd, expanded: false)
-                    .padding()
+            VStack(alignment: .leading) {
+                if let motd = viewModel.config.motd {
+                    StickyView(title: "MOTD", text: motd, kind: .informative, expanded: false)
+                }
+                if let error = viewModel.session.error {
+                    StickyView(title: "Error", text: "\(error)", kind: .error, expanded: true)
+                }
             }
+            .padding()
         }
         .navigationTitle("\(viewModel.config.nick)@\(viewModel.config.server)")
         #if os(macOS)

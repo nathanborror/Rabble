@@ -27,7 +27,7 @@ struct ChannelView: View {
             .scrollPosition($scrollPosition, anchor: .bottom)
 
             if let topic = viewModel.channel?.topic {
-                StickyView(title: "Topic", text: topic.message, expanded: true)
+                StickyView(title: "Topic", text: topic.message, kind: .informative, expanded: true)
                     .padding()
             }
         }
