@@ -105,7 +105,7 @@ final class AppState {
     // MARK: - IRC
 
     func createServer(kind: IRCConfig.Kind, server: String, port: UInt16, nick: String, ident: String?, username: String, email: String?, password: String?, realname: String) async throws {
-        var config = IRCConfig(kind: kind, server: server, port: port, nick: nick, ident: ident, username: username, realname: realname, email: email, password: password)
+        let config = IRCConfig(kind: kind, server: server, port: port, nick: nick, ident: ident, username: username, realname: realname, email: email, password: password)
 
         let server = IRCServer(config: config)
         let fileID = String.id
