@@ -10,15 +10,14 @@ public class IRCServerSession: IRCSession {
 
     public var fileID: String
     public var server: IRCServer
+
     public var isConnected = false
+    public var isAuthenticated = false
+    public var error: IRCSessionError? = nil
 
     private var connection: NWConnection? = nil
     private var incomingDataBuffer = ""
     private var motdBuffer = ""
-
-    public enum Error: Swift.Error {
-        case channelNotFound
-    }
 
     public init(fileID: String, server: IRCServer) {
         self.fileID = fileID
@@ -47,7 +46,7 @@ public class IRCServerSession: IRCSession {
 
     public func channel(_ channelID: String) throws -> IRCChannel {
         guard let channel = server.channels.first(where: { $0.id == channelID }) else {
-            throw Error.channelNotFound
+            throw IRCSessionError.channelNotFound
         }
         return channel
     }
@@ -118,7 +117,7 @@ public class IRCServerSession: IRCSession {
             send("CAP END")
 
             // Authenticate (SASL)
-            if let password = server.config.password {
+            if !isAuthenticated, let password = server.config.password {
                 let token = "\0\(server.config.username)\0\(password)".data(using: .utf8)!
                 send("AUTHENTICATE PLAIN")
                 send("AUTHENTICATE \(token.base64EncodedString())")
@@ -134,7 +133,7 @@ public class IRCServerSession: IRCSession {
 
             handleListen()
         case .failed(let error):
-            logger.error("\(error)")
+            self.error = .unhandled(error)
             disconnect()
         case .cancelled:
             disconnect()
@@ -149,7 +148,7 @@ public class IRCServerSession: IRCSession {
         connection?.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
             guard let self else { return }
             Task { @MainActor in
-                try await self.handleIncomingData(data)
+                await self.handleIncomingData(data)
                 if error == nil {
                     self.handleListen()
                 }
@@ -157,7 +156,7 @@ public class IRCServerSession: IRCSession {
         }
     }
 
-    func handleIncomingData(_ data: Data?) async throws {
+    func handleIncomingData(_ data: Data?) async {
         guard let data, let newText = String(data: data, encoding: .utf8) else { return }
         incomingDataBuffer += newText
 
@@ -182,8 +181,14 @@ public class IRCServerSession: IRCSession {
             upsertConfigLog(message)
 
             // Handle command and numeric
-            try await handleMessageCommand(message)
-            try await handleMessageNumeric(message)
+            do {
+                try await handleMessageCommand(message)
+                try await handleMessageNumeric(message)
+            } catch let error as IRCSessionError {
+                self.error = error
+            } catch {
+                self.error = .unhandled(error)
+            }
         }
         save()
     }
@@ -234,6 +239,11 @@ public class IRCServerSession: IRCSession {
             motdBuffer += text.trimmingPrefix("- ") + "\n"
         case .RPL_ENDOFMOTD:
             server.config.motd = motdBuffer
+
+        // Errors
+
+        case .ERR_SASLFAIL:
+            throw IRCSessionError.authenticationFailed
 
         default:
             return
@@ -321,7 +331,7 @@ public class IRCServerSession: IRCSession {
 
     func removeChannel(_ channelID: String) throws {
         guard let index = server.channels.firstIndex(where: { $0.id == channelID }) else {
-            throw Error.channelNotFound
+            throw IRCSessionError.channelNotFound
         }
         server.channels.remove(at: index)
     }

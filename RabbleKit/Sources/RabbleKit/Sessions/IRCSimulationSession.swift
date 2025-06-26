@@ -7,23 +7,16 @@ private let logger = Logger(subsystem: "IRCSimulationSession", category: "IRC")
 @MainActor
 @Observable
 public class IRCSimulationSession: IRCSession {
-
     public var fileID: String
     public var server: IRCServer
 
-    public enum Error: Swift.Error {
-        case channelNotFound
-    }
+    public var isConnected = true
+    public var isAuthenticated = false
+    public var error: IRCSessionError? = nil
 
     public init(fileID: String, server: IRCServer) {
         self.fileID = fileID
         self.server = server
-    }
-
-    // MARK: Convenience
-
-    public var isConnected: Bool {
-        true
     }
 
     // MARK: Session Interface
@@ -38,7 +31,7 @@ public class IRCSimulationSession: IRCSession {
 
     public func channel(_ channelID: String) throws -> IRCChannel {
         guard let channel = server.channels.first(where: { $0.id == channelID }) else {
-            throw Error.channelNotFound
+            throw IRCSessionError.channelNotFound
         }
         return channel
     }

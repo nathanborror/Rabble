@@ -92,6 +92,11 @@ public enum IRCNumeric: Codable, Equatable, Sendable {
     case ERR_NOTONCHANNEL(client: String, channel: String, text: String)
     case ERR_CHANOPRIVSNEEDED(client: String, channel: String, text: String)
 
+    /// # 904: <client> :SASL authentication failed
+    /// This numeric indicates that SASL authentication failed because of invalid credentials or other errors not explicitly mentioned by other numerics. For more
+    /// information on this numeric, see the IRCv3 sasl-3.1 extension. The text used in the last param of this message varies wildly.
+    case ERR_SASLFAIL(client: String, text: String)
+
     public init?(_ string: String, params: [String]) {
         guard let code = UInt16(string) else {
             return nil
@@ -165,6 +170,9 @@ public enum IRCNumeric: Codable, Equatable, Sendable {
         case 482:
             guard params.count >= 3 else { return nil }
             self = .ERR_CHANOPRIVSNEEDED(client: params[0], channel: params[1], text: params[2])
+        case 904:
+            guard params.count >= 2 else { return nil }
+            self = .ERR_SASLFAIL(client: params[0], text: params[1])
         default:
             return nil
         }
