@@ -10,9 +10,9 @@ public class IRCServerSession: IRCSession {
 
     public var fileID: String
     public var server: IRCServer
+    public var isConnected = false
 
-    public private(set) var connection: NWConnection? = nil
-
+    private var connection: NWConnection? = nil
     private var incomingDataBuffer = ""
     private var motdBuffer = ""
 
@@ -23,13 +23,6 @@ public class IRCServerSession: IRCSession {
     public init(fileID: String, server: IRCServer) {
         self.fileID = fileID
         self.server = server
-    }
-
-    // MARK: Convenience
-
-    public var isConnected: Bool {
-        guard let state = connection?.state else { return false }
-        return state == .ready
     }
 
     // MARK: Session Interface
@@ -49,6 +42,7 @@ public class IRCServerSession: IRCSession {
     public func disconnect() {
         connection?.cancel()
         connection = nil
+        isConnected = false
     }
 
     public func channel(_ channelID: String) throws -> IRCChannel {
@@ -116,6 +110,8 @@ public class IRCServerSession: IRCSession {
     func handleStateUpdate(state: NWConnection.State) async throws {
         switch state {
         case .ready:
+            isConnected = true
+
             var messages = [String]()
 
             // Request capabilities
@@ -382,14 +378,12 @@ public class IRCServerSession: IRCSession {
         guard let firstSpace = rest.firstIndex(of: " ") else {
             let value = String(rest)
             return .init(
-                id: tags?["msgid"] ?? .id,
                 kind: .server,
                 prefix: parseServerMessagePrefix(prefix),
                 numeric: .init(value, params: []),
                 command: .init(value, params: []),
                 tags: tags,
-                raw: input,
-                created: parseServerTime(tags?["time"]) ?? .now
+                raw: input
             )
         }
         let instruction = String(rest[..<firstSpace])
@@ -416,15 +410,13 @@ public class IRCServerSession: IRCSession {
             i = nextSpace
         }
         return .init(
-            id: tags?["msgid"] ?? .id,
             kind: .server,
             prefix: parseServerMessagePrefix(prefix),
             numeric: .init(instruction, params: params),
             command: .init(instruction, params: params),
             params: params,
             tags: tags,
-            raw: input,
-            created: parseServerTime(tags?["time"]) ?? .now
+            raw: input
         )
     }
 
