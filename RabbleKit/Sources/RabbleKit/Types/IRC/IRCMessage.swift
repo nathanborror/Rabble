@@ -24,7 +24,7 @@ public struct IRCMessage: Codable, Identifiable, Sendable {
 
     public enum Prefix: Codable, Sendable {
         case server(String)
-        case user(nick: String, username: String?, host: String?)
+        case user(nick: String, ident: String?, host: String?)
         case service(String)
     }
 

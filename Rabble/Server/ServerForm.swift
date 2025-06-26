@@ -9,9 +9,11 @@ struct ServerForm: View {
     @State var server = "localhost"
     @State var port: UInt16 = 6667
     @State var nick = "nathan"
+    @State var ident = "nathan"
     @State var username = "nathan"
+    @State var email = "nathan@nathan.run"
     @State var password = ""
-    @State var name = "Nathan Borror"
+    @State var realname = "Nathan Borror"
 
     @State var service = "openai"
     @State var model = "gpt4o"
@@ -30,16 +32,20 @@ struct ServerForm: View {
                 Section {
                     TextField("Server", text: $server)
                         .textContentType(.URL)
-                    TextField("Port", value: $port, format: .number)
+                    TextField("Port", value: $port, format: .number.grouping(.never))
                 }
                 Section {
                     TextField("Nick", text: $nick)
                         .textContentType(.username)
+                    TextField("Ident", text: $ident)
+                        .textContentType(.username)
                     TextField("Username", text: $username)
                         .textContentType(.username)
+                    TextField("Email", text: $email)
+                        .textContentType(.emailAddress)
                     SecureField("Password", text: $password)
                         .textContentType(.password)
-                    TextField("Name", text: $name)
+                    TextField("Real Name", text: $realname)
                         .textContentType(.name)
                 }
             case .simulation:
@@ -59,7 +65,7 @@ struct ServerForm: View {
                 Section {
                     TextField("Nick", text: $nick)
                         .textContentType(.username)
-                    TextField("Name", text: $name)
+                    TextField("Name", text: $realname)
                         .textContentType(.name)
                 }
             }
@@ -83,7 +89,17 @@ struct ServerForm: View {
     func handleSubmit() {
         Task {
             do {
-                try await state.createServer(kind, server: server, port: port, nick: nick, username: username, password: password, name: name)
+                try await state.createServer(
+                    kind: kind,
+                    server: server,
+                    port: port,
+                    nick: nick,
+                    ident: ident.isEmpty ? nil : ident,
+                    username: username,
+                    email: email.isEmpty ? nil : email,
+                    password: password.isEmpty ? nil : password,
+                    realname: realname
+                )
                 dismiss()
             } catch {
                 print(error)

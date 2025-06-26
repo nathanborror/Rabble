@@ -104,9 +104,9 @@ final class AppState {
 
     // MARK: - IRC
 
-    func createServer(_ kind: IRCConfig.Kind, server: String, port: UInt16, nick: String, username: String, password: String, name: String) async throws {
-        let password: String? = password.isEmpty ? nil : password
-        let config = IRCConfig(kind: kind, server: server, port: port, nick: nick, username: username, password: password, name: name)
+    func createServer(kind: IRCConfig.Kind, server: String, port: UInt16, nick: String, ident: String?, username: String, email: String?, password: String?, realname: String) async throws {
+        var config = IRCConfig(kind: kind, server: server, port: port, nick: nick, ident: ident, username: username, realname: realname, email: email, password: password)
+
         let server = IRCServer(config: config)
         let fileID = String.id
         _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: server)

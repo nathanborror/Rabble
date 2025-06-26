@@ -112,38 +112,26 @@ public class IRCServerSession: IRCSession {
         case .ready:
             isConnected = true
 
-            var messages = [String]()
-
             // Request capabilities
-            messages += [
-                "CAP LS 302",
-                "CAP REQ :draft/chathistory echo-message server-time message-tags batch labeled-response sasl",
-                "CAP END",
-            ]
+            send("CAP LS 302")
+            send("CAP REQ :draft/chathistory echo-message server-time message-tags batch labeled-response sasl")
+            send("CAP END")
 
-            // Authenticate (sasl)
+            // Authenticate (SASL)
             if let password = server.config.password {
-                let auth = "\0\(server.config.nick)\0\(password)".data(using: .utf8)!
-                messages += [
-                    "AUTHENTICATE PLAIN",
-                    "AUTHENTICATE \(auth.base64EncodedString())",
-                ]
+                let token = "\0\(server.config.username)\0\(password)".data(using: .utf8)!
+                send("AUTHENTICATE PLAIN")
+                send("AUTHENTICATE \(token.base64EncodedString())")
             }
 
-            // Establish identity
-            messages += [
-                "NICK \(server.config.nick)",
-                "USER \(server.config.nick) 0 * :\(server.config.name)",
-            ]
-
-            for message in messages {
-                send(message)
-            }
+            send("NICK \(server.config.nick)")
+            send("USER \(server.config.ident ?? server.config.username) 0 * :\(server.config.realname ?? "-")")
 
             // Rejoin channels
             for channel in server.channels {
                 sendChannelJoin(channel.id)
             }
+
             handleListen()
         case .failed(let error):
             logger.error("\(error)")
@@ -428,17 +416,17 @@ public class IRCServerSession: IRCSession {
             let nick = String(prefix[..<exclam])
             let rest = prefix[prefix.index(after: exclam)...]
             if let at = rest.firstIndex(of: "@") {
-                let username = String(rest[..<at])
+                let ident = String(rest[..<at])
                 let host = String(rest[rest.index(after: at)...])
                 if knownServices.contains(nick) {
                     return .service(nick)
                 }
-                return .user(nick: nick, username: username, host: host)
+                return .user(nick: nick, ident: ident, host: host)
             } else {
                 if knownServices.contains(nick) {
                     return .service(nick)
                 }
-                return .user(nick: nick, username: nil, host: nil)
+                return .user(nick: nick, ident: nil, host: nil)
             }
         } else if let at = prefix.firstIndex(of: "@") {
             let nick = String(prefix[..<at])
@@ -446,14 +434,14 @@ public class IRCServerSession: IRCSession {
             if knownServices.contains(nick) {
                 return .service(nick)
             }
-            return .user(nick: nick, username: nick, host: host)
+            return .user(nick: nick, ident: nil, host: host)
         } else if prefix.contains(".") {
             return .server(prefix)
         } else {
             if knownServices.contains(prefix) {
                 return .service(prefix)
             }
-            return .user(nick: prefix, username: nil, host: nil)
+            return .user(nick: prefix, ident: nil, host: nil)
         }
     }
 

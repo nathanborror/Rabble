@@ -13,7 +13,9 @@ struct ServerInfo: View {
             VStack(alignment: .leading, spacing: 16) {
                 info("Server", value: session.server.config.server)
                 info("Nick", value: session.server.config.nick)
-                info("Name", value: session.server.config.name)
+                info("Ident", value: session.server.config.ident)
+                info("Username", value: session.server.config.username)
+                info("Real Name", value: session.server.config.realname)
                 info("Capabilities", value: Array(session.server.config.capabilities.keys).joined(separator: ", "))
             }
             .padding()
