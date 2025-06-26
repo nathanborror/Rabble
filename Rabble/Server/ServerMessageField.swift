@@ -4,16 +4,16 @@ import RabbleKit
 struct ServerMessageField: View {
     @Environment(ServerViewModel.self) var viewModel
 
-    @State private var draft: String = ""
     @State private var history: [String] = []
     @State private var historyIndex: Int? = nil
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         VStack(alignment: .leading, spacing: 0) {
             Divider()
             HStack(alignment: .bottom) {
                 if viewModel.session.isConnected {
-                    TextField("Message", text: $draft, axis: .vertical)
+                    TextField("Message", text: $viewModel.draft, axis: .vertical)
                         .onKeyPress { press in
                             switch press.key {
                             case .upArrow:
