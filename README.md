@@ -11,20 +11,21 @@ An experimental IRC client written in pure Swift.
 
 ## Tasks
 
-- [ ] Show error messages in timeline
-- [ ] Show disconnection messages in timeline
 - [x] Sidebar to show channels
 - [x] Channel view
 - [x] Channel message timeline
-- [ ] Some sort of command palette
 - [x] Connection pool
 - [x] Re-join rooms upon reconnecting
 - [x] Enable echo-message on every connection
+- [ ] Show disconnection messages in timeline
+- [ ] Show error messages in timeline
+- [ ] Some sort of command palette
 - [ ] Show notices in channels
 - [ ] Store base64 token instead of raw password
 - [ ] Figure out nick registration
 - [ ] Figure out channel registration
 - [ ] Packagable write() needs to remove files
+- [ ] Check message.prefix (user and host) when reacting to commands
 
 ## File Structure
 
