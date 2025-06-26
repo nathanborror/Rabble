@@ -5,17 +5,21 @@ struct MessageView: View {
     let message: IRCMessage
 
     var body: some View {
-        Group {
+        HStack {
+            Text(message.tags?["time"] ?? message.created.formatted(date: .numeric, time: .standard))
+                .font(.system(.subheadline, design: .monospaced))
+                .foregroundStyle(.tertiary)
+
             switch message.command {
             case let .privmsg(_, text):
                 if let prefix = message.prefix {
                     switch prefix {
                     case let .user(nick, _, _):
-                        PrivMsgUserView(nick: nick, text: text, timestamp: message.created)
+                        PrivMsgUserView(nick: nick, text: text)
                     case .server(let nick):
-                        PrivMsgServerView(nick: nick, text: text, timestamp: message.created)
+                        PrivMsgServerView(nick: nick, text: text)
                     case .service(let nick):
-                        PrivMsgServiceView(nick: nick, text: text, timestamp: message.created)
+                        PrivMsgServiceView(nick: nick, text: text)
                     }
                 } else {
                     Text(message.raw)
@@ -38,12 +42,9 @@ struct MessageView: View {
 struct PrivMsgUserView: View {
     let nick: String
     let text: String
-    let timestamp: Date
 
     var body: some View {
         HStack {
-            Text(timestamp, format: .dateTime)
-                .foregroundStyle(.tertiary)
             Text(nick+":")
                 .fontWeight(.semibold)
             Text(text)
@@ -55,12 +56,9 @@ struct PrivMsgUserView: View {
 struct PrivMsgServerView: View {
     let nick: String
     let text: String
-    let timestamp: Date
 
     var body: some View {
         HStack {
-            Text(timestamp, format: .dateTime)
-                .foregroundStyle(.tertiary)
             Text(nick+":")
                 .fontWeight(.semibold)
                 .foregroundStyle(.blue)
@@ -73,12 +71,9 @@ struct PrivMsgServerView: View {
 struct PrivMsgServiceView: View {
     let nick: String
     let text: String
-    let timestamp: Date
 
     var body: some View {
         HStack {
-            Text(timestamp, format: .dateTime)
-                .foregroundStyle(.tertiary)
             Text(nick+":")
                 .fontWeight(.semibold)
                 .foregroundStyle(.green)
