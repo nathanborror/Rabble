@@ -16,7 +16,8 @@ public protocol IRCSession {
     func connect() async throws
     func disconnect()
     func channel(_ channelID: String) throws -> IRCChannel
-    func send(_ input: String)
+    func send(_ line: String)
+    func send(_ line: String, expecting: @escaping (IRCMessage) -> Bool, timeout: TimeInterval) async throws
     func sendChannelJoin(_ channel: String)
     func sendChannelInfo(_ channel: String)
     func sendChannelPart(_ channel: String)
@@ -27,6 +28,7 @@ public protocol IRCSession {
 public enum IRCSessionError: Error, CustomStringConvertible {
     case channelNotFound
     case authenticationFailed
+    case timeout
     case unhandled(Error)
 
     public var description: String {
@@ -35,6 +37,8 @@ public enum IRCSessionError: Error, CustomStringConvertible {
             "Channel not found"
         case .authenticationFailed:
             "Authentication failed"
+        case .timeout:
+            "Timeout"
         case .unhandled(let error):
             "Unhandled error: \(error)"
         }

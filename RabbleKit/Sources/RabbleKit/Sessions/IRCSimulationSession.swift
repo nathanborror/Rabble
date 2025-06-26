@@ -40,6 +40,10 @@ public class IRCSimulationSession: IRCSession {
         print("not implemented")
     }
 
+    public func send(_ line: String, expecting: @escaping (IRCMessage) -> Bool, timeout: TimeInterval = 10) async throws {
+        print("not implemented")
+    }
+
     public func sendChannelJoin(_ channel: String) {
         print("not implemented")
     }

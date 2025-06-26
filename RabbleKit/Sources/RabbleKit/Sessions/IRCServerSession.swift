@@ -1,6 +1,7 @@
 import Foundation
 import OSLog
 import Network
+import SharedKit
 
 private let logger = Logger(subsystem: "IRCServerSession", category: "IRC")
 
@@ -18,6 +19,14 @@ public class IRCServerSession: IRCSession {
     private var connection: NWConnection? = nil
     private var incomingDataBuffer = ""
     private var motdBuffer = ""
+
+    struct PendingRequest {
+        let continuation: CheckedContinuation<Void, Error>
+        let expectedResponse: (IRCMessage) -> Bool
+        let timeout: Date
+    }
+
+    private var pendingRequests: [String: PendingRequest] = [:]
 
     public init(fileID: String, server: IRCServer) {
         self.fileID = fileID
@@ -51,17 +60,37 @@ public class IRCServerSession: IRCSession {
         return channel
     }
 
-    public func send(_ input: String) {
-
-        // Required, IRC is a line-oriented protocol
-        let input = input+"\r\n"
-
-        // Send input to server config
-        guard let data = input.data(using: .utf8) else { return }
+    public func send(_ line: String) {
+        let line = line+"\r\n"
+        guard let data = line.data(using: .utf8) else { return }
         connection?.send(content: data, completion: .contentProcessed { error in
             guard let error else { return }
-            print(error)
+            logger.error("\(error)")
         })
+    }
+
+    public func send(_ line: String, expecting: @escaping (IRCMessage) -> Bool, timeout: TimeInterval = 10) async throws {
+        try await withCheckedThrowingContinuation { continuation in
+            let id = String.id
+
+            // Update pending requests queue
+            pendingRequests[id] = .init(
+                continuation: continuation,
+                expectedResponse: expecting,
+                timeout: .now.addingTimeInterval(timeout)
+            )
+
+            // Send line to server
+            send(line)
+
+            // Wait for possible timeout, remove request from queue upon timeout
+            Task {
+                try await Task.sleep(for: .seconds(timeout))
+                if let request = pendingRequests.removeValue(forKey: id) {
+                    request.continuation.resume(throwing: IRCSessionError.timeout)
+                }
+            }
+        }
     }
 
     public func sendChannelJoin(_ channel: String) {
@@ -111,9 +140,17 @@ public class IRCServerSession: IRCSession {
         case .ready:
             isConnected = true
 
+            // Start listening immediatly
+            handleListen()
+
             // Request capabilities
-            send("CAP LS 302")
-            send("CAP REQ :draft/chathistory echo-message server-time message-tags batch labeled-response sasl")
+            try await send("CAP LS 302") { message in
+                message.command == .cap
+            }
+            try await send("CAP REQ :draft/chathistory echo-message server-time message-tags batch labeled-response sasl") { message in
+                message.command == .cap && message.params.contains("ACK")
+            }
+
             send("CAP END")
 
             // Authenticate (SASL)
@@ -130,8 +167,6 @@ public class IRCServerSession: IRCSession {
             for channel in server.channels {
                 sendChannelJoin(channel.id)
             }
-
-            handleListen()
         case .failed(let error):
             self.error = .unhandled(error)
             disconnect()
@@ -166,6 +201,15 @@ public class IRCServerSession: IRCSession {
 
             guard let message = parseServerMessage(line) else {
                 return
+            }
+
+            // Check pending requests
+            for (id, request) in pendingRequests {
+                if request.expectedResponse(message) {
+                    pendingRequests.removeValue(forKey: id)
+                    request.continuation.resume()
+                    break
+                }
             }
 
             // Respond to periodic PINGs to maintain the connection
