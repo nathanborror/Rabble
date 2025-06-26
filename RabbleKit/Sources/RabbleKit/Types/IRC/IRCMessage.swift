@@ -1,7 +1,8 @@
 import Foundation
+import SharedKit
 
 public struct IRCMessage: Codable, Identifiable, Sendable {
-    public var id: String
+    public var _id: String
     public var kind: Kind
     public var prefix: Prefix?
     public var numeric: IRCNumeric?
@@ -11,6 +12,10 @@ public struct IRCMessage: Codable, Identifiable, Sendable {
     public var raw: String
     public var created: Date
     public var modified: Date
+
+    public var id: String {
+        tags?["msgid"] ?? _id
+    }
 
     public enum Kind: Codable, Sendable {
         case server
@@ -23,10 +28,9 @@ public struct IRCMessage: Codable, Identifiable, Sendable {
         case service(String)
     }
 
-    public init(id: String = UUID().uuidString, kind: Kind, prefix: Prefix? = nil, numeric: IRCNumeric? = nil,
-                command: IRCCommand? = nil, params: [String] = [], tags: [String : String]? = nil, raw: String,
-                created: Date = .now) {
-        self.id = id
+    public init(kind: Kind, prefix: Prefix? = nil, numeric: IRCNumeric? = nil, command: IRCCommand? = nil,
+                params: [String] = [], tags: [String : String]? = nil, raw: String) {
+        self._id = .id
         self.kind = kind
         self.prefix = prefix
         self.numeric = numeric
@@ -34,7 +38,7 @@ public struct IRCMessage: Codable, Identifiable, Sendable {
         self.params = params
         self.tags = tags
         self.raw = raw
-        self.created = created
+        self.created = .now
         self.modified = .now
     }
 
