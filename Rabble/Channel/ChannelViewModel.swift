@@ -17,7 +17,8 @@ final class ChannelViewModel {
     }
 
     var messages: [IRCMessage] {
-        channel?.messages ?? []
+        let messages = channel?.messages ?? []
+        return messages.sorted { $0.created < $1.created }
     }
 
     init(channelID: String, session: IRCSession) {
