@@ -55,3 +55,17 @@ public struct IRCMessage: Codable, Identifiable, Sendable {
         return existing
     }
 }
+
+extension IRCMessage {
+
+    public var timestamp: Date {
+        if let time = tags?["time"] {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = formatter.date(from: time) {
+                return date
+            }
+        }
+        return created
+    }
+}

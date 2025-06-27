@@ -15,7 +15,7 @@ struct ServerView: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             ScrollView {
-                VStack(alignment: .leading) {
+                LazyVStack(alignment: .leading) {
                     ForEach(viewModel.logs) { message in
                         Text(message.raw)
                             .font(.footnote)
@@ -28,6 +28,7 @@ struct ServerView: View {
                 .padding()
             }
             .scrollPosition($scrollPosition, anchor: .bottom)
+            .defaultScrollAnchor(.bottom)
             .background(.background)
 
             VStack(alignment: .leading) {
@@ -66,9 +67,6 @@ struct ServerView: View {
             }
         }
         .onChange(of: viewModel.logs.count) { _, _ in
-            scrollPosition.scrollTo(edge: .bottom)
-        }
-        .onAppear {
             scrollPosition.scrollTo(edge: .bottom)
         }
     }

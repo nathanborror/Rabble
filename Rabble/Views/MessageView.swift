@@ -5,9 +5,8 @@ struct MessageView: View {
     let message: IRCMessage
 
     var body: some View {
-        HStack {
-            Text(message.tags?["time"] ?? message.created.formatted(date: .numeric, time: .standard))
-                .font(.system(.subheadline, design: .monospaced))
+        HStack(alignment: .firstTextBaseline) {
+            Text(message.timestamp.formatted(date: .omitted, time: .standard))
                 .foregroundStyle(.tertiary)
 
             switch message.command {

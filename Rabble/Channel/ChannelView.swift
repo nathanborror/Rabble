@@ -15,7 +15,7 @@ struct ChannelView: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             ScrollView {
-                VStack(spacing: 4) {
+                LazyVStack(spacing: 4) {
                     ForEach(viewModel.messages) { message in
                         MessageView(message: message)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -25,6 +25,7 @@ struct ChannelView: View {
                 .padding()
             }
             .scrollPosition($scrollPosition, anchor: .bottom)
+            .defaultScrollAnchor(.bottom)
 
             if let topic = viewModel.channel?.topic {
                 StickyView(title: "Topic", text: topic.message, kind: .informative, expanded: true)
@@ -53,9 +54,6 @@ struct ChannelView: View {
             .inspectorColumnWidth(ideal: 200)
         }
         .onChange(of: viewModel.messages.count) { _, _ in
-            scrollPosition.scrollTo(edge: .bottom)
-        }
-        .onAppear {
             scrollPosition.scrollTo(edge: .bottom)
         }
     }
