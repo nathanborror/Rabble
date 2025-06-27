@@ -27,8 +27,10 @@ struct ChannelView: View {
             .defaultScrollAnchor(.bottom)
 
             if let topic = viewModel.channel?.topic {
-                StickyView(title: "Topic", text: topic.message, kind: .informative, expanded: true)
-                    .padding()
+                StickyView(kind: .informative, title: "Topic", expanded: true) {
+                    Text(topic.message)
+                }
+                .padding()
             }
         }
         .navigationTitle("#" + (viewModel.channel?.cleanName ?? "unknown"))

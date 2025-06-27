@@ -33,10 +33,14 @@ struct ServerView: View {
 
             VStack(alignment: .leading) {
                 if let motd = viewModel.config.motd {
-                    StickyView(title: "MOTD", text: motd, kind: .informative, expanded: false)
+                    StickyView(kind: .informative, title: "MOTD", expanded: false) {
+                        Text(motd)
+                    }
                 }
                 if let error = viewModel.session.error {
-                    StickyView(title: "Error", text: "\(error)", kind: .error, expanded: true)
+                    StickyView(kind: .error, title: "Error", expanded: true) {
+                        Text("\(error)")
+                    }
                 }
             }
             .padding()

@@ -2,17 +2,16 @@ import SwiftUI
 import SharedKit
 import RabbleKit
 
-struct StickyView: View {
-    let title: String
-    let text: String
+struct StickyView<Content: View>: View {
     let kind: Kind
+    let title: String
+    @State var expanded: Bool
+    @ViewBuilder let content: Content
 
     enum Kind {
         case informative
         case error
     }
-
-    @State var expanded: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -38,7 +37,7 @@ struct StickyView: View {
 
                 if expanded {
                     VStack(alignment: .leading) {
-                        Text(text)
+                        content
                     }
                     .font(.system(.subheadline, design: .monospaced))
                     .padding(8)
@@ -74,18 +73,13 @@ struct StickyView: View {
 
 #Preview {
     VStack {
-        StickyView(
-            title: "Lorem Ipsum",
-            text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            kind: .informative,
-            expanded: false
-        )
-        StickyView(
-            title: "Lorem Ipsum",
-            text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            kind: .error,
-            expanded: true
-        )
+        StickyView(kind: .informative, title: "Lorem Ipsum", expanded: false) {
+            Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
+        }
+        StickyView(kind: .error, title: "Lorem Ipsum", expanded: true) {
+            Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
+            Button("Register") {}
+        }
     }
     .padding()
 }
