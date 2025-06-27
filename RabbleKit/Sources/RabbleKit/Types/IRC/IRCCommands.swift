@@ -8,16 +8,16 @@ public enum IRCCommand: Codable, Equatable, Sendable {
     case quit
 
     /// # JOIN <channel>{,<channel>} [<key>{,<key>}]
-    case join(channel: String)
+    case join(channels: [String], keys: [String])
 
     /// # PART <channel>{,<channel>} [<reason>]
-    case part(channel: String, reason: String?)
+    case part(channels: [String], reason: String?)
 
     /// # PRIVMSG <target>{,<target>} <text to be sent>
-    case privmsg(target: String, text: String)
+    case privmsg(targets: [String], text: String)
 
     /// # NOTICE <target>{,<target>} <text to be sent>
-    case notice(target: String, text: String)
+    case notice(targets: [String], text: String)
 
     case ping
     case pong
@@ -62,17 +62,27 @@ public enum IRCCommand: Codable, Equatable, Sendable {
         case "quit":
             self = .quit
         case "join":
-            self = .join(channel: params[0])
+            guard params.count >= 1 else { return nil }
+            let channels = params[0].split(separator: ",").map(String.init)
+            if params.count > 1 {
+                let keys = params[1].split(separator: ",").map(String.init)
+                self = .join(channels: channels, keys: keys)
+            } else {
+                self = .join(channels: channels, keys: [])
+            }
         case "part":
             guard params.count >= 1 else { return nil }
+            let channels = params[0].split(separator: ",").map(String.init)
             let reason = params.count > 1 ? params[1] : nil
-            self = .part(channel: params[0], reason: reason)
+            self = .part(channels: channels, reason: reason)
         case "privmsg":
             guard params.count >= 2 else { return nil }
-            self = .privmsg(target: params[0], text: params[1])
+            let targets = params[0].split(separator: ",").map(String.init)
+            self = .privmsg(targets: targets, text: params[1])
         case "notice":
             guard params.count >= 2 else { return nil }
-            self = .notice(target: params[0], text: params[1])
+            let targets = params[0].split(separator: ",").map(String.init)
+            self = .notice(targets: targets, text: params[1])
         case "ping":
             self = .ping
         case "pong":

@@ -2,6 +2,7 @@ import Foundation
 
 public struct IRCChannel: Identifiable, Codable, Sendable {
     public var name: String
+    public var key: String?
     public var topic: Topic?
     public var users: [String: User]
     public var modes: Set<String>
@@ -81,10 +82,11 @@ public struct IRCChannel: Identifiable, Codable, Sendable {
         }
     }
 
-    public init(name: String, topic: Topic? = nil, users: [String: User] = [:], modes: Set<String> = [],
-                password: String? = nil, limit: Int? = nil, bans: Set<String> = [], messages: [IRCMessage] = [],
-                created: Date) {
+    public init(name: String, key: String? = nil, topic: Topic? = nil, users: [String: User] = [:],
+                modes: Set<String> = [], password: String? = nil, limit: Int? = nil, bans: Set<String> = [],
+                messages: [IRCMessage] = [], created: Date) {
         self.name = name
+        self.key = key
         self.topic = topic
         self.users = users
         self.modes = modes
@@ -99,6 +101,7 @@ public struct IRCChannel: Identifiable, Codable, Sendable {
     public func apply(_ channel: IRCChannel) -> IRCChannel {
         var existing = self
         existing.name = channel.name
+        existing.key = channel.key
         existing.topic = channel.topic
         existing.users = channel.users
         existing.modes = channel.modes

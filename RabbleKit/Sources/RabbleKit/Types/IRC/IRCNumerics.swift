@@ -7,14 +7,44 @@ public enum IRCNumeric: Codable, Equatable, Sendable {
     case RPL_WELCOME
     case RPL_YOURHOST
     case RPL_CREATED
-    case RPL_MYINFO
-    case RPL_ISUPPORT
-    case RPL_BOUNCE
-    case RPL_UMODEIS
+
+    /// # 004: <client> <servername> <version> <available user modes> <available channel modes> [<channel modes with a parameter>]
+    /// Part of the post-registration greeting. Clients SHOULD discover available features using RPL_ISUPPORT tokens rather than the mode letters listed in this reply.
+    case RPL_MYINFO(client: String, servername: String, version: String, userModes: String, channelModes: String, channelModesWithParameter: String)
+
+    /// # 005: <client> <1-13 tokens> :are supported by this server
+    case RPL_ISUPPORT(client: String, tokens: [String])
+
+    /// # 010: <client> <hostname> <port> :<info>
+    /// Sent to the client to redirect it to another server. The <info> text varies between server software and reasons for the redirection. Because this numeric
+    /// does not specify whether to enable SSL and is not interpreted correctly by all clients, it is recommended that this not be used. This numeric is also
+    /// known as RPL_REDIR by some software.
+    case RPL_BOUNCE(client: String, hostname: String, Port: String, info: String)
+
+    /// # 221: <client> <user modes>
+    /// Sent to a client to inform that client of their currently-set user modes.
+    case RPL_UMODEIS(client: String, modes: String)
+
+    /// # 251: <client> :There are <u> users and <i> invisible on <s> servers
+    /// Sent as a reply to the LUSERS command. <u>, <i>, and <s> are non-negative integers, and represent the number of total users, invisible users, and
+    /// other servers connected to this server.
     case RPL_LUSERCLIENT
-    case RPL_LUSEROP
-    case RPL_LUSERUNKNOWN
-    case RPL_LUSERCHANNELS
+
+    /// # 252: <client> <ops> :operator(s) online
+    /// Sent as a reply to the LUSERS command. <ops> is a positive integer and represents the number of IRC operators connected to this server. The text
+    /// used in the last param of this message may vary.
+    case RPL_LUSEROP(client: String, ops: Int)
+
+    /// # 253: <client> <connections> :unknown connection(s)
+    /// Sent as a reply to the LUSERS command. <connections> is a positive integer and represents the number of connections to this server that are
+    /// currently in an unknown state. The text used in the last param of this message may vary.
+    case RPL_LUSERUNKNOWN(client: String, connections: Int)
+
+    /// # 254: <client> <channels> :channels formed
+    /// Sent as a reply to the LUSERS command. <channels> is a positive integer and represents the number of channels that currently exist on this server.
+    /// The text used in the last param of this message may vary.
+    case RPL_LUSERCHANNELS(client: String, channels: Int)
+
     case RPL_LUSERME
     case RPL_LOCALUSERS
     case RPL_GLOBALUSERS
@@ -105,14 +135,31 @@ public enum IRCNumeric: Codable, Equatable, Sendable {
         case 001: self = .RPL_WELCOME
         case 002: self = .RPL_YOURHOST
         case 003: self = .RPL_CREATED
-        case 004: self = .RPL_MYINFO
-        case 005: self = .RPL_ISUPPORT
-        case 010: self = .RPL_BOUNCE
-        case 221: self = .RPL_UMODEIS
+        case 004:
+            guard params.count >= 6 else { return nil }
+            self = .RPL_MYINFO(client: params[0], servername: params[1], version: params[2], userModes: params[3], channelModes: params[4], channelModesWithParameter: params[5])
+        case 005:
+            guard params.count >= 3 else { return nil }
+            self = .RPL_ISUPPORT(client: params[0], tokens: Array(params[1..<params.count-1]))
+        case 010:
+            guard params.count >= 4 else { return nil }
+            self = .RPL_BOUNCE(client: params[0], hostname: params[1], Port: params[2], info: params[3])
+        case 221:
+            guard params.count >= 2 else { return nil }
+            self = .RPL_UMODEIS(client: params[0], modes: params[1])
         case 251: self = .RPL_LUSERCLIENT
-        case 252: self = .RPL_LUSEROP
-        case 253: self = .RPL_LUSERUNKNOWN
-        case 254: self = .RPL_LUSERCHANNELS
+        case 252:
+            guard params.count >= 2 else { return nil }
+            guard let count = Int(params[1]) else { return nil }
+            self = .RPL_LUSEROP(client: params[0], ops: count)
+        case 253:
+            guard params.count >= 2 else { return nil }
+            guard let count = Int(params[1]) else { return nil }
+            self = .RPL_LUSERUNKNOWN(client: params[0], connections: count)
+        case 254:
+            guard params.count >= 2 else { return nil }
+            guard let count = Int(params[1]) else { return nil }
+            self = .RPL_LUSERCHANNELS(client: params[0], channels: count)
         case 255: self = .RPL_LUSERME
         case 265: self = .RPL_LOCALUSERS
         case 266: self = .RPL_GLOBALUSERS

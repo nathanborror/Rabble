@@ -10,12 +10,17 @@ struct ServerInfo: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                info("Server", value: session.server.config.server)
+                info("Server", value: "\(session.server.config.server):\(session.server.config.port)")
                 info("Nick", value: session.server.config.nick)
                 info("Ident", value: session.server.config.ident)
                 info("Username", value: session.server.config.username)
+                info("Host", value: session.server.config.host)
                 info("Real Name", value: session.server.config.realname)
+                info("Email", value: session.server.config.email)
                 info("Capabilities", value: Array(session.server.config.capabilities.keys).joined(separator: ", "))
+                info("Available User Modes", value: session.server.config.availableUserModes)
+                info("Available Channel Modes", value: session.server.config.availableChannelModes)
+                info("Support", value: session.server.config.support.map { "\($0.key): \($0.value)" }.joined(separator: "\n"))
             }
             .padding()
         }

@@ -244,13 +244,37 @@ public class IRCServerSession: IRCSession {
 
     func handleMessageCommand(_ message: IRCMessage) async throws {
         switch message.command {
-        case let .join(channel):
-            upsertChannel(.init(name: channel, created: .now))
-            upsertConfigChannel(.init(name: channel))
-        case let .part(channel, _):
-            try removeChannel(channel)
-        case let .privmsg(channel, _):
-            try upsertChannelMessage(message, channelID: channel)
+        case let .join(channels, keys):
+            // Add channel(s) if the message is coming from the client's nick
+            if message.nick == server.config.nick {
+                for (index, channel) in channels.enumerated() {
+                    let key = (keys.count > index) ? keys[index] : nil
+                    upsertChannel(.init(name: channel, key: key, created: .now))
+                }
+            }
+            // Add the message to the channel
+            for channel in channels {
+                try upsertChannelMessage(message, channelID: channel)
+            }
+        case let .part(channels, _):
+            // Remove channel(s) if the message is coming from the client's nick
+            if message.nick == server.config.nick {
+                for channel in channels {
+                    try removeChannel(channel)
+                }
+            }
+            // Add the message to the channel
+            for channel in channels {
+                try upsertChannelMessage(message, channelID: channel)
+            }
+        case let .privmsg(targets, _):
+            for target in targets {
+                if target.hasPrefix("#") {
+                    try upsertChannelMessage(message, channelID: target)
+                } else {
+                    print("[target: \(target)] not implemented")
+                }
+            }
         case .cap:
             upsertConfigCapabilities(message.params)
         case let .topic(channel, text):
@@ -262,6 +286,34 @@ public class IRCServerSession: IRCSession {
 
     func handleMessageNumeric(_ message: IRCMessage) async throws {
         switch message.numeric {
+        case let .RPL_MYINFO(_, servername, _, userModes, channelModes, _):
+            var config = server.config
+            config.host = servername
+            config.availableUserModes = userModes
+            config.availableChannelModes = channelModes
+            server.config = config
+        case let .RPL_ISUPPORT(_, tokens):
+            var config = self.server.config
+            for token in tokens {
+                let parts = token.split(separator: "=")
+                if parts.count == 2 {
+                    let key = String(parts[0])
+                    let value = String(parts[1])
+                    if let int = Int(value) {
+                        config.support[key] = .int(int)
+                    } else {
+                        config.support[key] = .string(value)
+                    }
+                } else {
+                    let key = String(parts[0])
+                    config.support[key] = .bool(true)
+                }
+            }
+            self.server.config = config
+        case let .RPL_UMODEIS(_, modes):
+            var config = server.config
+            config.modes = modes
+            server.config = config
         case .RPL_LIST:
             guard message.params.count >= 4 else {
                 return

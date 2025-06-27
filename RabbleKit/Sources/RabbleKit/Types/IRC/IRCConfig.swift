@@ -1,4 +1,5 @@
 import Foundation
+import SharedKit
 
 public struct IRCConfig: Codable, Sendable {
     public var kind: Kind
@@ -26,10 +27,18 @@ public struct IRCConfig: Codable, Sendable {
     /// Password is necessary for registration.
     public var password: String?
 
+    /// Current user modes set.
+    public var modes: String
+
+    /// Current MOTD for the server.
     public var motd: String?
+    
     public var logs: [IRCMessage]
     public var list: [Channel]
     public var capabilities: [String: Bool]
+    public var availableUserModes: String?
+    public var availableChannelModes: String?
+    public var support: [String: Value]
     public var created: Date
     public var modified: Date
 
@@ -61,8 +70,9 @@ public struct IRCConfig: Codable, Sendable {
     }
 
     public init(kind: Kind, server: String, port: UInt16, nick: String, ident: String? = nil, username: String,
-                host: String? = nil, realname: String? = nil, email: String? = nil, password: String? = nil,
-                motd: String? = nil, logs: [IRCMessage] = [], list: [Channel] = [], capabilities: [String : Bool] = [:]) {
+                host: String? = nil, realname: String? = nil, email: String? = nil, password: String? = nil, modes: String,
+                motd: String? = nil, logs: [IRCMessage] = [], list: [Channel] = [], capabilities: [String : Bool] = [:],
+                availableUserModes: String? = nil, availableChannelModes: String? = nil, support: [String: Value] = [:]) {
         self.kind = kind
         self.server = server
         self.port = port
@@ -73,10 +83,14 @@ public struct IRCConfig: Codable, Sendable {
         self.realname = realname
         self.email = email
         self.password = password
+        self.modes = modes
         self.motd = motd
         self.logs = logs
         self.list = list
         self.capabilities = capabilities
+        self.availableUserModes = availableUserModes
+        self.availableChannelModes = availableChannelModes
+        self.support = support
         self.created = .now
         self.modified = .now
     }
@@ -93,10 +107,14 @@ public struct IRCConfig: Codable, Sendable {
         existing.realname = config.realname
         existing.email = config.email
         existing.password = config.password
+        existing.modes = config.modes
         existing.motd = config.motd
         existing.logs = config.logs
         existing.list = config.list
         existing.capabilities = config.capabilities
+        existing.availableUserModes = config.availableUserModes
+        existing.availableChannelModes = config.availableChannelModes
+        existing.support = config.support
         existing.modified = .now
         return existing
     }
