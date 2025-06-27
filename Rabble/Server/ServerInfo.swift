@@ -3,7 +3,6 @@ import RabbleKit
 
 struct ServerInfo: View {
     @Environment(AppState.self) var state
-    @Environment(ServerViewModel.self) var viewModel
     @Environment(\.openURL) var openURL
 
     let session: IRCSession
