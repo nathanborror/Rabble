@@ -124,6 +124,11 @@ public class IRCServerSession: IRCSession {
         send("PRIVMSG NickServ :REGISTER \(password) \(email)")
     }
 
+    public func sendAuthenticationAttempt(password: String) {
+        guard !isAuthenticated else { return }
+        send("PRIVMSG NickServ :IDENTIFY \(password)")
+    }
+
     public func save() {
         Task {
             do {
@@ -152,19 +157,14 @@ public class IRCServerSession: IRCSession {
             try await send("CAP LS 302") { message in
                 message.command == .cap
             }
-            try await send("CAP REQ :draft/chathistory echo-message server-time message-tags batch labeled-response sasl") { message in
+
+            // TODO: Check before requiring
+            // draft/chathistory sasl
+
+            try await send("CAP REQ :echo-message server-time message-tags batch labeled-response") { message in
                 message.command == .cap && message.params.contains("ACK")
             }
-
             send("CAP END")
-
-            // Authenticate (SASL)
-            if !isAuthenticated, let password = server.config.password {
-                let token = "\0\(server.config.username)\0\(password)".data(using: .utf8)!
-                send("AUTHENTICATE PLAIN")
-                send("AUTHENTICATE \(token.base64EncodedString())")
-            }
-
             send("NICK \(server.config.nick)")
             send("USER \(server.config.ident ?? server.config.username) 0 * :\(server.config.realname ?? "-")")
 
