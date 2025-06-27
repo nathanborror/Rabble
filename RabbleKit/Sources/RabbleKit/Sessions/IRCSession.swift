@@ -21,6 +21,7 @@ public protocol IRCSession {
     func sendChannelJoin(_ channel: String)
     func sendChannelInfo(_ channel: String)
     func sendChannelPart(_ channel: String)
+    func sendRegistrationAttempt(email: String, password: String)
     func save()
     func clearLogs()
 }

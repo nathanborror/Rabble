@@ -119,6 +119,11 @@ public class IRCServerSession: IRCSession {
         send("PART \(channel)")
     }
 
+    public func sendRegistrationAttempt(email: String, password: String) {
+        guard !isAuthenticated else { return }
+        send("PRIVMSG NickServ :REGISTER \(password) \(email)")
+    }
+
     public func save() {
         Task {
             do {

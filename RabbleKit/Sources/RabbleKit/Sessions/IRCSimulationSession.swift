@@ -56,6 +56,10 @@ public class IRCSimulationSession: IRCSession {
         print("not implemented")
     }
 
+    public func sendRegistrationAttempt(email: String, password: String) {
+        print("not implemented")
+    }
+
     public func save() {
         Task {
             do {
