@@ -16,6 +16,19 @@ final class ChannelViewModel {
         session.server.config
     }
 
+    var title: String {
+        "#" + (channel?.cleanName ?? "unknown")
+    }
+
+    var subtitle: String {
+        switch config.kind {
+        case .network:
+            "\(config.server) · \(channel?.users.count ?? 0) users"
+        case .simulation:
+            "\(channel?.users.count ?? 0) users · simulation using \(config.server)"
+        }
+    }
+
     var channel: IRCChannel? {
         try? session.channel(channelID)
     }

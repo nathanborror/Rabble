@@ -33,10 +33,10 @@ struct ChannelView: View {
                 .padding()
             }
         }
-        .navigationTitle("#" + (viewModel.channel?.cleanName ?? "unknown"))
         .environment(viewModel)
+        .navigationTitle(viewModel.title)
         #if os(macOS)
-        .navigationSubtitle("\(viewModel.channel?.users.count ?? 0) users")
+        .navigationSubtitle(viewModel.subtitle)
         #endif
         .safeAreaInset(edge: .bottom) {
             ChannelMessageField()
