@@ -26,6 +26,7 @@ An experimental IRC client written in pure Swift.
 - [ ] Figure out channel registration
 - [ ] Packagable write() needs to remove files
 - [ ] Check message.prefix (user and host) when reacting to commands
+- [ ] Make handleIncomingData something all IRCSession implementations can use
 
 ## File Structure
 
