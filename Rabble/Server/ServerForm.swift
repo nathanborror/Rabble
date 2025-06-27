@@ -12,11 +12,11 @@ struct ServerForm: View {
     @State var ident = "nathan"
     @State var username = "nathan"
     @State var email = "nathan@nathan.run"
-    @State var password = ""
+    @State var password = "abc"
     @State var realname = "Nathan Borror"
 
     @State var service = "openai"
-    @State var model = "gpt4o"
+    @State var model = "gpt-4o"
 
     var body: some View {
         Form {
@@ -52,14 +52,10 @@ struct ServerForm: View {
                 Section {
                     Picker("Service", selection: $service) {
                         Text("OpenAI").tag("openai")
-                        Text("Anthropic").tag("anthropic")
-                        Text("Mistral").tag("mistral")
-                        Text("Meta").tag("meta")
-                        Text("Ollama").tag("ollama")
                     }
                     Picker("Model", selection: $model) {
-                        Text("gpt4o").tag("gpt4o")
-                        Text("gpt4o-mini").tag("gpt4o-mini")
+                        Text("gpt-4o").tag("gpt-4o")
+                        Text("gpt-4o-mini").tag("gpt-4o-mini")
                     }
                 }
                 Section {
@@ -89,6 +85,9 @@ struct ServerForm: View {
     func handleSubmit() {
         Task {
             do {
+                if kind == .simulation {
+                    server = "\(model)@\(service)"
+                }
                 try await state.createServer(
                     kind: kind,
                     server: server,
