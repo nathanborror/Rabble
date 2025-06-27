@@ -15,14 +15,13 @@ struct ChannelView: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             ScrollView {
-                LazyVStack(spacing: 4) {
+                LazyVStack(spacing: 0) {
                     ForEach(viewModel.messages) { message in
                         MessageView(message: message)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .scrollTargetLayout()
                     }
                 }
-                .padding()
             }
             .scrollPosition($scrollPosition, anchor: .bottom)
             .defaultScrollAnchor(.bottom)
@@ -33,6 +32,7 @@ struct ChannelView: View {
             }
         }
         .navigationTitle("#" + (viewModel.channel?.cleanName ?? "unknown"))
+        .environment(viewModel)
         #if os(macOS)
         .navigationSubtitle("\(viewModel.channel?.users.count ?? 0) users")
         #endif

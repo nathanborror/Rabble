@@ -2,6 +2,8 @@ import SwiftUI
 import RabbleKit
 
 struct MessageView: View {
+    @Environment(ChannelViewModel.self) var channelViewModel
+
     let message: IRCMessage
 
     var body: some View {
@@ -23,18 +25,26 @@ struct MessageView: View {
                 } else {
                     Text(message.raw)
                 }
-            case let .notice(_, text):
-                Text(text)
-                    .font(.system(.subheadline, design: .monospaced))
-                    .foregroundStyle(.secondary)
-            case let .join(channel):
-                Text(channel)
-                    .font(.system(.subheadline, design: .monospaced))
-                    .foregroundStyle(.secondary)
+            case .join:
+                Text("\(message.nick ?? "Unknown user") joined the channel")
+            case .part:
+                Text("\(message.nick ?? "Unknown user") left the channel")
             default:
                 Text("nil")
             }
         }
+        .padding(.vertical, 4)
+        .padding(.horizontal)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.system(.subheadline, design: .monospaced))
+        .background(backgroundColor)
+    }
+
+    var backgroundColor: Color {
+        if case .user(let nick, _, _) = message.prefix, channelViewModel.config.nick == nick {
+            return .yellow.opacity(0.2)
+        }
+        return .clear
     }
 }
 
@@ -43,12 +53,15 @@ struct PrivMsgUserView: View {
     let text: String
 
     var body: some View {
-        HStack {
-            Text(nick+":")
-                .fontWeight(.semibold)
+        HStack(alignment: .firstTextBaseline) {
+            HStack {
+                Spacer(minLength: 0)
+                Text(nick)
+            }
+            .fontWeight(.semibold)
+            .frame(width: 120)
             Text(text)
         }
-        .font(.system(.subheadline, design: .monospaced))
     }
 }
 
@@ -57,13 +70,10 @@ struct PrivMsgServerView: View {
     let text: String
 
     var body: some View {
-        HStack {
-            Text(nick+":")
-                .fontWeight(.semibold)
-                .foregroundStyle(.blue)
-            Text(text)
-        }
-        .font(.system(.subheadline, design: .monospaced))
+        Text(nick+":")
+            .fontWeight(.semibold)
+            .foregroundStyle(.blue)
+        + Text(text)
     }
 }
 
@@ -72,12 +82,9 @@ struct PrivMsgServiceView: View {
     let text: String
 
     var body: some View {
-        HStack {
-            Text(nick+":")
-                .fontWeight(.semibold)
-                .foregroundStyle(.green)
-            Text(text)
-        }
-        .font(.system(.subheadline, design: .monospaced))
+        Text(nick+":")
+            .fontWeight(.semibold)
+            .foregroundStyle(.green)
+        + Text(text)
     }
 }

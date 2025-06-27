@@ -68,4 +68,11 @@ extension IRCMessage {
         }
         return created
     }
+
+    public var nick: String? {
+        guard case .user(let nick, _, _) = self.prefix else {
+            return nil
+        }
+        return nick
+    }
 }

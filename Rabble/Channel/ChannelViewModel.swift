@@ -12,6 +12,10 @@ final class ChannelViewModel {
     var draft: String = ""
     var showingInspector = false
 
+    var config: IRCConfig {
+        session.server.config
+    }
+
     var channel: IRCChannel? {
         try? session.channel(channelID)
     }
