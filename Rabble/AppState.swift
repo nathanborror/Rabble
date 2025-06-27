@@ -111,12 +111,25 @@ final class AppState {
         let fileID = String.id
         _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: server)
 
-        let session = IRCServerSession(fileID: fileID, server: server)
-        sessionPool[fileID] = session
+        switch server.config.kind {
+        case .network:
+            sessionPool[fileID] = IRCServerSession(fileID: fileID, server: server)
+        case .simulation:
+            sessionPool[fileID] = IRCSimulationSession(fileID: fileID, server: server)
+        }
+
         selection = .init(fileID: fileID, channelID: nil)
 
         // Connect to server
-        try await session.connect()
+        try await sessionPool[fileID]?.connect()
+    }
+
+    func deleteServer(fileID: String) async throws {
+        try await filesProvider.cacheFileDelete(fileID)
+        sessionPool.removeValue(forKey: fileID)
+        if selection?.fileID == fileID {
+            selection = nil
+        }
     }
 
     // MARK: - File Handling

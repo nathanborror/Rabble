@@ -14,13 +14,19 @@ struct ServerList: View {
                 }
             }
             .contextMenu(forSelectionType: AppState.Selection.self) { selections in
-                if let selection = selections.first, let session = state.sessionPool[selection.fileID], let channelID = selection.channelID {
-                    Button("Get Info") {
-                        session.sendChannelInfo(channelID)
-                    }
-                    Divider()
-                    Button("Leave") {
-                        session.sendChannelPart(channelID)
+                if let selection = selections.first, let session = state.sessionPool[selection.fileID] {
+                    if let channelID = selection.channelID {
+                        Button("Get Info") {
+                            session.sendChannelInfo(channelID)
+                        }
+                        Divider()
+                        Button("Leave") {
+                            session.sendChannelPart(channelID)
+                        }
+                    } else {
+                        Button("Delete") {
+                            Task { try await state.deleteServer(fileID: session.fileID) }
+                        }
                     }
                 }
             }
