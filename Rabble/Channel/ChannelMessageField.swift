@@ -13,7 +13,7 @@ struct ChannelMessageField: View {
             Divider()
             HStack(alignment: .bottom) {
                 if viewModel.session.isConnected {
-                    TextField("Message", text: $viewModel.draft, axis: .vertical)
+                    TextField("Say something...", text: $viewModel.draft, axis: .vertical)
                         .onKeyPress { press in
                             switch press.key {
                             case .upArrow:
