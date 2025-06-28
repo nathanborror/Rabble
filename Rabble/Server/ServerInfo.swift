@@ -1,4 +1,5 @@
 import SwiftUI
+import IRC
 import RabbleKit
 
 struct ServerInfo: View {

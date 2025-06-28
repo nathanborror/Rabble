@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import IRC
 import RabbleKit
 
 @Observable
@@ -12,12 +13,12 @@ final class ChannelViewModel {
     var draft: String = ""
     var showingInspector = false
 
-    var config: IRCConfig {
+    var config: IRC.Config {
         session.server.config
     }
 
     var title: String {
-        "#" + (channel?.cleanName ?? "unknown")
+        channel?.name ?? "unknown"
     }
 
     var subtitle: String {
@@ -29,11 +30,11 @@ final class ChannelViewModel {
         }
     }
 
-    var channel: IRCChannel? {
-        try? session.channel(channelID)
+    var channel: IRC.Channel? {
+        try? session.getChannel(channelID)
     }
 
-    var messages: [IRCMessage] {
+    var messages: [IRC.Message] {
         let messages = channel?.messages ?? []
         return messages.sorted { $0.created < $1.created }
     }
@@ -44,13 +45,19 @@ final class ChannelViewModel {
     }
 
     func submit() {
-        guard let channel else { return }
-        if draft.hasPrefix("/topic") {
-            let topic = draft.trimmingPrefix("/topic ")
-            session.send("TOPIC \(channel.name) :\(topic)")
-        } else {
-            session.send("PRIVMSG \(channel.name) :\(draft)")
+        Task {
+            do {
+                guard let channel else { return }
+                if draft.hasPrefix("/topic") {
+                    let topic = draft.trimmingPrefix("/topic ")
+                    try await session.send("TOPIC \(channel.name) :\(topic)")
+                } else {
+                    try await session.send("PRIVMSG \(channel.name) :\(draft)")
+                }
+                draft = ""
+            } catch {
+                print(error)
+            }
         }
-        draft = ""
     }
 }

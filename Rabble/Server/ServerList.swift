@@ -1,4 +1,5 @@
 import SwiftUI
+import IRC
 import RabbleKit
 
 struct ServerList: View {
@@ -8,24 +9,36 @@ struct ServerList: View {
         @Bindable var state = state
         VStack {
             List(selection: $state.selection) {
-                ForEach(Array(state.sessionPool.values), id: \.fileID) { session in
+                ForEach(Array(state.sessionPool.values), id: \.server.id) { session in
                     ServerRow(session: session)
-                        .tag(AppState.Selection(fileID: session.fileID, channelID: nil))
+                        .tag(AppState.Selection(fileID: session.server.id, channelID: nil))
                 }
             }
             .contextMenu(forSelectionType: AppState.Selection.self) { selections in
                 if let selection = selections.first, let session = state.sessionPool[selection.fileID] {
                     if let channelID = selection.channelID {
                         Button("Get Info") {
-                            session.sendChannelInfo(channelID)
+                            Task {
+                                do {
+                                    try await session.channelInfo(channelID)
+                                } catch {
+                                    print(error)
+                                }
+                            }
                         }
                         Divider()
                         Button("Leave") {
-                            session.sendChannelPart(channelID)
+                            Task {
+                                do {
+                                    try await session.channelPart(channelID)
+                                } catch {
+                                    print(error)
+                                }
+                            }
                         }
                     } else {
                         Button("Delete") {
-                            Task { try await state.deleteServer(fileID: session.fileID) }
+                            Task { try await state.deleteServer(fileID: session.server.id) }
                         }
                     }
                 }
@@ -87,11 +100,11 @@ struct ServerRow: View {
                         .frame(width: 16, height: 16)
                         .foregroundStyle(.secondary)
 
-                    Text(channel.cleanName)
+                    Text(channel.name)
                         .fontDesign(.monospaced)
                 }
                 .padding(.leading, 16)
-                .tag(AppState.Selection(fileID: session.fileID, channelID: channel.id))
+                .tag(AppState.Selection(fileID: session.server.id, channelID: channel.id))
             }
         }
     }

@@ -42,7 +42,13 @@ struct MainApp: App {
                 .keyboardShortcut("n", modifiers: .command)
                 Divider()
                 Button("Reset All Data") {
-                    state.resetAll()
+                    Task {
+                        do {
+                            try await state.resetAll()
+                        } catch {
+                            print(error)
+                        }
+                    }
                 }
             }
         }
@@ -85,7 +91,7 @@ struct MainApp: App {
     }
 
     func appReset() async {
-        state.resetAll()
+        try? await state.resetAll()
         await appActive()
     }
 }

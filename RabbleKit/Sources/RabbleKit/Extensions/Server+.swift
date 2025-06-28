@@ -1,26 +1,17 @@
 import Foundation
-import SharedKit
+import IRC
 
-public struct IRCServer: Packagable {
-    public var id: String
-    public var config: IRCConfig
-    public var channels: [IRCChannel]
-
-    public init(id: String = .id, config: IRCConfig, channels: [IRCChannel] = []) {
-        self.id = id
-        self.config = config
-        self.channels = channels
-    }
+extension IRC.Server: Packagable {
 
     public static func load(url: URL) throws -> Self {
         let configData = try Data(contentsOf: url.appending(path: "config.json"))
-        let config = try JSONDecoder().decode(IRCConfig.self, from: configData)
+        let config = try JSONDecoder().decode(IRC.Config.self, from: configData)
 
         let channelURLs = try FileManager.default.contentsOfDirectory(at: url.appending(path: "channels"), includingPropertiesForKeys: nil)
-        var channels: [IRCChannel] = []
+        var channels: [Channel] = []
         for url in channelURLs {
             let channelData = try Data(contentsOf: url)
-            let channel = try JSONDecoder().decode(IRCChannel.self, from: channelData)
+            let channel = try JSONDecoder().decode(IRC.Channel.self, from: channelData)
             channels.append(channel)
         }
         return .init(config: config, channels: channels)

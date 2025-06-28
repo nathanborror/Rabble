@@ -1,6 +1,7 @@
 import SwiftUI
 import OSLog
 import UniformTypeIdentifiers
+import IRC
 import RabbleKit
 
 private let logger = Logger(subsystem: "AppState", category: "App")
@@ -30,13 +31,13 @@ final class AppState {
     }
 
     var selection: Selection? = nil
-    var sessionPool: [String: IRCSession] = [:]
+    var sessionPool: [String: IRC.IRCSession] = [:]
     var showingServerForm = false
 
     private let filesProvider: FilesProvider
     private let logsProvider: LogsProvider
 
-    var config: Config {
+    var config: RabbleKit.Config {
         filesProvider.config
     }
 
@@ -69,22 +70,22 @@ final class AppState {
         _ = try await [filesReady, logsReady]
 
         for file in files.filter({ $0.isIRC }) {
-            let server: IRCServer = try filePackage(file.id)
+            let server: IRC.Server = try filePackage(file.id)
             switch server.config.kind {
             case .network:
-                sessionPool[file.id] = IRCServerSession(fileID: file.id, server: server)
+                sessionPool[file.id] = IRCSessionServer(server)
             case .simulation:
-                sessionPool[file.id] = IRCSimulationSession(fileID: file.id, server: server)
+                sessionPool[file.id] = IRCSessionSimulation(server)
             }
         }
     }
 
-    func resetAll() {
+    func resetAll() async throws {
         do {
 
             // Disconnect all sessions
             for (_, session) in sessionPool {
-                session.disconnect()
+                try await session.disconnect()
             }
 
             // Reset providers
@@ -104,18 +105,18 @@ final class AppState {
 
     // MARK: - IRC
 
-    func createServer(kind: IRCConfig.Kind, server: String, port: UInt16, nick: String, ident: String?, username: String, email: String?, password: String?, realname: String) async throws {
-        let config = IRCConfig(kind: kind, server: server, port: port, nick: nick, ident: ident, username: username, realname: realname, email: email, password: password, modes: "")
-
-        let server = IRCServer(config: config)
+    func createServer(kind: IRC.Config.Kind, server: String, port: UInt16, nick: String, ident: String?, username: String, email: String?, password: String?, realname: String) async throws {
         let fileID = String.id
-        _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: server)
+        let config = IRC.Config(kind: kind, server: server, port: port, nick: nick, ident: ident, username: username, realname: realname, email: email, password: password)
+        let server = IRC.Server(id: fileID, config: config)
+
+        let testID = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: server)
 
         switch server.config.kind {
         case .network:
-            sessionPool[fileID] = IRCServerSession(fileID: fileID, server: server)
+            sessionPool[fileID] = IRCSessionServer(server)
         case .simulation:
-            sessionPool[fileID] = IRCSimulationSession(fileID: fileID, server: server)
+            sessionPool[fileID] = IRCSessionSimulation(server)
         }
 
         selection = .init(fileID: fileID, channelID: nil)

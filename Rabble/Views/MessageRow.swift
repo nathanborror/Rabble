@@ -1,8 +1,9 @@
 import SwiftUI
+import IRC
 import RabbleKit
 
 struct MessageRow: View {
-    let message: IRCMessage
+    let message: IRC.Message
 
     @State private var showingDetails = false
 

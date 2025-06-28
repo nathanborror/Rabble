@@ -1,4 +1,5 @@
 import SwiftUI
+import IRC
 import RabbleKit
 
 struct ChannelList: View {
@@ -8,7 +9,7 @@ struct ChannelList: View {
     let session: IRCSession
 
     @State private var selected: Set<String> = []
-    @State private var sortOrder = [KeyPathComparator(\IRCConfig.Channel.name)]
+    @State private var sortOrder = [KeyPathComparator(\IRC.Config.Channel.name)]
 
     var body: some View {
         Table(session.server.config.list, selection: $selected, sortOrder: $sortOrder) {
@@ -44,13 +45,25 @@ struct ChannelList: View {
     }
 
     func handleList() {
-        session.send("LIST")
+        Task {
+            do {
+                try await session.send("LIST")
+            } catch {
+                print(error)
+            }
+        }
     }
 
     func handleJoin(_ names: Set<String>) {
-        for name in names {
-            session.sendChannelJoin(name)
-            state.selection = .init(fileID: session.fileID, channelID: name)
+        Task {
+            do {
+                for name in names {
+                    try await session.channelJoin(name)
+                    state.selection = .init(fileID: session.server.id, channelID: name)
+                }
+            } catch {
+                print(error)
+            }
         }
     }
 }

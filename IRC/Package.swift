@@ -4,21 +4,21 @@
 import PackageDescription
 
 let package = Package(
-    name: "IRCKit",
+    name: "IRC",
     platforms: [
         .iOS(.v18),
         .macOS(.v15),
     ],
     products: [
-        .library(name: "IRCKit", targets: ["IRCKit"]),
+        .library(name: "IRC", targets: ["IRC"]),
     ],
     dependencies: [
         .package(url: "https://github.com/nathanborror/swift-shared-kit", branch: "main"),
     ],
     targets: [
-        .target(name: "IRCKit", dependencies: [
+        .target(name: "IRC", dependencies: [
             .product(name: "SharedKit", package: "swift-shared-kit"),
         ]),
-        .testTarget(name: "IRCKitTests", dependencies: ["IRCKit"]),
+        .testTarget(name: "IRCTests", dependencies: ["IRC"]),
     ]
 )

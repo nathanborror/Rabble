@@ -1,11 +1,12 @@
 import SwiftUI
+import IRC
 import RabbleKit
 
 struct ServerForm: View {
     @Environment(AppState.self) var state
     @Environment(\.dismiss) var dismiss
 
-    @State var kind = IRCConfig.Kind.network
+    @State var kind = IRC.Config.Kind.network
     @State var server = "localhost"
     @State var port: UInt16 = 6667
     @State var nick = "nathan"
@@ -22,8 +23,8 @@ struct ServerForm: View {
         Form {
             Section {
                 Picker("Kind", selection: $kind) {
-                    Text("Network").tag(IRCConfig.Kind.network)
-                    Text("Simulation").tag(IRCConfig.Kind.simulation)
+                    Text("Network").tag(IRC.Config.Kind.network)
+                    Text("Simulation").tag(IRC.Config.Kind.simulation)
                 }
                 .pickerStyle(.inline)
             }

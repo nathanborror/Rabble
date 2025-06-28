@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import SharedKit
 import GenKit
+import IRC
 
 @MainActor @Observable
 public final class API {
@@ -144,7 +145,7 @@ extension API {
 
 extension API {
 
-    public func generate(_ lines: [String]) async throws -> [Message] {
+    public func generate(_ lines: [String]) async throws -> [GenKit.Message] {
         let (service, model) = try preferredChatService()
 
         let message = Message(role: .user, content: lines.joined(separator: "\n"))
@@ -199,32 +200,32 @@ extension API {
         return resp.messages
     }
 
-    public func preferredChatService() throws -> (ChatService, Model) {
+    public func preferredChatService() throws -> (GenKit.ChatService, GenKit.Model) {
         let service = try get(serviceID: config.serviceChatDefault, config: config)
         let model = try get(modelID: service.preferredChatModel, service: service)
         return (try service.chatService(session: session), model)
     }
 
-    public func preferredImageService() throws -> (ImageService, Model) {
+    public func preferredImageService() throws -> (GenKit.ImageService, GenKit.Model) {
         let service = try get(serviceID: config.serviceImageDefault, config: config)
         let model = try get(modelID: service.preferredImageModel, service: service)
         return (try service.imageService(session: session), model)
     }
 
-    public func preferredSummarizationService() throws -> (ChatService, Model) {
+    public func preferredSummarizationService() throws -> (GenKit.ChatService, GenKit.Model) {
         let service = try get(serviceID: config.serviceSummarizationDefault, config: config)
         let model = try get(modelID: service.preferredSummarizationModel, service: service)
         return (try service.summarizationService(session: session), model)
     }
 
-    func get(serviceID: String?, config: Config) throws -> Service {
+    func get(serviceID: String?, config: Config) throws -> GenKit.Service {
         guard let service = config.services.first(where: { $0.id == serviceID }) else {
             throw Error.missingService
         }
         return service
     }
 
-    func get(modelID: String?, service: Service) throws -> Model {
+    func get(modelID: String?, service: GenKit.Service) throws -> GenKit.Model {
         guard let model = service.models.first(where: { $0.id == modelID }) else {
             throw Error.missingModel
         }

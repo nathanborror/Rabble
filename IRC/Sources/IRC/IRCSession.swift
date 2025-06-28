@@ -2,7 +2,7 @@ import Foundation
 import OSLog
 import Network
 
-private let logger = Logger(subsystem: "IRCSession", category: "IRCKit")
+private let logger = Logger(subsystem: "IRCSession", category: "IRC")
 
 public enum IRCSessionError: Error, CustomStringConvertible {
     case channelNotFound
@@ -24,22 +24,56 @@ public enum IRCSessionError: Error, CustomStringConvertible {
     }
 }
 
+public struct IRCPendingRequest {
+    let continuation: CheckedContinuation<Void, Error>
+    let expectedResponse: (Message) -> Bool
+    let timeout: Date
+}
+
 @MainActor
 public protocol IRCSession: AnyObject {
 
     var server: Server { get set }
+    var pending: [String: IRCPendingRequest] { get set }
+    var buffer: String { get set }
     var isConnected: Bool { get }
     var isAuthenticated: Bool { get }
-    var error: IRCSessionError? { get }
+    var error: IRCSessionError? { get set }
 
     func connect() async throws
     func disconnect() async throws
-
     func send(_ line: String) async throws
-    func send(_ line: String, expecting: @escaping (Message) -> Bool, timeout: TimeInterval) async throws
 }
 
+// MARK: Conevenience
+
 extension IRCSession {
+
+    public func send(_ line: String, expecting: @escaping (Message) -> Bool, timeout: TimeInterval = 10) async throws {
+        try await withCheckedThrowingContinuation { continuation in
+            let id = String.id
+
+            // Update pending requests queue
+            pending[id] = .init(
+                continuation: continuation,
+                expectedResponse: expecting,
+                timeout: .now.addingTimeInterval(timeout)
+            )
+
+            // Send line to server
+            Task {
+                try await send(line)
+            }
+
+            // Wait for possible timeout, remove request from queue upon timeout
+            Task {
+                try await Task.sleep(for: .seconds(timeout))
+                if let request = pending.removeValue(forKey: id) {
+                    request.continuation.resume(throwing: IRCSessionError.timeout)
+                }
+            }
+        }
+    }
     
     public func channelJoin(_ channel: String, fetchHistory: Bool = false) async throws {
         try await send("JOIN \(channel)")
@@ -189,6 +223,56 @@ extension IRCSession {
 // MARK: Processors
 
 extension IRCSession {
+
+    public func processIncomingData(_ data: Data?) async throws {
+        guard let data else { return }
+        try await processIncomingString(String(data: data, encoding: .utf8))
+    }
+
+    public func processIncomingString(_ input: String?) async throws {
+        guard let input else { return }
+        buffer += input.replacingOccurrences(of: "\r\n", with: "\n")
+
+        while let range = buffer.range(of: "\n") {
+            let line = String(buffer[..<range.lowerBound])
+            buffer = String(buffer[range.upperBound...]) // Remove parsed line + delimiter
+
+            guard let message = parseMessage(line) else {
+                return
+            }
+
+            // Check pending requests
+            for (id, request) in pending {
+                if request.expectedResponse(message) {
+                    pending.removeValue(forKey: id)
+                    request.continuation.resume()
+                    break
+                }
+            }
+
+            // Respond to periodic PINGs to maintain the connection
+            switch message.command {
+            case .ping:
+                let pong = "PONG \(message.params[0])"
+                try await send(pong)
+            default:
+                break
+            }
+
+            // Upsert new line to config object
+            upsertConfigLog(message)
+
+            // Handle command and numeric
+            do {
+                try await processMessageCommand(message)
+                try await processMessageNumeric(message)
+            } catch let error as IRCSessionError {
+                self.error = error
+            } catch {
+                self.error = .unhandled(error)
+            }
+        }
+    }
 
     public func processMessageCommand(_ message: Message) async throws {
         switch message.command {

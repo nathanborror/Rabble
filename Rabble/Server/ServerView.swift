@@ -1,4 +1,5 @@
 import SwiftUI
+import IRC
 import RabbleKit
 
 struct ServerView: View {
@@ -42,6 +43,16 @@ struct ServerView: View {
                         Text("\(error)")
                     }
                 }
+
+//                if let error = viewModel.session.error, error == .authenticationFailed {
+//                    StickyView(kind: .error, title: "Authentication Error", expanded: true) {
+//                        Text("\(error)")
+//                    }
+//                } else if let error = viewModel.session.error {
+//                    StickyView(kind: .error, title: "Error", expanded: true) {
+//                        Text("\(error)")
+//                    }
+//                }
             }
             .padding()
         }
@@ -86,12 +97,18 @@ struct ServerView: View {
     }
 
     func handleChannelList() {
-        viewModel.session.send("LIST")
-        openWindow(id: "channels", value: viewModel.session.fileID)
+        Task {
+            do {
+                try await viewModel.session.send("LIST")
+                openWindow(id: "channels", value: viewModel.session.server.id)
+            } catch {
+                print(error)
+            }
+        }
     }
 
     func handleChannelInfo() {
-        openWindow(id: "server", value: viewModel.session.fileID)
+        openWindow(id: "server", value: viewModel.session.server.id)
     }
 
     func handleClearLogs() {

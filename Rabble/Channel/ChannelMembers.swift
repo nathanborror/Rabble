@@ -1,4 +1,5 @@
 import SwiftUI
+import IRC
 import RabbleKit
 
 struct ChannelMembers: View {
@@ -9,7 +10,7 @@ struct ChannelMembers: View {
     var body: some View {
         ScrollView {
             LazyVStack {
-                if let channelID = state.selection?.channelID, let channel = try? session.channel(channelID) {
+                if let channelID = state.selection?.channelID, let channel = try? session.getChannel(channelID) {
                     ForEach(Array(channel.users.values)) { user in
                         HStack {
                             Text(user.nick)

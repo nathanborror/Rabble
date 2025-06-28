@@ -1,5 +1,5 @@
 import Testing
-@testable import IRCKit
+@testable import IRC
 
 @MainActor
 @Suite("Message Parsing Tests")
@@ -9,7 +9,7 @@ struct MessageParsingTests {
     func welcomeSequence() async throws {
         let alice = IRCMockSession.alice
 
-        alice.expected = [
+        let expected = [
             ":ergo.test 001 alice :Welcome to the ErgoTest IRC Network nathan",
             ":ergo.test 002 alice :Your host is ergo.test, running version ergo-2.17.0-unreleased-17ed01c1ed18da57",
             ":ergo.test 003 alice :This server was created Fri, 27 Jun 2025 15:19:15 UTC",
@@ -20,7 +20,7 @@ struct MessageParsingTests {
         ]
 
         try await alice.connect()
-        try await alice.handleExpectedMessages()
+        try await alice.processIncomingString(expected.joined(separator: "\n")+"\n")
 
         #expect(alice.server.config.host == "ergo.test")
         #expect(alice.server.config.availableUserModes == "BERTZios")
@@ -32,7 +32,7 @@ struct MessageParsingTests {
         let name = "#random"
 
         let alice = IRCMockSession.alice
-        alice.expected = [
+        let expected = [
             ":alice!~u@p7wgw3kynvpai.irc JOIN \(name)",
             ":ergo.test 353 alice = \(name) :@alice",
             ":ergo.test 366 alice \(name) :End of NAMES list",
@@ -43,7 +43,7 @@ struct MessageParsingTests {
         ]
 
         try await alice.channelJoin(name)
-        try await alice.handleExpectedMessages()
+        try await alice.processIncomingString(expected.joined(separator: "\n")+"\n")
         #expect(alice.server.channels.count == 1)
 
         let channel = try alice.getChannel(name)
@@ -69,7 +69,7 @@ struct MessageParsingTests {
         let name = "#private"
 
         let alice = IRCMockSession.alice
-        alice.expected = [
+        let expected = [
             ":alice!~u@p7wgw3kynvpai.irc JOIN \(name)",
             ":ergo.test 353 alice = \(name) :@alice",
             ":ergo.test 366 alice \(name) :End of NAMES list",
@@ -79,7 +79,7 @@ struct MessageParsingTests {
         ]
 
         try await alice.channelJoin(name)
-        try await alice.handleExpectedMessages()
+        try await alice.processIncomingString(expected.joined(separator: "\n")+"\n")
         #expect(alice.server.channels.count == 1)
 
         let channel = try alice.getChannel(name)
@@ -89,7 +89,7 @@ struct MessageParsingTests {
         #expect(channel.isSecret)
 
         let bob = IRCMockSession.bob
-        bob.expected = [
+        let expectedForBob = [
             ":alice!~u@p7wgw3kynvpai.irc INVITE bob \(name)",
             ":bob!~u@p7wgw3kynvpai.irc JOIN \(name)",
             ":ergo.test 353 bob @ \(name) :@alice bob",
@@ -97,7 +97,7 @@ struct MessageParsingTests {
             ":ergo.test 324 bob \(name) +kCnst s3cr3t",
             ":ergo.test 329 bob \(name) 1751134868",
         ]
-        try await bob.handleExpectedMessages()
+        try await bob.processIncomingString(expectedForBob.joined(separator: "\n")+"\n")
         #expect(bob.server.channels.count == 1)
 
         let bobChannel = try bob.getChannel(name)

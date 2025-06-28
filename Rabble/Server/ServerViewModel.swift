@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import IRC
 import RabbleKit
 
 @Observable
@@ -9,19 +10,19 @@ final class ServerViewModel {
     var session: IRCSession
     var draft: String = ""
 
-    var config: IRCConfig {
+    var config: IRC.Config {
         session.server.config
     }
 
-    var logs: [IRCMessage] {
+    var logs: [IRC.Message] {
         session.server.config.logs
     }
 
-    var list: [IRCConfig.Channel] {
+    var list: [IRC.Config.Channel] {
         session.server.config.list
     }
 
-    var channels: [String: IRCChannel] {
+    var channels: [String: IRC.Channel] {
         Dictionary(uniqueKeysWithValues: session.server.channels.map { ($0.id, $0) })
     }
 
@@ -30,7 +31,13 @@ final class ServerViewModel {
     }
 
     func submit() {
-        session.send(draft)
-        draft = ""
+        Task {
+            do {
+                try await session.send(draft)
+                draft = ""
+            } catch {
+                print(error)
+            }
+        }
     }
 }
