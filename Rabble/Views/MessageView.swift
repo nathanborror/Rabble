@@ -30,8 +30,6 @@ struct MessageView: View {
             default:
                 Text("nil")
             }
-
-            Text(message.id)
         }
         .padding(.vertical, 4)
         .padding(.horizontal)
