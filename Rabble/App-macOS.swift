@@ -35,12 +35,25 @@ struct MainApp: App {
         }
         .environment(state)
         .commands {
-            CommandMenu("Rabble") {
+            CommandGroup(replacing: .newItem) {
                 Button("New Server") {
                     state.showingServerForm = true
                 }
                 .keyboardShortcut("n", modifiers: .command)
-                Divider()
+            }
+            CommandGroup(after: .newItem) {
+                Button("Save All") {
+                    Task {
+                        do {
+                            try await state.save()
+                        } catch {
+                            print(error)
+                        }
+                    }
+                }
+                .keyboardShortcut("s", modifiers: .command)
+            }
+            CommandMenu("Rabble") {
                 Button("Reset All Data") {
                     Task {
                         do {

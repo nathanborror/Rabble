@@ -103,6 +103,12 @@ final class AppState {
         }
     }
 
+    func save() async throws {
+        for (fileID, session) in sessionPool {
+            try await API.shared.fileUpdate(fileID, package: session.server)
+        }
+    }
+
     // MARK: - IRC
 
     func createServer(kind: IRC.Config.Kind, server: String, port: UInt16, nick: String, ident: String?, username: String, email: String?, password: String?, realname: String) async throws {
