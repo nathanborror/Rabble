@@ -15,6 +15,24 @@ struct ChannelMembers: View {
                         HStack {
                             Text(user.nick)
                             Spacer()
+
+                            if let membership = user.membership {
+                                Group {
+                                    switch membership {
+                                    case .owner:
+                                        Text("owner")
+                                    case .admin:
+                                        Text("admin")
+                                    case .op:
+                                        Text("operator")
+                                    case .half:
+                                        Text("halfop")
+                                    case .voice:
+                                        Text("voice")
+                                    }
+                                }
+                                .foregroundStyle(.tertiary)
+                            }
                         }
                     }
                 }
