@@ -4,9 +4,28 @@
 import Foundation
 
 public enum Numeric: Codable, Equatable, Sendable {
-    case RPL_WELCOME
-    case RPL_YOURHOST
-    case RPL_CREATED
+
+    /// # 001: <client> :Welcome to the <networkname> Network, <nick>[!<user>@<host>]
+    /// The first message sent after client registration, this message introduces the client to the network. The text used in the last param of this message
+    /// varies wildly.
+    ///
+    /// Servers that implement spoofed hostmasks in any capacity SHOULD NOT include the extended (complete) hostmask in the last parameter of this reply,
+    /// either for all clients or for those whose hostnames have been spoofed. This is because some clients try to extract the hostname from this final parameter
+    /// of this message and resolve this hostname, in order to discover their ‘local IP address’.
+    ///
+    /// Clients MUST NOT try to extract the hostname from the final parameter of this message and then attempt to resolve this hostname. This method of
+    /// operation WILL BREAK and will cause issues when the server returns a spoofed hostname.
+    case RPL_WELCOME(client: String, text: String)
+
+    /// # 002: <client> :Your host is <servername>, running version <version>
+    /// Part of the post-registration greeting, this numeric returns the name and software/version of the server the client is currently connected to. The text used
+    /// in the last param of this message varies wildly.
+    case RPL_YOURHOST(client: String, text: String)
+
+    /// # 003: <client> :This server was created <datetime>
+    /// Part of the post-registration greeting, this numeric returns a human-readable date/time that the server was started or created. The text used in the last
+    /// param of this message varies wildly.
+    case RPL_CREATED(client: String, text: String)
 
     /// # 004: <client> <servername> <version> <available user modes> <available channel modes> [<channel modes with a parameter>]
     /// Part of the post-registration greeting. Clients SHOULD discover available features using RPL_ISUPPORT tokens rather than the mode letters listed in this reply.
@@ -45,18 +64,82 @@ public enum Numeric: Codable, Equatable, Sendable {
     /// The text used in the last param of this message may vary.
     case RPL_LUSERCHANNELS(client: String, channels: Int)
 
-    case RPL_LUSERME
-    case RPL_LOCALUSERS
-    case RPL_GLOBALUSERS
-    case RPL_WHOISUSER
+    /// # 255: <client> :I have <c> clients and <s> servers
+    /// Sent as a reply to the LUSERS command. <c> and <s> are non-negative integers and represent the number of clients and other servers connected to
+    /// this server, respectively.
+    case RPL_LUSERME(client: String, text: String)
+
+    /// # 265: <client> [<u> <m>] :Current local users <u>, max <m>
+    /// Sent as a reply to the LUSERS command. <u> and <m> are non-negative integers and represent the number of clients currently and the maximum
+    /// number of clients that have been connected directly to this server at one time, respectively. The two optional parameters SHOULD be supplied to allow
+    /// clients to better extract these numbers.
+    case RPL_LOCALUSERS(client: String, u: Int, m: Int, text: String)
+
+    /// # 266: <client> [<u> <m>] :Current global users <u>, max <m>
+    /// Sent as a reply to the LUSERS command. <u> and <m> are non-negative integers. <u> represents the number of clients currently connected to this
+    /// server, globally (directly and through other server links). <m> represents the maximum number of clients that have been connected to this server at one
+    /// time, globally. The two optional parameters SHOULD be supplied to allow clients to better extract these numbers.
+    case RPL_GLOBALUSERS(client: String, u: Int, m: Int, text: String)
+
+    /// # 301: <client> <nick> :<message>
+    /// Indicates that the user with the nickname <nick> is currently away and sends the away message that they set.
+    case RPL_AWAY(client: String, nick: String, text: String)
+
+    /// # 302: <client> :[<reply>{ <reply>}]
+    /// Sent as a reply to the USERHOST command, this numeric lists nicknames and the information associated with them. The last parameter of this numeric
+    /// (if there are any results) is a list of <reply> values, delimited by a SPACE character (' ', 0x20).
+    case RPL_USERHOST(client: String, reply: String)
+
+    /// # 305: <client> :You are no longer marked as being away
+    /// Sent as a reply to the AWAY command, this lets the client know that they are no longer set as being away. The text used in the last param of this
+    /// message may vary.
+    case RPL_UNAWAY(client: String, text: String)
+
+    /// # 311: <client> <nick> <username> <host> * :<realname>
+    /// Sent as a reply to the WHOIS command, this numeric shows details about the client with the nickname <nick>. <username> and <realname>
+    /// represent the names set by the USER command (though <username> may be set by the server in other ways). <host> represents the host used for the
+    /// client in nickmasks (which may or may not be a real hostname or IP address). <host> CANNOT start with a colon (':', 0x3A) as this would get parsed as a
+    /// trailing parameter – IPv6 addresses such as "::1" are prefixed with a zero ('0', 0x30) to ensure this. The second-last parameter is a literal asterisk character
+    /// ('*', 0x2A) and does not mean anything.
+    case RPL_WHOISUSER(client: String, nick: String, username: String, host: String, realname: String)
+
+    /// # 312: <client> <nick> <server> :<server info>
     case RPL_WHOISSERVER
+
+    /// # 313: <client> <nick> :is an IRC operator
     case RPL_WHOISOPERATOR
+
+    /// # 314: <client> <nick> <username> <host> * :<realname>
+    case RPL_WHOWASUSER
+
+    /// # 315: <client> <mask> :End of WHO list
     case RPL_ENDOFWHO
+
+    /// # 317: <client> <nick> <secs> <signon> :seconds idle, signon time
+    case RPL_WHOISIDLE
+
+    /// # 318: <client> <nick> :End of /WHOIS list
     case RPL_ENDOFWHOIS
+
+    /// # 319: <client> <nick> :[prefix]<channel>{ [prefix]<channel>}
     case RPL_WHOISCHANNELS
-    case RPL_LISTSTART
-    case RPL_LIST
-    case RPL_LISTEND
+
+    /// # 320: <client> <nick> :blah blah blah
+    case RPL_WHOISSPECIAL
+
+    /// # 321: <client> Channel :Users  Name
+    /// Sent as a reply to the LIST command, this numeric marks the start of a channel list. As noted in the command description, this numeric MAY be skipped
+    /// by the server so clients MUST NOT depend on receiving it.
+    case RPL_LISTSTART(client: String)
+
+    /// # 322: <client> <channel> <client count> :<topic>
+    /// Sent as a reply to the LIST command, this numeric sends information about a channel to the client. <channel> is the name of the channel.
+    /// <client count> is an integer indicating how many clients are joined to that channel. <topic> is the channel’s topic (as set by the TOPIC command).
+    case RPL_LIST(client: String, channel: String, count: Int, topic: String?)
+
+    /// # 323: <client> :End of /LIST
+    /// Sent as a reply to the LIST command, this numeric indicates the end of a LIST response.
+    case RPL_LISTEND(client: String)
 
     /// # 324: <client> <channel> <modestring> <mode arguments>...
     /// Sent to a client to inform them of the currently-set modes of a channel. <channel> is the name of the channel. <modestring> and <mode arguments>
@@ -144,9 +227,15 @@ public enum Numeric: Codable, Equatable, Sendable {
             return nil
         }
         switch code {
-        case 001: self = .RPL_WELCOME
-        case 002: self = .RPL_YOURHOST
-        case 003: self = .RPL_CREATED
+        case 001:
+            guard params.count >= 2 else { return nil }
+            self = .RPL_WELCOME(client: params[0], text: params[1])
+        case 002:
+            guard params.count >= 2 else { return nil }
+            self = .RPL_YOURHOST(client: params[0], text: params[1])
+        case 003:
+            guard params.count >= 2 else { return nil }
+            self = .RPL_CREATED(client: params[0], text: params[1])
         case 004:
             guard params.count >= 6 else { return nil }
             self = .RPL_MYINFO(client: params[0], servername: params[1], version: params[2], userModes: params[3], channelModes: params[4], channelModesWithParameters: params[5])
@@ -172,18 +261,52 @@ public enum Numeric: Codable, Equatable, Sendable {
             guard params.count >= 2 else { return nil }
             guard let count = Int(params[1]) else { return nil }
             self = .RPL_LUSERCHANNELS(client: params[0], channels: count)
-        case 255: self = .RPL_LUSERME
-        case 265: self = .RPL_LOCALUSERS
-        case 266: self = .RPL_GLOBALUSERS
-        case 311: self = .RPL_WHOISUSER
-        case 312: self = .RPL_WHOISSERVER
-        case 313: self = .RPL_WHOISOPERATOR
-        case 315: self = .RPL_ENDOFWHO
-        case 318: self = .RPL_ENDOFWHOIS
-        case 319: self = .RPL_WHOISCHANNELS
-        case 321: self = .RPL_LISTSTART
-        case 322: self = .RPL_LIST
-        case 323: self = .RPL_LISTEND
+        case 255:
+            guard params.count >= 2 else { return nil }
+            self = .RPL_LUSERME(client: params[0], text: params[1])
+        case 265:
+            guard params.count >= 4 else { return nil }
+            self = .RPL_LOCALUSERS(client: params[0], u: Int(params[1]) ?? 0, m: Int(params[2]) ?? 0, text: params[3])
+        case 266:
+            guard params.count >= 4 else { return nil }
+            self = .RPL_GLOBALUSERS(client: params[0], u: Int(params[1]) ?? 0, m: Int(params[2]) ?? 0, text: params[3])
+        case 301:
+            guard params.count >= 3 else { return nil }
+            self = .RPL_AWAY(client: params[0], nick: params[1], text: params[2])
+        case 302:
+            guard params.count >= 2 else { return nil }
+            self = .RPL_USERHOST(client: params[0], reply: params[1])
+        case 305:
+            guard params.count >= 2 else { return nil }
+            self = .RPL_UNAWAY(client: params[0], text: params[1])
+        case 311:
+            guard params.count >= 6 else { return nil }
+            self = .RPL_WHOISUSER(client: params[0], nick: params[1], username: params[2], host: params[3], realname: params[5])
+        case 312:
+            self = .RPL_WHOISSERVER
+        case 313:
+            self = .RPL_WHOISOPERATOR
+        case 314:
+            self = .RPL_WHOWASUSER
+        case 315:
+            self = .RPL_ENDOFWHO
+        case 317:
+            self = .RPL_WHOISIDLE
+        case 318:
+            self = .RPL_ENDOFWHOIS
+        case 319:
+            self = .RPL_WHOISCHANNELS
+        case 320:
+            self = .RPL_WHOISSPECIAL
+        case 321:
+            guard params.count >= 1 else { return nil }
+            self = .RPL_LISTSTART(client: params[0])
+        case 322:
+            guard params.count >= 4 else { return nil }
+            self = .RPL_LIST(client: params[0], channel: params[1], count: Int(params[2]) ?? 0, topic: params[3].isEmpty ? nil : params[3])
+        case 323:
+            guard params.count >= 1 else { return nil }
+            self = .RPL_LISTEND(client: params[0])
         case 324:
             guard params.count >= 3 else { return nil }
             let args = Array(params.dropFirst(3))

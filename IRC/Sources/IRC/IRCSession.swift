@@ -348,17 +348,8 @@ extension IRCSession {
             var config = server.config
             config.modes = modes
             server.config = config
-        case .RPL_LIST:
-            guard message.params.count >= 4 else {
-                return
-            }
-            let name = message.params[1]
-            let users = Int(message.params[2]) ?? 0
-            let topic = message.params[3].isEmpty ? nil : message.params[3]
-            guard name != "*" else {
-                return
-            }
-            upsertConfigChannel(.init(name: name, users: users, topic: topic))
+        case let .RPL_LIST(_, channel, count, topic):
+            upsertConfigChannel(.init(name: channel, users: count, topic: topic))
         case let .RPL_CHANNELMODEIS(_, channel, modestring, arguments):
             var channel = try getChannel(channel)
             channel.modes = modestring
