@@ -6,6 +6,7 @@ private let logger = Logger(subsystem: "IRCSession", category: "IRC")
 
 public enum IRCSessionError: Error, CustomStringConvertible {
     case channelNotFound
+    case channelMemberNotFound
     case authenticationFailed
     case timeout
     case unhandled(Error)
@@ -14,6 +15,8 @@ public enum IRCSessionError: Error, CustomStringConvertible {
         switch self {
         case .channelNotFound:
             "Channel not found"
+        case .channelMemberNotFound:
+            "Channel member not found"
         case .authenticationFailed:
             "Authentication failed"
         case .timeout:
@@ -92,7 +95,11 @@ extension IRCSession {
     public func channelPart(_ channel: String) async throws {
         try await send("PART \(channel)")
     }
-    
+
+    public func channelKick(_ channel: String, nick: String, comment: String?) async throws {
+        try await send("KICK \(channel) \(nick) :\(comment ?? "")")
+    }
+
     public func nickServRegister(email: String, password: String) async throws {
         guard !isAuthenticated else { return }
         try await send("PRIVMSG NickServ :REGISTER \(password) \(email)")
@@ -159,6 +166,14 @@ extension IRCSession {
             throw IRCSessionError.channelNotFound
         }
         return channel
+    }
+
+    public func getChannelMember(_ userID: String, channelID: String) throws -> ChannelUser {
+        let channel = try getChannel(channelID)
+        guard let user = channel.users[userID] else {
+            throw IRCSessionError.channelMemberNotFound
+        }
+        return user
     }
 
     public func upsertChannel(_ channel: Channel) throws {

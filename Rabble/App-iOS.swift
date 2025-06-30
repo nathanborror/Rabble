@@ -10,7 +10,7 @@ struct MainApp: App {
             NavigationSplitView {
                 ServerList()
             } detail: {
-                if let fileID = state.selection?.fileID, let session = state.sessionPool[fileID] {
+                if let fileID = state.selection?.sessionID, let session = state.sessionPool[fileID] {
                     if let channelID = state.selection?.channelID {
                         ChannelView(channelID: channelID, session: session)
                             .id(fileID+channelID)

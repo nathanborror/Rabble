@@ -25,9 +25,16 @@ final class AppState {
         }
     }
 
-    struct Selection: Hashable {
-        let fileID: String
-        let channelID: String?
+    struct Selection: Codable, Hashable {
+        var sessionID: String
+        var channelID: String?
+        var userID: String?
+
+        init(fileID: String, channelID: String? = nil, nick: String? = nil) {
+            self.sessionID = fileID
+            self.channelID = channelID
+            self.userID = nick
+        }
     }
 
     var selection: Selection? = nil
@@ -127,7 +134,7 @@ final class AppState {
             sessionPool[fileID] = IRCSessionSimulation(server)
         }
 
-        selection = .init(fileID: fileID, channelID: nil)
+        selection = .init(fileID: fileID)
 
         // Connect to server
         try await sessionPool[fileID]?.connect()
@@ -136,7 +143,7 @@ final class AppState {
     func deleteServer(fileID: String) async throws {
         try await filesProvider.cacheFileDelete(fileID)
         sessionPool.removeValue(forKey: fileID)
-        if selection?.fileID == fileID {
+        if selection?.sessionID == fileID {
             selection = nil
         }
     }

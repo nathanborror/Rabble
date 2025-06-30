@@ -11,11 +11,11 @@ struct ServerList: View {
             List(selection: $state.selection) {
                 ForEach(Array(state.sessionPool.values), id: \.server.id) { session in
                     ServerRow(session: session)
-                        .tag(AppState.Selection(fileID: session.server.id, channelID: nil))
+                        .tag(AppState.Selection(fileID: session.server.id))
                 }
             }
             .contextMenu(forSelectionType: AppState.Selection.self) { selections in
-                if let selection = selections.first, let session = state.sessionPool[selection.fileID] {
+                if let selection = selections.first, let session = state.sessionPool[selection.sessionID] {
                     if let channelID = selection.channelID {
                         Button("Get Info") {
                             Task {

@@ -16,7 +16,7 @@ struct MainApp: App {
                         }
                     }
             } detail: {
-                if let fileID = state.selection?.fileID, let session = state.sessionPool[fileID] {
+                if let fileID = state.selection?.sessionID, let session = state.sessionPool[fileID] {
                     if let channelID = state.selection?.channelID {
                         ChannelView(channelID: channelID, session: session)
                             .id(fileID+channelID)
@@ -83,6 +83,16 @@ struct MainApp: App {
                 ServerInfo(session: session)
             } else {
                 ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
+            }
+        }
+        .environment(state)
+        .defaultSize(width: 350, height: 500)
+
+        WindowGroup("User Info", id: "user", for: AppState.Selection.self) { selection in
+            if let selection = selection.wrappedValue, let channelID = selection.channelID, let userID = selection.userID {
+                ChannelMemberInfo(sessionID: selection.sessionID, channelID: channelID, userID: userID)
+            } else {
+                ContentUnavailableView("No Channel Member", image: "person.text.rectangle")
             }
         }
         .environment(state)

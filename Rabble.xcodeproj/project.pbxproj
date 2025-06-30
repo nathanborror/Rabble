@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D841838A2E1255CC00339DB0 /* ChannelMemberInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D84183892E1255CC00339DB0 /* ChannelMemberInfo.swift */; };
+		D841838C2E1258E300339DB0 /* InspectorValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = D841838B2E1258E300339DB0 /* InspectorValue.swift */; };
 		D875291B2E046C98005C45C8 /* ServerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D875291A2E046C98005C45C8 /* ServerViewModel.swift */; };
 		D875291E2E04DDFC005C45C8 /* ChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D875291D2E04DDFC005C45C8 /* ChannelView.swift */; };
 		D87529222E05B166005C45C8 /* ServerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D87529212E05B166005C45C8 /* ServerInfo.swift */; };
@@ -42,6 +44,8 @@
 
 /* Begin PBXFileReference section */
 		D82BF0652E0F22BF002B7416 /* IRC */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = IRC; sourceTree = "<group>"; };
+		D84183892E1255CC00339DB0 /* ChannelMemberInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMemberInfo.swift; sourceTree = "<group>"; };
+		D841838B2E1258E300339DB0 /* InspectorValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorValue.swift; sourceTree = "<group>"; };
 		D875291A2E046C98005C45C8 /* ServerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerViewModel.swift; sourceTree = "<group>"; };
 		D875291D2E04DDFC005C45C8 /* ChannelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelView.swift; sourceTree = "<group>"; };
 		D87529212E05B166005C45C8 /* ServerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerInfo.swift; sourceTree = "<group>"; };
@@ -96,6 +100,7 @@
 				D8EDE8B22E0BBA460084805C /* MessageView.swift */,
 				D888DCE62E00DB30004DAF72 /* MessageRow.swift */,
 				D87529292E09B245005C45C8 /* StickyView.swift */,
+				D841838B2E1258E300339DB0 /* InspectorValue.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -119,6 +124,7 @@
 				D8EDE8D62E0C9D6A0084805C /* ChannelViewModel.swift */,
 				D875291D2E04DDFC005C45C8 /* ChannelView.swift */,
 				D87529232E05C478005C45C8 /* ChannelMembers.swift */,
+				D84183892E1255CC00339DB0 /* ChannelMemberInfo.swift */,
 				D888DCDF2DFD3AF4004DAF72 /* ChannelList.swift */,
 				D87529272E078E77005C45C8 /* ChannelMessageField.swift */,
 			);
@@ -309,6 +315,7 @@
 				D875292A2E09B245005C45C8 /* StickyView.swift in Sources */,
 				D8EDE8D92E0CA1E50084805C /* ServerMessageField.swift in Sources */,
 				D8EDE8C62E0C80BA0084805C /* PermissionsView.swift in Sources */,
+				D841838A2E1255CC00339DB0 /* ChannelMemberInfo.swift in Sources */,
 				D8EDE8C72E0C80BA0084805C /* ServiceForm.swift in Sources */,
 				D8EDE8C92E0C80BA0084805C /* InstructionForm.swift in Sources */,
 				D8EDE8CA2E0C80BA0084805C /* SettingsView-iOS.swift in Sources */,
@@ -316,6 +323,7 @@
 				D8EDE8CC2E0C80BA0084805C /* PermissionList.swift in Sources */,
 				D8EDE8CD2E0C80BA0084805C /* PermissionForm.swift in Sources */,
 				D8EDE8D72E0C9D6A0084805C /* ChannelViewModel.swift in Sources */,
+				D841838C2E1258E300339DB0 /* InspectorValue.swift in Sources */,
 				D8EDE8CE2E0C80BA0084805C /* ServiceManager.swift in Sources */,
 				D8EDE8D02E0C80BA0084805C /* ServiceView.swift in Sources */,
 				D8EDE8D12E0C80BA0084805C /* ServiceDefaults.swift in Sources */,
