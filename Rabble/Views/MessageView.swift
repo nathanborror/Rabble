@@ -11,6 +11,7 @@ struct MessageView: View {
         HStack(alignment: .firstTextBaseline) {
             Text(message.timestamp.formatted(date: .omitted, time: .standard))
                 .foregroundStyle(.tertiary)
+                .frame(width: 80, alignment: .trailing)
 
             switch message.command {
             case let .PRIVMSG(_, text):
@@ -24,9 +25,39 @@ struct MessageView: View {
                     Text(text)
                 }
             case .JOIN:
-                Text("\(message.nick ?? "Unknown user") joined the channel")
-            case .PART:
-                Text("\(message.nick ?? "Unknown user") left the channel")
+                HStack(alignment: .firstTextBaseline) {
+                    HStack {
+                        Spacer(minLength: 0)
+                        Image(systemName: "hand.wave.fill")
+                    }
+                    .fontWeight(.semibold)
+                    .frame(width: 120)
+                    .foregroundStyle(.mint)
+                    Text("\(message.nick ?? "Unknown user") joined")
+                }
+            case let .PART(_, reason):
+                HStack(alignment: .firstTextBaseline) {
+                    HStack {
+                        Spacer(minLength: 0)
+                        Image(systemName: "door.left.hand.closed")
+                    }
+                    .fontWeight(.semibold)
+                    .frame(width: 120)
+                    .foregroundStyle(.mint)
+                    Text("\(message.nick ?? "Unknown user") left \(reason != nil ? "(\(reason!))" : "")")
+                }
+            case let .KICK(_, nick, comment):
+                HStack(alignment: .firstTextBaseline) {
+                    HStack {
+                        Spacer(minLength: 0)
+                        Image(systemName: "figure.kickboxing")
+                    }
+                    .fontWeight(.semibold)
+                    .frame(width: 120)
+                    .foregroundStyle(.mint)
+                    Text("\(nick) was kicked \(comment != nil ? "(\(comment!))" : "")")
+                }
+
             default:
                 Text("nil")
             }
