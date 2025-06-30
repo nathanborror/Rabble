@@ -110,19 +110,31 @@ struct MessageParsingTests {
         let name = "#general"
 
         let alice = IRCMockSession.alice
-        let expected = [
+        try await alice.processIncomingString([
             ":alice!~u@p7wgw3kynvpai.irc JOIN \(name)",
-            ":ergo.test 353 alice = \(name) :@alice",
+            ":ergo.test 353 alice = \(name) :@alice bob",
             ":ergo.test 366 alice \(name) :End of NAMES list",
             ":ergo.test 324 alice \(name) +Cnt",
             ":ergo.test 329 alice \(name) 1751134868",
-            ":alice!~u@p7wgw3kynvpai.irc JOIN #general",
-            ":ergo.test 353 alice = #general :@bob alice",
-            ":bob!~u@p7wgw3kynvpai.irc KICK #general alice :bye bye",
-        ]
-        try await alice.processIncomingString(expected.joined(separator: "\n")+"\n")
+            ":alice!~u@p7wgw3kynvpai.irc KICK #general bob :bye",
+        ].joined(separator: "\n")+"\n")
 
-        #expect(alice.server.channels.count == 0)
+        #expect(alice.server.channels.count == 1)
+
+        let channel = try alice.getChannel(name)
+        #expect(channel.users.count == 1)
+
+        let bob = IRCMockSession.bob
+        try await bob.processIncomingString([
+            ":bob!~u@p7wgw3kynvpai.irc JOIN \(name)",
+            ":ergo.test 353 bob = \(name) :@alice bob",
+            ":ergo.test 366 bob \(name) :End of NAMES list",
+            ":ergo.test 324 bob \(name) +Cnt",
+            ":ergo.test 329 bob \(name) 1751134868",
+            ":alice!~u@p7wgw3kynvpai.irc KICK #general bob :bye",
+        ].joined(separator: "\n")+"\n")
+
+        #expect(bob.server.channels.count == 0)
     }
 
     @Test("Users joining a channel")
@@ -143,5 +155,23 @@ struct MessageParsingTests {
 
         let channel = alice.server.channels[0]
         #expect(channel.users.count == 2)
+    }
+
+    @Test("Nick change")
+    func nickChange() async throws {
+        let alice = IRCMockSession.alice
+        try await alice.processIncomingString([
+            ":alice!~u@p7wgw3kynvpai.irc JOIN #general",
+            ":ergo.test 353 alice = #general :@alice",
+            ":ergo.test 366 alice #general :End of NAMES list",
+            ":ergo.test 324 alice #general +Cnt",
+            ":ergo.test 329 alice #general 1751134868",
+            ":alice!~u@p7wgw3kynvpai.irc NICK charlie",
+        ].joined(separator: "\n")+"\n")
+
+        let channel = try alice.getChannel("#general")
+        #expect(channel.users.count == 1)
+        #expect(channel.users["charlie"] != nil)
+        #expect(alice.server.config.nick == "charlie")
     }
 }

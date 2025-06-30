@@ -7,7 +7,7 @@ public enum Command: Codable, Equatable, Sendable {
     /// The CAP command is used for capability negotiation between a server and a client. The CAP message may be sent from the server to the client. For the
     /// exact semantics of the CAP command and subcommands, please see the Capability Negotiation specification.
     /// Parameters: <subcommand> [:<capabilities>]
-    case CAP(subcommand: String, capabilities: String?)
+    case CAP(subcommand: String, capabilities: [String])
 
     /// The AUTHENTICATE command is used for SASL authentication between a server and a client. The client must support and successfully negotiate the
     /// "sasl" client capability (as listed below in the SASL specifications) before using this command. The AUTHENTICATE message may be sent from the server
@@ -22,8 +22,8 @@ public enum Command: Codable, Equatable, Sendable {
 
     /// The NICK command is used to give the client a nickname or change the previous one. If the server receives a NICK command from a client where the
     /// desired nickname is already in use on the network, it should issue an ERR_NICKNAMEINUSE numeric and ignore the NICK command.
-    /// Parameters: <nickname>
-    case NICK(nickname: String)
+    /// Parameters: <nick>
+    case NICK(nick: String)
 
     /// The USER command is used at the beginning of a connection to specify the username and realname of a new user. It must be noted that <realname>
     /// must be the last parameter because it may contain SPACE (' ', 0x20) characters, and should be prefixed with a colon (:) if required.
@@ -57,8 +57,8 @@ public enum Command: Codable, Equatable, Sendable {
 
     // MARK: - Channel Operations
 
-    case JOIN(channels: [String], keys: [String])
-    case PART(channels: [String], reason: String?)
+    case JOIN(channel: String)
+    case PART(channel: String, reason: String?)
     case TOPIC(channel: String, text: String)
     case NAMES
     case LIST
@@ -67,7 +67,7 @@ public enum Command: Codable, Equatable, Sendable {
     /// The KICK command can be used to request the forced removal of a user from a channel. It causes the <user> to be removed from the <channel> by
     /// force. This message may be sent from a server to a client to notify the client that someone has been removed from a channel. In this case, the message
     /// <source> will be the client who sent the kick, and <channel> will be the channel which the target client has been removed from.
-    /// Parameters: <channel> <user> *( "," <user> ) [<comment>]
+    /// Parameters: <channel> <user> [<comment>]
     case KICK(channel: String, nick: String, comment: String?)
 
     // MARK: - Server Queries and Commands
@@ -85,8 +85,8 @@ public enum Command: Codable, Equatable, Sendable {
 
     // MARK: - Sending Messages
 
-    case PRIVMSG(targets: [String], text: String)
-    case NOTICE(targets: [String], text: String)
+    case PRIVMSG(target: String, text: String)
+    case NOTICE(target: String, text: String)
 
     // MARK: - User-Based Queries
 
@@ -111,8 +111,9 @@ public enum Command: Codable, Equatable, Sendable {
     public init?(_ command: String, params: [String]) {
         switch command {
         case "CAP":
-            guard params.count >= 1 else { return nil }
-            self = .CAP(subcommand: params[0], capabilities: params[1])
+            guard params.count >= 3 else { return nil }
+            let capabilities = params.last?.split(separator: " ").map(String.init)
+            self = .CAP(subcommand: params[1], capabilities: capabilities ?? [])
         case "AUTHENTICATE":
             self = .AUTHENTICATE
         case "PASS":
@@ -120,7 +121,7 @@ public enum Command: Codable, Equatable, Sendable {
             self = .PASS(password: params[0])
         case "NICK":
             guard params.count >= 1 else { return nil }
-            self = .NICK(nickname: params[0])
+            self = .NICK(nick: params[0])
         case "USER":
             guard params.count >= 2 else { return nil }
             self = .USER(username: params[0], realname: params[1])
@@ -139,18 +140,10 @@ public enum Command: Codable, Equatable, Sendable {
             self = .ERROR(reason: params[0])
         case "JOIN":
             guard params.count >= 1 else { return nil }
-            let channels = params[0].split(separator: ",").map(String.init)
-            if params.count > 1 {
-                let keys = params[1].split(separator: ",").map(String.init)
-                self = .JOIN(channels: channels, keys: keys)
-            } else {
-                self = .JOIN(channels: channels, keys: [])
-            }
+            self = .JOIN(channel: params[0])
         case "PART":
             guard params.count >= 1 else { return nil }
-            let channels = params[0].split(separator: ",").map(String.init)
-            let reason = params.count > 1 ? params[1] : nil
-            self = .PART(channels: channels, reason: reason)
+            self = .PART(channel: params[0], reason: (params.count > 1) ? params[1] : nil)
         case "TOPIC":
             guard params.count >= 2 else { return nil }
             self = .TOPIC(channel: params[0], text: params[1])
@@ -163,7 +156,7 @@ public enum Command: Codable, Equatable, Sendable {
             self = .INVITE(nick: params[0], channel: params[1])
         case "KICK":
             guard params.count >= 2 else { return nil }
-            self = .KICK(channel: params[0], nick: params[1], comment: params[2])
+            self = .KICK(channel: params[0], nick: params[1], comment: (params.count > 2) ? params[2] : nil)
         case "MOTD":
             self = .MOTD
         case "VERSION":
@@ -186,12 +179,10 @@ public enum Command: Codable, Equatable, Sendable {
             self = .MODE
         case "PRIVMSG":
             guard params.count >= 2 else { return nil }
-            let targets = params[0].split(separator: ",").map(String.init)
-            self = .PRIVMSG(targets: targets, text: params[1])
+            self = .PRIVMSG(target: params[0], text: params[1])
         case "NOTICE":
             guard params.count >= 2 else { return nil }
-            let targets = params[0].split(separator: ",").map(String.init)
-            self = .NOTICE(targets: targets, text: params[1])
+            self = .NOTICE(target: params[0], text: params[1])
         case "WHO":
             self = .WHO
         case "WHOIS":

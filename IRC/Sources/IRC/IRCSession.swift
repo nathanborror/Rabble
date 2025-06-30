@@ -135,22 +135,6 @@ extension IRCSession {
         }
         server.channelList = list
     }
-
-    public func upsertConfigCapabilities(_ params: [String]) {
-        var capabilities = server.config.capabilities
-        if params[1] == "LS" && params[2] == "*" {
-            let caps = params[3].split(separator: " ").map(String.init)
-            for cap in caps {
-                capabilities[cap] = false
-            }
-        } else if params[1] == "LS" {
-            let caps = params[2].split(separator: " ").map(String.init)
-            for cap in caps {
-                capabilities[cap] = false
-            }
-        }
-        server.config.capabilities = capabilities
-    }
 }
 
 // MARK: Channels
@@ -229,6 +213,12 @@ extension IRCSession {
         }
         server.channels.remove(at: index)
     }
+
+    public func removeChannelNick(_ nick: String, channelID: String) throws {
+        var channel = try getChannel(channelID)
+        channel.users.removeValue(forKey: nick)
+        try upsertChannel(channel)
+    }
 }
 
 // MARK: Processors
@@ -288,14 +278,14 @@ extension IRCSession {
     public func processMessageCommand(_ message: Message) async throws {
         guard let command = message.command else { return }
         switch command {
-        case .CAP:
-            upsertConfigCapabilities(message.params)
+        case let .CAP(subcommand, capabilities):
+            try await commandCAP(message, subcommand: subcommand, capabilities: capabilities)
         case .AUTHENTICATE:
             break
         case .PASS:
             break
-        case .NICK:
-            break
+        case let .NICK(nick):
+            try await commandNICK(message, nick: nick)
         case .USER:
             break
         case .PING:
@@ -308,44 +298,20 @@ extension IRCSession {
             break
         case .ERROR:
             break
-        case .JOIN(let channels, let keys):
-            if message.nick == server.config.nick {
-                for (index, channel) in channels.enumerated() {
-                    let key = (keys.count > index) ? keys[index] : nil
-                    try upsertChannel(.init(name: channel, key: key))
-                }
-            } else {
-                for channel in channels {
-                    try upsertChannelMessage(message, channelID: channel)
-                    if let nick = message.nick {
-                        try upsertChannelNick(nick, channelID: channel)
-                    }
-                }
-            }
-        case .PART(let channels, _):
-            for channel in channels {
-                try upsertChannelMessage(message, channelID: channel)
-                if message.nick == server.config.nick {
-                    try removeChannel(channel)
-                }
-            }
-        case .TOPIC(let channel, let text):
-            try upsertChannelMessage(message, channelID: channel)
-            try upsertChannelTopic(text, channelID: channel)
+        case let .JOIN(channel):
+            try await commandJOIN(message, channel: channel)
+        case let .PART(channel, reason):
+            try await commandPART(message, channel: channel, reason: reason)
+        case let .TOPIC(channel, text):
+            try await commandTOPIC(message, channel: channel, text: text)
         case .NAMES:
             break
         case .LIST:
             break
-        case .INVITE(let nick, let channel):
-            if server.config.nick == nick {
-                try await channelJoin(channel)
-            }
-            try upsertChannelMessage(message, channelID: channel)
+        case let .INVITE(nick, channel):
+            try await commandINVITE(message, channel: channel, nick: nick)
         case let .KICK(channel, nick, _):
-            try upsertChannelMessage(message, channelID: channel)
-            if server.config.nick == nick {
-                try removeChannel(channel)
-            }
+            try await commandKICK(message, channel: channel, nick: nick)
         case .MOTD:
             break
         case .VERSION:
@@ -366,15 +332,8 @@ extension IRCSession {
             break
         case .MODE:
             break
-        case .PRIVMSG(let targets, _):
-            for target in targets {
-                if target.hasPrefix("#") {
-                    try upsertChannelMessage(message, channelID: target)
-                } else {
-                    // TODO: Implement private direct messages
-                    print("[target: \(target)] not implemented")
-                }
-            }
+        case let .PRIVMSG(target, _):
+            try await commandPRIVMSG(message, target: target)
         case .NOTICE:
             break
         case .WHO:
@@ -459,6 +418,90 @@ extension IRCSession {
 
         default:
             return
+        }
+    }
+}
+
+// MARK: Command State Changes
+
+extension IRCSession {
+
+    private func commandCAP(_ message: Message, subcommand: String, capabilities: [String]) async throws {
+        if subcommand == "LS" {
+            for cap in capabilities {
+                let existing = server.config.capabilities[cap] ?? false
+                server.config.capabilities[cap] = existing
+            }
+        }
+        if subcommand == "ACK" {
+            for cap in capabilities {
+                server.config.capabilities[cap] = true
+            }
+        }
+    }
+
+    private func commandNICK(_ message: Message, nick: String) async throws {
+        if let previousNick = message.nick {
+            for channel in server.channels {
+                var existing = channel
+                if var user = channel.users[previousNick] {
+                    user.nick = nick
+                    existing.users.removeValue(forKey: previousNick)
+                    existing.users[nick] = user
+                }
+                try upsertChannel(existing)
+            }
+            if previousNick == server.config.nick {
+                server.config.nick = nick
+            }
+        }
+    }
+
+    private func commandJOIN(_ message: Message, channel: String) async throws {
+        if message.nick == server.config.nick {
+            try upsertChannel(.init(name: channel))
+        } else {
+            try upsertChannelMessage(message, channelID: channel)
+            if let nick = message.nick {
+                try upsertChannelNick(nick, channelID: channel)
+            }
+        }
+    }
+
+    private func commandPART(_ message: Message, channel: String, reason: String?) async throws {
+        try upsertChannelMessage(message, channelID: channel)
+        if message.nick == server.config.nick {
+            try removeChannel(channel)
+        }
+    }
+
+    private func commandTOPIC(_ message: Message, channel: String, text: String) async throws {
+        try upsertChannelMessage(message, channelID: channel)
+        try upsertChannelTopic(text, channelID: channel)
+    }
+
+    private func commandINVITE(_ message: Message, channel: String, nick: String) async throws {
+        if server.config.nick == nick {
+            try await channelJoin(channel)
+        }
+        try upsertChannelMessage(message, channelID: channel)
+    }
+
+    private func commandKICK(_ message: Message, channel: String, nick: String) async throws {
+        try upsertChannelMessage(message, channelID: channel)
+        if server.config.nick == nick {
+            try removeChannel(channel)
+        } else {
+            try removeChannelNick(nick, channelID: channel)
+        }
+    }
+
+    private func commandPRIVMSG(_ message: Message, target: String) async throws {
+        if target.hasPrefix("#") {
+            try upsertChannelMessage(message, channelID: target)
+        } else {
+            // TODO: Implement private direct messages
+            print("[target: \(target)] not implemented")
         }
     }
 }
