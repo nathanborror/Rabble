@@ -11,7 +11,7 @@ final class ChannelViewModel {
 
     var session: IRCSession
     var draft: String = ""
-    var showingInspector = false
+    var showingInspector = true
 
     var config: IRC.Config {
         session.server.config
