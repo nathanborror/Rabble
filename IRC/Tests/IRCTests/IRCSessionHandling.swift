@@ -120,9 +120,28 @@ struct MessageParsingTests {
             ":ergo.test 353 alice = #general :@bob alice",
             ":bob!~u@p7wgw3kynvpai.irc KICK #general alice :bye bye",
         ]
-        try await alice.channelJoin(name)
         try await alice.processIncomingString(expected.joined(separator: "\n")+"\n")
 
         #expect(alice.server.channels.count == 0)
+    }
+
+    @Test("Users joining a channel")
+    func usersJoiningChannel() async throws {
+        let name = "#general"
+
+        let alice = IRCMockSession.alice
+        let expected = [
+            ":alice!~u@p7wgw3kynvpai.irc JOIN \(name)",
+            ":ergo.test 353 alice = \(name) :@alice",
+            ":ergo.test 366 alice \(name) :End of NAMES list",
+            ":ergo.test 324 alice \(name) +Cnt",
+            ":ergo.test 329 alice \(name) 1751134868",
+            ":bob!~u@p7wgw3kynvpai.irc JOIN \(name)",
+        ]
+        try await alice.processIncomingString(expected.joined(separator: "\n")+"\n")
+        #expect(alice.server.channels.count == 1)
+
+        let channel = alice.server.channels[0]
+        #expect(channel.users.count == 2)
     }
 }
