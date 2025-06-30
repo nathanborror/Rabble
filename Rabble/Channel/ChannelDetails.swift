@@ -5,6 +5,7 @@ import RabbleKit
 struct ChannelDetails: View {
     @Environment(AppState.self) var state
     @Environment(ChannelViewModel.self) var viewModel
+    @Environment(\.openWindow) var openWindow
 
     let session: IRCSession
 
@@ -39,6 +40,41 @@ struct ChannelDetails: View {
             .listRowSeparator(.hidden)
         }
         .navigationTitle("Members")
+        .contextMenu(forSelectionType: String.self) { userIDs in
+            if !userIDs.contains(viewModel.config.nick) {
+                Button("Give Operator") {
+                    print("not implemented")
+                }
+                Button("Give Voice") {
+                    print("not implemented")
+                }
+                Divider()
+                Button("Kick") {
+                    handleKick(userIDs)
+                }
+                Button("Ban") {
+                    print("not implemented")
+                }
+            }
+        } primaryAction: { userIDs in
+            handleShowInfo(userIDs)
+        }
+    }
+
+    func handleShowInfo(_ userIDs: Set<String>) {
+        guard let userID = userIDs.first else { return }
+        if var selection = state.selection {
+            selection.userID = userID
+            openWindow(id: "user", value: selection)
+        }
+    }
+
+    func handleKick(_ userIDs: Set<String>) {
+        Task {
+            for userID in userIDs {
+                try await viewModel.session.channelKick(viewModel.channelID, nick: userID, comment: nil)
+            }
+        }
     }
 }
 
@@ -73,9 +109,6 @@ struct ChannelMemberSection<Content: View>: View {
 }
 
 struct ChannelMember: View {
-    @Environment(AppState.self) var state
-    @Environment(\.openWindow) var openWindow
-
     let user: ChannelUser
 
     var body: some View {
@@ -86,14 +119,6 @@ struct ChannelMember: View {
         }
         .opacity(opacity)
         .padding(.leading, 20)
-        .contextMenu {
-            Button("Show Info") {
-                if var selection = state.selection {
-                    selection.userID = user.nick
-                    openWindow(id: "user", value: selection)
-                }
-            }
-        }
     }
 
     var opacity: CGFloat {

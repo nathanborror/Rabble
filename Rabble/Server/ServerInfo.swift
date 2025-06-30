@@ -20,7 +20,13 @@ struct ServerInfo: View {
                 InspectorValue("Capabilities", value: Array(session.server.config.capabilities.keys).joined(separator: ", "))
                 InspectorValue("Available User Modes", value: session.server.config.availableUserModes)
                 InspectorValue("Available Channel Modes", value: session.server.config.availableChannelModes)
-                InspectorValue("Support", value: session.server.config.support.map { "\($0.key): \($0.value)" }.joined(separator: "\n"))
+                InspectorValue("Support", value: session.server.config.support.map {
+                    if $0.value == true {
+                        "+ \($0.key)"
+                    } else {
+                        "- \($0.key)"
+                    }
+                }.joined(separator: "\n"))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
