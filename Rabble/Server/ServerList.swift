@@ -100,7 +100,7 @@ struct ServerRow: View {
                         .frame(width: 16, height: 16)
                         .foregroundStyle(.secondary)
 
-                    Text(channel.name)
+                    Text(channel.name.trimmingPrefix("#"))
                         .fontDesign(.monospaced)
                 }
                 .padding(.leading, 16)
