@@ -17,8 +17,8 @@ struct ServerView: View {
         ZStack(alignment: .topTrailing) {
             ScrollView {
                 LazyVStack(alignment: .leading) {
-                    ForEach(viewModel.logs) { message in
-                        Text(message.raw)
+                    ForEach(viewModel.logs, id: \.self) { log in
+                        Text(log)
                             .font(.footnote)
                             .fontDesign(.monospaced)
                             .textSelection(.enabled)

@@ -14,12 +14,12 @@ final class ServerViewModel {
         session.server.config
     }
 
-    var logs: [IRC.Message] {
-        session.server.config.logs
+    var logs: [String] {
+        session.server.logs
     }
 
-    var list: [IRC.Config.Channel] {
-        session.server.config.list
+    var list: [IRC.ChannelRef] {
+        session.server.channelList
     }
 
     var channels: [String: IRC.Channel] {

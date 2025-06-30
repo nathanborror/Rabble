@@ -137,3 +137,25 @@ public struct Channel: Identifiable, Codable, Sendable {
         modes?.contains("z") ?? false
     }
 }
+
+public struct ChannelRef: Identifiable, Codable, Sendable {
+    public var name: String
+    public var users: Int?
+    public var topic: String?
+
+    public var id: String { name }
+
+    public init(name: String, users: Int? = nil, topic: String? = nil) {
+        self.name = name
+        self.users = users
+        self.topic = topic
+    }
+
+    public func apply(_ channel: ChannelRef) -> ChannelRef {
+        var existing = self
+        existing.name = channel.name
+        existing.users = (channel.users != nil) ? channel.users : existing.users
+        existing.topic = (channel.topic != nil) ? channel.topic : existing.topic
+        return existing
+    }
+}

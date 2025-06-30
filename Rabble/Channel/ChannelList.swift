@@ -9,10 +9,10 @@ struct ChannelList: View {
     let session: IRCSession
 
     @State private var selected: Set<String> = []
-    @State private var sortOrder = [KeyPathComparator(\IRC.Config.Channel.name)]
+    @State private var sortOrder = [KeyPathComparator(\IRC.ChannelRef.name)]
 
     var body: some View {
-        Table(session.server.config.list, selection: $selected, sortOrder: $sortOrder) {
+        Table(session.server.channelList, selection: $selected, sortOrder: $sortOrder) {
             TableColumn("Name", value: \.name)
             TableColumn("Users") { channel in
                 Text("\(channel.users ?? 0)")

@@ -16,7 +16,7 @@ public class IRCSessionSimulation: IRCSession {
 
     public init(_ server: Server) {
         self.server = server
-        self.isConnected = !server.config.logs.isEmpty
+        self.isConnected = !server.logs.isEmpty
     }
 
     // MARK: Session Interface
@@ -47,7 +47,7 @@ public class IRCSessionSimulation: IRCSession {
             try await processIncomingString(":\(server.config.nick)!~u@unknown.irc \(input)\n")
 
             do {
-                let lines = server.config.logs.map { $0.raw } + [input]
+                let lines = server.logs.map { $0 } + [input]
                 let messages = try await API.shared.generate(lines)
                 for message in messages {
                     let data = message.content ?? ""

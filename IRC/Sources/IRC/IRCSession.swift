@@ -111,7 +111,7 @@ extension IRCSession {
     }
 
     public func clearLogs() {
-        server.config.logs = []
+        server.logs = []
     }
 }
 
@@ -119,25 +119,21 @@ extension IRCSession {
 
 extension IRCSession {
 
-    public func upsertConfigLog(_ message: Message) {
-        var logs = server.config.logs
-        if let index = logs.firstIndex(where: { $0.id == message.id }) {
-            logs[index] = message
-        } else {
-            logs.append(message)
-        }
-        server.config.logs = logs
+    public func upsertLog(_ input: String) {
+        var logs = server.logs
+        logs.append(input)
+        server.logs = logs
     }
 
-    public func upsertConfigChannel(_ channel: Config.Channel) {
-        var list = server.config.list
+    public func upsertChannelRef(_ channel: ChannelRef) {
+        var list = server.channelList
         if let index = list.firstIndex(where: { $0.id == channel.id }) {
             let existing = list[index].apply(channel)
             list[index] = existing
         } else {
             list.append(channel)
         }
-        server.config.list = list
+        server.channelList = list
     }
 
     public func upsertConfigCapabilities(_ params: [String]) {
@@ -275,7 +271,7 @@ extension IRCSession {
             }
 
             // Upsert new line to config object
-            upsertConfigLog(message)
+            upsertLog(line)
 
             // Handle command and numeric
             do {
@@ -321,6 +317,9 @@ extension IRCSession {
             } else {
                 for channel in channels {
                     try upsertChannelMessage(message, channelID: channel)
+                    if let nick = message.nick {
+                        try upsertChannelNick(nick, channelID: channel)
+                    }
                 }
             }
         case .PART(let channels, _):
@@ -435,7 +434,7 @@ extension IRCSession {
             config.modes = modes
             server.config = config
         case let .RPL_LIST(_, channel, count, topic):
-            upsertConfigChannel(.init(name: channel, users: count, topic: topic))
+            upsertChannelRef(.init(name: channel, users: count, topic: topic))
         case let .RPL_CHANNELMODEIS(_, channel, modestring, arguments):
             var channel = try getChannel(channel)
             channel.modes = modestring

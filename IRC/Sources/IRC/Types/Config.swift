@@ -33,8 +33,6 @@ public struct Config: Codable, Sendable {
     /// Current MOTD for the server.
     public var motd: String?
 
-    public var logs: [Message]
-    public var list: [Channel]
     public var capabilities: [String: Bool]
     public var availableUserModes: String?
     public var availableChannelModes: String?
@@ -48,31 +46,10 @@ public struct Config: Codable, Sendable {
         case simulation
     }
 
-    public struct Channel: Identifiable, Codable, Sendable {
-        public var name: String
-        public var users: Int?
-        public var topic: String?
 
-        public var id: String { name }
-
-        public init(name: String, users: Int? = nil, topic: String? = nil) {
-            self.name = name
-            self.users = users
-            self.topic = topic
-        }
-
-        public func apply(_ channel: Channel) -> Channel {
-            var existing = self
-            existing.name = channel.name
-            existing.users = (channel.users != nil) ? channel.users : existing.users
-            existing.topic = (channel.topic != nil) ? channel.topic : existing.topic
-            return existing
-        }
-    }
-
-    public init(kind: Kind = .network, server: String, port: UInt16, nick: String, ident: String? = nil, username: String,
-                host: String? = nil, realname: String? = nil, email: String? = nil, password: String? = nil, modes: String? = nil,
-                motd: String? = nil, logs: [Message] = [], list: [Channel] = [], capabilities: [String : Bool] = [:],
+    public init(kind: Kind = .network, server: String, port: UInt16, nick: String, ident: String? = nil,
+                username: String, host: String? = nil, realname: String? = nil, email: String? = nil,
+                password: String? = nil, modes: String? = nil, motd: String? = nil, capabilities: [String : Bool] = [:],
                 availableUserModes: String? = nil, availableChannelModes: String? = nil,
                 availableChannelModesWithParameters: String? = nil, support: [String: Value] = [:]) {
         self.kind = kind
@@ -87,8 +64,6 @@ public struct Config: Codable, Sendable {
         self.password = password
         self.modes = modes
         self.motd = motd
-        self.logs = logs
-        self.list = list
         self.capabilities = capabilities
         self.availableUserModes = availableUserModes
         self.availableChannelModes = availableChannelModes
