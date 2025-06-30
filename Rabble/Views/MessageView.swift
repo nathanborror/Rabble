@@ -13,7 +13,7 @@ struct MessageView: View {
                 .foregroundStyle(.tertiary)
 
             switch message.command {
-            case let .privmsg(_, text):
+            case let .PRIVMSG(_, text):
                 HStack(alignment: .firstTextBaseline) {
                     HStack {
                         Spacer(minLength: 0)
@@ -23,9 +23,9 @@ struct MessageView: View {
                     .frame(width: 120)
                     Text(text)
                 }
-            case .join:
+            case .JOIN:
                 Text("\(message.nick ?? "Unknown user") joined the channel")
-            case .part:
+            case .PART:
                 Text("\(message.nick ?? "Unknown user") left the channel")
             default:
                 Text("nil")

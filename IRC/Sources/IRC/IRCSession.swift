@@ -252,7 +252,7 @@ extension IRCSession {
 
             // Respond to periodic PINGs to maintain the connection
             switch message.command {
-            case .ping:
+            case .PING:
                 let pong = "PONG \(message.params[0])"
                 try await send(pong)
             default:
@@ -275,27 +275,84 @@ extension IRCSession {
     }
 
     public func processMessageCommand(_ message: Message) async throws {
-        switch message.command {
-        case let .join(channels, keys):
-            // Add channel(s) if the message is coming from the client's nick
+        guard let command = message.command else { return }
+        switch command {
+        case .CAP:
+            upsertConfigCapabilities(message.params)
+        case .AUTHENTICATE:
+            break
+        case .PASS:
+            break
+        case .NICK:
+            break
+        case .USER:
+            break
+        case .PING:
+            break
+        case .PONG:
+            break
+        case .OPER:
+            break
+        case .QUIT:
+            break
+        case .ERROR:
+            break
+        case .JOIN(let channels, let keys):
             if message.nick == server.config.nick {
                 for (index, channel) in channels.enumerated() {
                     let key = (keys.count > index) ? keys[index] : nil
                     try upsertChannel(.init(name: channel, key: key))
                 }
+            } else {
+                for channel in channels {
+                    try upsertChannelMessage(message, channelID: channel)
+                }
             }
-            // Add the message to the channel
-            for channel in channels {
-                try upsertChannelMessage(message, channelID: channel)
-            }
-        case let .part(channels, _):
+        case .PART(let channels, _):
             for channel in channels {
                 try upsertChannelMessage(message, channelID: channel)
                 if message.nick == server.config.nick {
                     try removeChannel(channel)
                 }
             }
-        case let .privmsg(targets, _):
+        case .TOPIC(let channel, let text):
+            try upsertChannelMessage(message, channelID: channel)
+            try upsertChannelTopic(text, channelID: channel)
+        case .NAMES:
+            break
+        case .LIST:
+            break
+        case .INVITE(let nick, let channel):
+            if server.config.nick == nick {
+                try await channelJoin(channel)
+            }
+            try upsertChannelMessage(message, channelID: channel)
+        case let .KICK(channel, nick, _):
+            try upsertChannelMessage(message, channelID: channel)
+            if server.config.nick == nick {
+                try removeChannel(channel)
+            }
+        case .MOTD:
+            break
+        case .VERSION:
+            break
+        case .ADMIN:
+            break
+        case .CONNECT:
+            break
+        case .LUSERS:
+            break
+        case .TIME:
+            break
+        case .STATS:
+            break
+        case .HELP:
+            break
+        case .INFO:
+            break
+        case .MODE:
+            break
+        case .PRIVMSG(let targets, _):
             for target in targets {
                 if target.hasPrefix("#") {
                     try upsertChannelMessage(message, channelID: target)
@@ -304,16 +361,30 @@ extension IRCSession {
                     print("[target: \(target)] not implemented")
                 }
             }
-        case .cap:
-            upsertConfigCapabilities(message.params)
-        case let .topic(channel, text):
-            try upsertChannelTopic(text, channelID: channel)
-            try upsertChannelMessage(message, channelID: channel)
-        case let .invite(nick, channel):
-            guard server.config.nick == nick else { return }
-            try await channelJoin(channel)
-        default:
-            return
+        case .NOTICE:
+            break
+        case .WHO:
+            break
+        case .WHOIS:
+            break
+        case .WHOWAS:
+            break
+        case .KILL:
+            break
+        case .REHASH:
+            break
+        case .RESTART:
+            break
+        case .SQUIT:
+            break
+        case .AWAY:
+            break
+        case .LINKS:
+            break
+        case .USERHOST:
+            break
+        case .WALLOPS:
+            break
         }
     }
 

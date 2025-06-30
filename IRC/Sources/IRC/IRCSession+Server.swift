@@ -66,14 +66,20 @@ public class IRCSessionServer: IRCSession {
 
             // Request capabilities
             try await send("CAP LS 302") { message in
-                message.command == .cap
+                if case .CAP = message.command {
+                    return true
+                }
+                return false
             }
 
             // TODO: Check before requiring
             // draft/chathistory sasl
 
             try await send("CAP REQ :echo-message server-time message-tags batch labeled-response") { message in
-                message.command == .cap && message.params.contains("ACK")
+                if case .CAP = message.command {
+                    return message.params.contains("ACK")
+                }
+                return false
             }
             try await send("CAP END")
             try await send("NICK \(server.config.nick)")

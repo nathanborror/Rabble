@@ -77,7 +77,6 @@ struct MessageParsingTests {
             ":ergo.test 329 alice \(name) 1751134868",
             ":ergo.test 341 alice bob \(name)",
         ]
-
         try await alice.channelJoin(name)
         try await alice.processIncomingString(expected.joined(separator: "\n")+"\n")
         #expect(alice.server.channels.count == 1)
@@ -104,5 +103,26 @@ struct MessageParsingTests {
         #expect(bobChannel.modes == "+kCnst")
         #expect(bobChannel.key == "s3cr3t")
         #expect(bobChannel.users.count == 2)
+    }
+
+    @Test("Kick from channel")
+    func kickFromChannel() async throws {
+        let name = "#general"
+
+        let alice = IRCMockSession.alice
+        let expected = [
+            ":alice!~u@p7wgw3kynvpai.irc JOIN \(name)",
+            ":ergo.test 353 alice = \(name) :@alice",
+            ":ergo.test 366 alice \(name) :End of NAMES list",
+            ":ergo.test 324 alice \(name) +Cnt",
+            ":ergo.test 329 alice \(name) 1751134868",
+            ":alice!~u@p7wgw3kynvpai.irc JOIN #general",
+            ":ergo.test 353 alice = #general :@bob alice",
+            ":bob!~u@p7wgw3kynvpai.irc KICK #general alice :bye bye",
+        ]
+        try await alice.channelJoin(name)
+        try await alice.processIncomingString(expected.joined(separator: "\n")+"\n")
+
+        #expect(alice.server.channels.count == 0)
     }
 }
