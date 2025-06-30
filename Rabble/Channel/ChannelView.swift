@@ -52,8 +52,9 @@ struct ChannelView: View {
         }
         .inspector(isPresented: $viewModel.showingInspector) {
             NavigationStack {
-                ChannelMembers(session: viewModel.session)
+                ChannelDetails(session: viewModel.session)
             }
+            .environment(viewModel)
             .inspectorColumnWidth(ideal: 200)
         }
         .onChange(of: viewModel.messages.count) { _, _ in

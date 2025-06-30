@@ -39,6 +39,28 @@ final class ChannelViewModel {
         return messages.sorted { $0.created < $1.created }
     }
 
+    var members: [IRC.ChannelUser] {
+        guard let users = channel?.users.values else { return [] }
+        return Array(users)
+    }
+
+    var operators: [IRC.ChannelUser] {
+        members.filter {
+            $0.membership == .owner ||
+            $0.membership == .admin ||
+            $0.membership == .op ||
+            $0.membership == .half
+        }
+    }
+
+    var voice: [IRC.ChannelUser] {
+        members.filter { $0.membership == .voice }
+    }
+
+    var users: [IRC.ChannelUser] {
+        members.filter { $0.membership == nil }
+    }
+
     init(channelID: String, session: IRCSession) {
         self.channelID = channelID
         self.session = session
