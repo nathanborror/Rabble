@@ -145,10 +145,11 @@ extension API {
 
 extension API {
 
-    public func generate(_ lines: [String]) async throws -> [GenKit.Message] {
+    public func generate(history: [String], message: String) async throws -> [GenKit.Message] {
         let (service, model) = try preferredChatService()
 
-        let message = Message(role: .user, content: lines.joined(separator: "\n"))
+        let assistant = Message(role: .user, content: history.joined(separator: "\n")+"\n")
+        let user = Message(role: .assistant, content: message+"\n")
 
         var req = ChatSessionRequest(service: service, model: model)
         req.with(system: """
@@ -194,7 +195,7 @@ extension API {
 
             Remember, you must respond ONLY as an IRCv3 server would. Do not provide any additional information, explanations, or engage in conversation outside of the IRC protocol. Your entire response should be formatted as valid IRC server messages.
             """)
-        req.with(history: [message])
+        req.with(history: [assistant, user])
 
         let resp = try await ChatSession.shared.completion(req)
         return resp.messages

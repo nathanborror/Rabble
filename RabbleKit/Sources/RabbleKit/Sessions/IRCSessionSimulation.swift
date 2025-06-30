@@ -24,10 +24,11 @@ public class IRCSessionSimulation: IRCSession {
     public func connect() async throws {
         clearLogs()
         
-        let messages = try await API.shared.generate([
-            "NICK \(server.config.nick)",
-            "USER \(server.config.ident ?? server.config.username) 0 * \(server.config.realname ?? "-")",
-        ])
+        let messages = try await API.shared.generate(history: [], message: """
+            NICK \(server.config.nick)
+            USER \(server.config.ident ?? server.config.username) 0 * \(server.config.realname ?? "-")
+            
+            """)
 
         isConnected = true
 
@@ -47,8 +48,7 @@ public class IRCSessionSimulation: IRCSession {
             try await processIncomingString(":\(server.config.nick)!~u@unknown.irc \(input)\n")
 
             do {
-                let lines = server.logs.map { $0 } + [input]
-                let messages = try await API.shared.generate(lines)
+                let messages = try await API.shared.generate(history: server.logs, message: input)
                 for message in messages {
                     let data = message.content ?? ""
                     try await processIncomingString("\(data)\n")
