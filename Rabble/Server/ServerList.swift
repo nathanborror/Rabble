@@ -9,7 +9,7 @@ struct ServerList: View {
         @Bindable var state = state
         VStack {
             List(selection: $state.selection) {
-                ForEach(Array(state.sessionPool.values), id: \.server.id) { session in
+                ForEach(Array(state.sessionPool.values).sorted(by: { $0.server.config.created < $1.server.config.created }), id: \.server.id) { session in
                     ServerRow(session: session)
                         .tag(AppState.Selection(fileID: session.server.id))
                 }
