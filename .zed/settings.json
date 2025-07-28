@@ -8,6 +8,10 @@
     "Markdown": {
       "preferred_line_length": 80,
       "soft_wrap": "preferred_line_length"
+    },
+    "Plain Text": {
+      "preferred_line_length": 80,
+      "soft_wrap": "preferred_line_length"
     }
   }
 }

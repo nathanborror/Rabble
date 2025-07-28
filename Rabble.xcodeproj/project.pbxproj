@@ -43,7 +43,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		D82BF0652E0F22BF002B7416 /* IRC */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = IRC; sourceTree = "<group>"; };
 		D84183892E1255CC00339DB0 /* ChannelMemberInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelMemberInfo.swift; sourceTree = "<group>"; };
 		D841838B2E1258E300339DB0 /* InspectorValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectorValue.swift; sourceTree = "<group>"; };
 		D875291A2E046C98005C45C8 /* ServerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerViewModel.swift; sourceTree = "<group>"; };
@@ -135,7 +134,6 @@
 			isa = PBXGroup;
 			children = (
 				D877A7402DFA95E800A2BF17 /* Rabble */,
-				D82BF0652E0F22BF002B7416 /* IRC */,
 				D877A7452DFA966000A2BF17 /* RabbleKit */,
 				D877A72E2DFA95D900A2BF17 /* Products */,
 			);

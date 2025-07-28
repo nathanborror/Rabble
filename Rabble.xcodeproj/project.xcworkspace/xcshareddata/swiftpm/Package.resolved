@@ -1,5 +1,5 @@
 {
-  "originHash" : "0b9a42818e43a4f1958092dba39ee5e678e288563bfd9968aac68bc5f185fb0e",
+  "originHash" : "92fd9440f1733f8221e3a4168203f11fea859d09cd5f086df0369d3e9968901a",
   "pins" : [
     {
       "identity" : "fuzi",
@@ -71,6 +71,15 @@
       "state" : {
         "branch" : "main",
         "revision" : "868183db90fec3742b7fcf6db05dd4ae69151b29"
+      }
+    },
+    {
+      "identity" : "swift-irc",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nathanborror/swift-irc",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1321419a9bd6dfebf27bb0da719e33a6e382cf72"
       }
     },
     {
