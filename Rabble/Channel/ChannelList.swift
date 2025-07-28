@@ -32,9 +32,6 @@ struct ChannelList: View {
             handleJoin(names)
         }
         .navigationTitle("Channels")
-//        .onChange(of: sortOrder) { _, newSortOrder in
-//            manager.list.sort(using: newSortOrder)
-//        }
         .toolbar {
             ToolbarItem {
                 Button("List", systemImage: "arrow.clockwise") {

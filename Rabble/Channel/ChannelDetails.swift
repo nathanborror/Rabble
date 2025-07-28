@@ -114,7 +114,7 @@ struct ChannelMember: View {
     var body: some View {
         HStack(spacing: 0) {
             Text(user.nick)
-                .fontDesign(.monospaced)
+                .font(.system(.subheadline, design: .monospaced))
             Spacer()
         }
         .opacity(opacity)

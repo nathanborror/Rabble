@@ -14,26 +14,17 @@ struct ChannelView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    ForEach(viewModel.messages) { message in
-                        MessageView(message: message)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .scrollTargetLayout()
-                    }
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                ForEach(viewModel.messages) { message in
+                    MessageView(message: message)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .scrollTargetLayout()
                 }
-            }
-            .scrollPosition($scrollPosition, anchor: .bottom)
-            .defaultScrollAnchor(.bottom)
-
-            if let topic = viewModel.channel?.topic {
-                StickyView(kind: .informative, title: "Topic", expanded: true) {
-                    Text(topic.message)
-                }
-                .padding()
             }
         }
+        .scrollPosition($scrollPosition, anchor: .bottom)
+        .defaultScrollAnchor(.bottom)
         .environment(viewModel)
         .navigationTitle(viewModel.title)
         #if os(macOS)

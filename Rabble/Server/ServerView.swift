@@ -17,12 +17,14 @@ struct ServerView: View {
         ZStack(alignment: .topTrailing) {
             ScrollView {
                 LazyVStack(alignment: .leading) {
-                    ForEach(viewModel.logs, id: \.self) { log in
-                        Text(log)
-                            .font(.footnote)
-                            .fontDesign(.monospaced)
-                            .textSelection(.enabled)
-                            .scrollTargetLayout()
+                    ForEach(viewModel.logs.indices, id: \.self) { index in
+                        if index < viewModel.logs.count {
+                            Text(viewModel.logs[index])
+                                .font(.footnote)
+                                .fontDesign(.monospaced)
+                                .textSelection(.enabled)
+                                .scrollTargetLayout()
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -33,26 +35,11 @@ struct ServerView: View {
             .background(.background)
 
             VStack(alignment: .leading) {
-                if let motd = viewModel.config.motd {
-                    StickyView(kind: .informative, title: "MOTD", expanded: false) {
-                        Text(motd)
-                    }
-                }
                 if let error = viewModel.session.error {
                     StickyView(kind: .error, title: "Error", expanded: true) {
                         Text("\(error)")
                     }
                 }
-
-//                if let error = viewModel.session.error, error == .authenticationFailed {
-//                    StickyView(kind: .error, title: "Authentication Error", expanded: true) {
-//                        Text("\(error)")
-//                    }
-//                } else if let error = viewModel.session.error {
-//                    StickyView(kind: .error, title: "Error", expanded: true) {
-//                        Text("\(error)")
-//                    }
-//                }
             }
             .padding()
         }
@@ -65,11 +52,6 @@ struct ServerView: View {
                 .environment(viewModel)
         }
         .toolbar {
-            ToolbarItem {
-                Button("Clear Logs", systemImage: "eraser") {
-                    handleClearLogs()
-                }
-            }
             ToolbarItem {
                 Button("Channels", systemImage: "list.dash.header.rectangle") {
                     handleChannelList()
@@ -110,9 +92,4 @@ struct ServerView: View {
     func handleChannelInfo() {
         openWindow(id: "server", value: viewModel.session.server.id)
     }
-
-    func handleClearLogs() {
-        viewModel.session.clearLogs()
-    }
 }
-
