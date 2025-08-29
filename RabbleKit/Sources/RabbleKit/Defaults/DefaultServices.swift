@@ -43,12 +43,6 @@ extension Defaults {
             host: "https://api.groq.com/openai/v1"
         )
 
-    public static let llama =
-        Service(
-            id: .llama,
-            name: "Llama"
-        )
-
     public static let mistral =
         Service(
             id: .mistral,
@@ -66,11 +60,5 @@ extension Defaults {
         Service(
             id: .openAI,
             name: "OpenAI"
-        )
-
-    public static let perplexity =
-        Service(
-            id: .perplexity,
-            name: "Perplexity"
         )
 }

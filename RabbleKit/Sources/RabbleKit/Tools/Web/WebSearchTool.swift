@@ -46,9 +46,9 @@ extension WebSearchTool.Arguments {
 extension WebSearchTool {
     
     public static func handle(_ toolCall: ToolCall) async -> [Message] {
+        guard let functionCall = toolCall.function else { return [] }
         do {
-            let args = try Arguments(toolCall.function.arguments)
-            
+            let args = try Arguments(functionCall.arguments)
             switch args.kind {
             case .web:
                 let searchResponse = try await WebSearchSession.shared.search(query: args.query)
@@ -72,7 +72,7 @@ extension WebSearchTool {
                         "results": .string(results.joined(separator: "\n")),
                     ]),
                     toolCallID: toolCall.id,
-                    name: toolCall.function.name,
+                    name: functionCall.name,
                     metadata: ["label": .string("Searched web for '\(args.query)'")]
                 )]
             case .image:
@@ -92,7 +92,7 @@ extension WebSearchTool {
                     role: .tool,
                     content: content,
                     toolCallID: toolCall.id,
-                    name: toolCall.function.name,
+                    name: functionCall.name,
                     metadata: ["label": .string("Searched web images for '\(args.query)'")]
                 )]
             }
@@ -106,7 +106,7 @@ extension WebSearchTool {
                     </error>
                     """,
                 toolCallID: toolCall.id,
-                name: toolCall.function.name
+                name: functionCall.name
             )]
         }
     }

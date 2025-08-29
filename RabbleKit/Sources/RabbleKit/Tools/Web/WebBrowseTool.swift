@@ -46,8 +46,9 @@ extension WebBrowseTool.Arguments {
 extension WebBrowseTool {
 
     public static func handle(_ toolCall: ToolCall) async -> [Message] {
+        guard let functionCall = toolCall.function else { return [] }
         do {
-            let args = try Arguments(toolCall.function.arguments)
+            let args = try Arguments(functionCall.arguments)
             let summary = try await summarize(args)
             let label = "Read \(URL(string: args.url)?.host() ?? "")"
             return [.init(
@@ -62,7 +63,7 @@ extension WebBrowseTool {
                 </website>
                 """,
                 toolCallID: toolCall.id,
-                name: toolCall.function.name,
+                name: functionCall.name,
                 metadata: ["label": .string(label)]
             )]
         } catch {
@@ -74,7 +75,7 @@ extension WebBrowseTool {
                 </error>
                 """,
                 toolCallID: toolCall.id,
-                name: toolCall.function.name
+                name: functionCall.name
             )]
         }
     }

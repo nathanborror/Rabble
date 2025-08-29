@@ -1,5 +1,5 @@
 {
-  "originHash" : "92fd9440f1733f8221e3a4168203f11fea859d09cd5f086df0369d3e9968901a",
+  "originHash" : "b50e92f76bcf7af96161e34e381ae5a4e8aeb70246d991d6203dbfe967a885fd",
   "pins" : [
     {
       "identity" : "fuzi",
@@ -16,7 +16,7 @@
       "location" : "https://github.com/loopwork-ai/JSONSchema",
       "state" : {
         "branch" : "main",
-        "revision" : "0063f2f978c9eb09101689b8a0ffb77593c5d2f1"
+        "revision" : "4c6f2467d5bc72b062c7a9b7e4cd77a09635ea8b"
       }
     },
     {
@@ -34,7 +34,7 @@
       "location" : "https://github.com/apple/swift-argument-parser",
       "state" : {
         "branch" : "main",
-        "revision" : "932e6cdd2a8bd2286e52ccfee18a2f04c173835d"
+        "revision" : "c3bdeba7aa42ca42df3ec29c3cb98356bf2394cd"
       }
     },
     {
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections.git",
       "state" : {
-        "revision" : "c1805596154bb3a265fd91b8ac0c4433b4348fb0",
-        "version" : "1.2.0"
+        "revision" : "8c0c0a8b49e080e54e5e328cc552821ff07cd341",
+        "version" : "1.2.1"
       }
     },
     {
@@ -70,7 +70,7 @@
       "location" : "https://github.com/nathanborror/swift-gen-kit",
       "state" : {
         "branch" : "main",
-        "revision" : "868183db90fec3742b7fcf6db05dd4ae69151b29"
+        "revision" : "edb9c713ccdc7b52e953c3a1271bc7eef6723e3a"
       }
     },
     {
@@ -79,7 +79,7 @@
       "location" : "https://github.com/nathanborror/swift-irc",
       "state" : {
         "branch" : "main",
-        "revision" : "1321419a9bd6dfebf27bb0da719e33a6e382cf72"
+        "revision" : "7e554467a1475fa39e81e52e351ce75aa8a198d2"
       }
     },
     {
@@ -115,7 +115,7 @@
       "location" : "https://github.com/nathanborror/swift-openai",
       "state" : {
         "branch" : "main",
-        "revision" : "752fb110f4250d3cf444f9fd50081f8a4524ca93"
+        "revision" : "0b1dbbf98ff4fa95e07059dd03171710381213aa"
       }
     },
     {
@@ -124,7 +124,7 @@
       "location" : "https://github.com/nathanborror/swift-perplexity",
       "state" : {
         "branch" : "main",
-        "revision" : "c457e4358ecd2bd1f7e9d0bf5a1f67efd6646449"
+        "revision" : "caa4785f5c652ac6455defcee5d0d660c85a72d6"
       }
     },
     {
