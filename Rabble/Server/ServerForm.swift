@@ -15,6 +15,7 @@ struct ServerForm: View {
     @State var email = "nathan@nathan.run"
     @State var password = "abc"
     @State var realname = "Nathan Borror"
+    @State var useTLS = true
 
     @State var service = "openai"
     @State var model = "gpt-4o"
@@ -34,6 +35,7 @@ struct ServerForm: View {
                     TextField("Server", text: $server)
                         .textContentType(.URL)
                     TextField("Port", value: $port, format: .number.grouping(.never))
+                    Toggle("Use TLS", isOn: $useTLS)
                 }
                 Section {
                     TextField("Nick", text: $nick)
@@ -93,6 +95,7 @@ struct ServerForm: View {
                     kind: kind,
                     server: server,
                     port: port,
+                    useTLS: useTLS,
                     nick: nick,
                     ident: ident.isEmpty ? nil : ident,
                     username: username,
