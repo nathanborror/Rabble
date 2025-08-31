@@ -14,6 +14,7 @@ final class AppState {
     enum Error: Swift.Error, CustomStringConvertible {
         case restorationError(String)
         case serviceError(String)
+        case notConnected
 
         public var description: String {
             switch self {
@@ -21,6 +22,8 @@ final class AppState {
                 "Restoration error: \(detail)"
             case .serviceError(let detail):
                 "Service error: \(detail)"
+            case .notConnected:
+                "Not connected to the server"
             }
         }
     }
@@ -114,26 +117,74 @@ final class AppState {
 
     // MARK: - IRC
 
-    func createServer(kind: IRC.Config.Kind, server: String, port: UInt16, useTLS: Bool, nick: String, ident: String?, username: String, email: String?, password: String?, realname: String) async throws {
+    func sessionCreate(kind: IRC.Config.Kind, server: String, port: UInt16, useTLS: Bool, nick: String, ident: String?, username: String, email: String?, password: String?, realname: String) async throws {
         let fileID = String.id
         let config = IRC.Config(kind: kind, server: server, port: port, useTLS: useTLS, nick: nick, ident: ident, username: username, realname: realname, email: email, password: password)
         let server = IRC.Server(id: fileID, config: config)
 
         _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: server)
 
-        sessionPool[fileID] = IRCSessionServer(server)
+        let session = IRCSessionServer(server)
+        sessionPool[fileID] = session
         selection = .init(fileID: fileID)
 
         // Connect to server
-        try await sessionPool[fileID]?.connect()
+        try await sessionConnect(session: session)
     }
 
-    func deleteServer(fileID: String) async throws {
+    func sessionDelete(session: IRCSession) async throws {
+        let fileID = session.server.id
         try await filesProvider.cacheFileDelete(fileID)
         sessionPool.removeValue(forKey: fileID)
         if selection?.sessionID == fileID {
             selection = nil
         }
+    }
+
+    func sessionConnect(session: IRCSession) async throws {
+        try await session.connect()
+
+        let nick = session.server.config.nick
+        let username = session.server.config.username
+        let realname = session.server.config.realname ?? ""
+
+        if let password = session.server.config.password {
+            let token = sessionToken(nick: nick, username: username, password: password)
+            try await session.send("CAP LS")
+            try await session.send("NICK \(nick)")
+            try await session.send("USER \(username) 0 * :\(realname)")
+            try await session.send("CAP REQ :sasl echo-message")
+            try await session.send("AUTHENTICATE PLAIN")
+            try await session.send("AUTHENTICATE \(token)")
+            try await session.send("CAP END")
+        } else {
+            try await session.send("CAP LS")
+            try await session.send("NICK \(nick)")
+            try await session.send("USER \(username) 0 * :\(realname)")
+            try await session.send("CAP REQ :sasl echo-message")
+            try await session.send("CAP END")
+        }
+
+        for channel in session.server.channels {
+            try await session.channelJoin(channel.id)
+        }
+    }
+
+    func sessionRegister(session: IRCSession, email: String, password: String) async throws {
+        guard session.isConnected else {
+            throw Error.notConnected
+        }
+        try await session.nickServRegister(email: email, password: password)
+    }
+
+    func sessionDisconnect(session: IRCSession) async throws {
+        try await session.disconnect()
+    }
+
+    private func sessionToken(nick: String, username: String, password: String) -> String {
+        let authString = "\(nick)\u{0000}\(username)\u{0000}\(password)"
+        let data = authString.data(using: .utf8)!
+        return data.base64EncodedString()
     }
 
     // MARK: - File Handling

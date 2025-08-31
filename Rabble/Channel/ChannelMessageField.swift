@@ -2,6 +2,7 @@ import SwiftUI
 import RabbleKit
 
 struct ChannelMessageField: View {
+    @Environment(AppState.self) var state
     @Environment(ChannelViewModel.self) var viewModel
 
     @State private var history: [String] = []
@@ -45,7 +46,7 @@ struct ChannelMessageField: View {
                 } else {
                     Spacer()
                     Button("Reconnect") {
-                        Task { try await viewModel.session.connect() }
+                        Task { try await state.sessionConnect(session: viewModel.session) }
                     }
                     #if os(macOS)
                     .buttonStyle(.link)

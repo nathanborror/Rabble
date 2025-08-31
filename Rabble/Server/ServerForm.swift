@@ -10,12 +10,12 @@ struct ServerForm: View {
     @State var server = "localhost"
     @State var port: UInt16 = 6667
     @State var nick = "nathan"
-    @State var ident = "nathan"
+    @State var ident = ""
     @State var username = "nathan"
-    @State var email = "nathan@nathan.run"
-    @State var password = "abc"
+    @State var email = ""
+    @State var password = ""
     @State var realname = "Nathan Borror"
-    @State var useTLS = true
+    @State var useTLS = false
 
     @State var service = "openai"
     @State var model = "gpt-4o"
@@ -91,7 +91,7 @@ struct ServerForm: View {
                 if kind == .simulation {
                     server = "\(model)@\(service)"
                 }
-                try await state.createServer(
+                try await state.sessionCreate(
                     kind: kind,
                     server: server,
                     port: port,

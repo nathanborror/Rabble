@@ -37,8 +37,14 @@ struct ServerList: View {
                             }
                         }
                     } else {
+                        Button("Connect") {
+                            Task { try await state.sessionConnect(session: session) }
+                        }
+                        Button("Disconnect") {
+                            Task { try await state.sessionDisconnect(session: session) }
+                        }
                         Button("Delete") {
-                            Task { try await state.deleteServer(fileID: session.server.id) }
+                            Task { try await state.sessionDelete(session: session) }
                         }
                     }
                 }
@@ -83,7 +89,7 @@ struct ServerRow: View {
 
             if !session.isConnected {
                 Button {
-                    Task { try await session.connect() }
+                    Task { try await state.sessionConnect(session: session) }
                 } label: {
                     Image(systemName: "bolt.horizontal.fill")
                         .imageScale(.small)
