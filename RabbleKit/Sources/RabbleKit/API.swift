@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 import SharedKit
-import GenKit
 import IRC
 
 @MainActor @Observable
@@ -138,98 +137,5 @@ extension API {
 
     public func fileDelete(_ fileID: String) async throws {
         try await filesProvider.cacheFileDelete(fileID)
-    }
-}
-
-// MARK: - Services
-
-extension API {
-
-    public func generate(history: [String], message: String) async throws -> [GenKit.Message] {
-        let (service, model) = try preferredChatService()
-
-        let assistant = Message(role: .user, content: history.joined(separator: "\n")+"\n")
-        let user = Message(role: .assistant, content: message+"\n")
-
-        var req = ChatSessionRequest(service: service, model: model)
-        req.with(system: """
-            You are to behave as if you are an IRCv3 server. Your task is to respond to IRC messages exactly as an IRCv3 server would. 
-
-            Parse the incoming IRC logs and generate an appropriate response. Follow these guidelines:
-
-            - Responses should be in the format of IRC protocol messages.
-            - Each response line should start with a colon (:) followed by the server name (use "irc.example.com" as the server name).
-            - Each message should always be on a new line.
-            - Include appropriate numeric replies or command responses as per IRC protocol.
-            - If the message is invalid or unrecognized, respond with an appropriate error message.
-            - Do not add any explanations or comments outside of the IRC protocol format.
-            - Channels should be social, simulate other users in the channel and always return 1-3 responses. 
-
-            Here are some examples of common IRC messages and their corresponding server responses:
-
-            Example 1:
-            Input: 
-                NICK Alice
-            Response: 
-                :irc.example.com 001 Alice :Welcome to the Internet Relay Network Alice!user@host
-
-            Example 2:
-            Input: 
-                JOIN #channel
-            Response:
-                :irc.example.com 353 Alice = #channel :Alice @ChannelOp +Voice
-                :irc.example.com 366 Alice #channel :End of /NAMES list.
-
-            Example 3:
-            Input: 
-                INVALID_COMMAND
-            Response: 
-                :irc.example.com 421 * INVALID_COMMAND :Unknown command
-            
-            Example 4:
-            Input:
-                PRIVMSG #channel :hi
-            Response:
-                :Bob!~u@ghi789.irc PRIVMSG #channel :Hello Alice!
-                :Charlie!~u@aib123.irc PRIVMSG #channel :Welcome to this fine corner of the IRC
-
-            Remember, you must respond ONLY as an IRCv3 server would. Do not provide any additional information, explanations, or engage in conversation outside of the IRC protocol. Your entire response should be formatted as valid IRC server messages.
-            """)
-        req.with(history: [assistant, user])
-
-        let resp = try await ChatSession.shared.completion(req)
-        return resp.messages
-    }
-
-    public func preferredChatService() throws -> (GenKit.ChatService, GenKit.Model) {
-        let service = try get(serviceID: config.serviceChatDefault, config: config)
-        let model = try get(modelID: service.preferredChatModel, service: service)
-        return (try service.chatService(session: session), model)
-    }
-
-    public func preferredImageService() throws -> (GenKit.ImageService, GenKit.Model) {
-        let service = try get(serviceID: config.serviceImageDefault, config: config)
-        let model = try get(modelID: service.preferredImageModel, service: service)
-        return (try service.imageService(session: session), model)
-    }
-
-    public func preferredSummarizationService() throws -> (GenKit.ChatService, GenKit.Model) {
-        let service = try get(serviceID: config.serviceSummarizationDefault, config: config)
-        let model = try get(modelID: service.preferredSummarizationModel, service: service)
-        return (try service.summarizationService(session: session), model)
-    }
-
-    func get(serviceID: String?, config: Config) throws -> GenKit.Service {
-        guard let service = config.services.first(where: { $0.id == serviceID }) else {
-            throw Error.missingService
-        }
-        return service
-    }
-
-    func get(modelID: String?, service: GenKit.Service) throws -> GenKit.Model {
-        guard let model = service.models.first(where: { $0.id == modelID }) else {
-            throw Error.missingModel
-        }
-        return model
     }
 }

@@ -79,13 +79,7 @@ final class AppState {
         for file in files.filter({ $0.isIRC }) {
             var server: IRC.Server = try filePackage(file.id)
             server.id = file.id // This needs to be set because the Server.ID does not get saved because Server is a package
-
-            switch server.config.kind {
-            case .network:
-                sessionPool[file.id] = IRCSessionServer(server)
-            case .simulation:
-                sessionPool[file.id] = IRCSessionSimulation(server)
-            }
+            sessionPool[file.id] = IRCSessionServer(server)
         }
     }
 
@@ -127,13 +121,7 @@ final class AppState {
 
         _ = try await fileCreate(id: fileID, filename: "\(fileID).irc", mimetype: .package, package: server)
 
-        switch server.config.kind {
-        case .network:
-            sessionPool[fileID] = IRCSessionServer(server)
-        case .simulation:
-            sessionPool[fileID] = IRCSessionSimulation(server)
-        }
-
+        sessionPool[fileID] = IRCSessionServer(server)
         selection = .init(fileID: fileID)
 
         // Connect to server
