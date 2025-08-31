@@ -38,7 +38,7 @@ struct MainApp: App {
     }
 
     func appReset() async {
-        state.resetAll()
+        try? await state.resetAll()
         await appActive()
     }
 }
