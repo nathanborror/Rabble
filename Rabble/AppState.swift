@@ -142,7 +142,7 @@ final class AppState {
     }
 
     func sessionConnect(session: IRCSession) async throws {
-        try await session.connect(options: nil)
+        try await session.connect()
         try await self.sessionConnectSequence(session: session)
     }
 

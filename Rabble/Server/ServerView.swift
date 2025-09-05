@@ -71,7 +71,7 @@ struct ServerView: View {
     func handleConnect() {
         Task {
             do {
-                try await viewModel.session.connect(options: nil)
+                try await viewModel.session.connect()
             } catch {
                 print(error)
             }
