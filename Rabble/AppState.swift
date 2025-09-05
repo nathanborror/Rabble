@@ -142,7 +142,7 @@ final class AppState {
     }
 
     func sessionConnect(session: IRCSession) async throws {
-        try await session.connect()
+        try await session.connect(options: nil)
 
         let nick = session.server.config.nick
         let username = session.server.config.username

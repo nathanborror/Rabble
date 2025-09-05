@@ -45,7 +45,7 @@ struct ServerMessageField: View {
                 } else {
                     Spacer()
                     Button("Reconnect") {
-                        Task { try await viewModel.session.connect() }
+                        Task { try await viewModel.session.connect(options: nil) }
                     }
                     #if os(macOS)
                     .buttonStyle(.link)
