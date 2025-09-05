@@ -143,7 +143,10 @@ final class AppState {
 
     func sessionConnect(session: IRCSession) async throws {
         try await session.connect(options: nil)
+        try await self.sessionConnectSequence(session: session)
+    }
 
+    private func sessionConnectSequence(session: IRCSession) async throws {
         let nick = session.server.config.nick
         let username = session.server.config.username
         let realname = session.server.config.realname ?? ""
@@ -153,16 +156,15 @@ final class AppState {
             try await session.send("CAP LS")
             try await session.send("NICK \(nick)")
             try await session.send("USER \(username) 0 * :\(realname)")
-            try await session.send("CAP REQ :sasl echo-message")
-            try await session.send("AUTHENTICATE PLAIN")
-            try await session.send("AUTHENTICATE \(token)")
-            try await session.send("CAP END")
+            try await session.sendCapRequest("sasl", "echo-message")
+            try await session.sendAuthentication(token)
+            try await session.sendCapEnd()
         } else {
             try await session.send("CAP LS")
             try await session.send("NICK \(nick)")
             try await session.send("USER \(username) 0 * :\(realname)")
-            try await session.send("CAP REQ :sasl echo-message")
-            try await session.send("CAP END")
+            try await session.sendCapRequest("sasl", "echo-message")
+            try await session.sendCapEnd()
         }
 
         for channel in session.server.channels {
