@@ -5,6 +5,8 @@ import RabbleKit
 struct ServerList: View {
     @Environment(AppState.self) var state
 
+    @State var showingConfig: IRC.Config? = nil
+
     var body: some View {
         @Bindable var state = state
         VStack {
@@ -13,6 +15,9 @@ struct ServerList: View {
                     ServerRow(session: session)
                         .tag(AppState.Selection(fileID: session.server.id))
                 }
+            }
+            .sheet(item: $showingConfig) { config in
+                ServerForm(config: config)
             }
             .contextMenu(forSelectionType: AppState.Selection.self) { selections in
                 if let selection = selections.first, let session = state.sessionPool[selection.sessionID] {
@@ -37,12 +42,17 @@ struct ServerList: View {
                             }
                         }
                     } else {
+                        Button("Edit") {
+                            showingConfig = session.server.config
+                        }
+                        Divider()
                         Button("Connect") {
                             Task { try await state.sessionConnect(session: session) }
                         }
                         Button("Disconnect") {
                             Task { try await state.sessionDisconnect(session: session) }
                         }
+                        Divider()
                         Button("Delete") {
                             Task { try await state.sessionDelete(session: session) }
                         }

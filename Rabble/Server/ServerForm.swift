@@ -6,7 +6,8 @@ struct ServerForm: View {
     @Environment(AppState.self) var state
     @Environment(\.dismiss) var dismiss
 
-    @State var kind = IRC.Config.Kind.network
+    let config: IRC.Config?
+
     @State var server = "localhost"
     @State var port: UInt16 = 6667
     @State var nick = "nathan"
@@ -17,56 +18,31 @@ struct ServerForm: View {
     @State var realname = "Nathan Borror"
     @State var useTLS = false
 
-    @State var service = "openai"
-    @State var model = "gpt-4o"
+    init(config: IRC.Config? = nil) {
+        self.config = config
+    }
 
     var body: some View {
         Form {
             Section {
-                Picker("Kind", selection: $kind) {
-                    Text("Network").tag(IRC.Config.Kind.network)
-                    Text("Simulation").tag(IRC.Config.Kind.simulation)
-                }
-                .pickerStyle(.inline)
+                TextField("Server", text: $server)
+                    .textContentType(.URL)
+                TextField("Port", value: $port, format: .number.grouping(.never))
+                Toggle("Use TLS", isOn: $useTLS)
             }
-            switch kind {
-            case .network:
-                Section {
-                    TextField("Server", text: $server)
-                        .textContentType(.URL)
-                    TextField("Port", value: $port, format: .number.grouping(.never))
-                    Toggle("Use TLS", isOn: $useTLS)
-                }
-                Section {
-                    TextField("Nick", text: $nick)
-                        .textContentType(.username)
-                    TextField("Ident", text: $ident)
-                        .textContentType(.username)
-                    TextField("Username", text: $username)
-                        .textContentType(.username)
-                    TextField("Email", text: $email)
-                        .textContentType(.emailAddress)
-                    SecureField("Password", text: $password)
-                        .textContentType(.password)
-                    TextField("Real Name", text: $realname)
-                        .textContentType(.name)
-                }
-            case .simulation:
-                Section {
-                    Picker("Service", selection: $service) {
-                        Text("OpenAI").tag("openai")
-                    }
-                    Picker("Model", selection: $model) {
-                        Text("gpt-4o").tag("gpt-4o")
-                        Text("gpt-4o-mini").tag("gpt-4o-mini")
-                    }
-                }
-                Section {
-                    TextField("Nick", text: $nick)
-                        .textContentType(.username)
-                    TextField("Name", text: $realname)
-                        .textContentType(.name)
-                }
+            Section {
+                TextField("Nick", text: $nick)
+                    .textContentType(.username)
+                TextField("Ident", text: $ident)
+                    .textContentType(.username)
+                TextField("Username", text: $username)
+                    .textContentType(.username)
+                TextField("Email", text: $email)
+                    .textContentType(.emailAddress)
+                SecureField("Password", text: $password)
+                    .textContentType(.password)
+                TextField("Real Name", text: $realname)
+                    .textContentType(.name)
             }
         }
         .navigationTitle("Server Form")
@@ -83,16 +59,30 @@ struct ServerForm: View {
                 }
             }
         }
+        .task(id: config) {
+            handleLoad()
+        }
+    }
+
+    func handleLoad() {
+        guard let config else { return }
+
+        self.server = config.server
+        self.port = config.port
+        self.nick = config.nick
+        self.ident = config.ident ?? ident
+        self.username = config.username
+        self.email = config.email ?? email
+        self.password = config.password ?? password
+        self.realname = config.realname ?? realname
+        self.useTLS = config.useTLS
     }
 
     func handleSubmit() {
         Task {
             do {
-                if kind == .simulation {
-                    server = "\(model)@\(service)"
-                }
                 try await state.sessionCreate(
-                    kind: kind,
+                    kind: .network,
                     server: server,
                     port: port,
                     useTLS: useTLS,

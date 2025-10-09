@@ -151,25 +151,25 @@ final class AppState {
         let username = session.server.config.username
         let realname = session.server.config.realname ?? ""
 
-        if let password = session.server.config.password {
-            let token = sessionToken(nick: nick, username: username, password: password)
-            try await session.send("CAP LS")
-            try await session.send("NICK \(nick)")
-            try await session.send("USER \(username) 0 * :\(realname)")
-            try await session.sendCapRequest("sasl", "echo-message")
-            try await session.sendAuthentication(token)
-            try await session.sendCapEnd()
-        } else {
-            try await session.send("CAP LS")
-            try await session.send("NICK \(nick)")
-            try await session.send("USER \(username) 0 * :\(realname)")
-            try await session.sendCapRequest("sasl", "echo-message")
-            try await session.sendCapEnd()
-        }
-
-        for channel in session.server.channels {
-            try await session.channelJoin(channel.id)
-        }
+//        if let password = session.server.config.password {
+//            let token = sessionToken(nick: nick, username: username, password: password)
+//            try await session.send("CAP LS")
+//            try await session.send("NICK \(nick)")
+//            try await session.send("USER \(username) 0 * :\(realname)")
+//            try await session.sendCapRequest("sasl", "echo-message")
+//            try await session.sendAuthentication(token)
+//            try await session.sendCapEnd()
+//        } else {
+//            try await session.send("CAP LS")
+//            try await session.send("NICK \(nick)")
+//            try await session.send("USER \(username) 0 * :\(realname)")
+//            try await session.sendCapRequest("sasl", "echo-message")
+//            try await session.sendCapEnd()
+//        }
+//
+//        for channel in session.server.channels {
+//            try await session.channelJoin(channel.id)
+//        }
     }
 
     func sessionRegister(session: IRCSession, email: String, password: String) async throws {
