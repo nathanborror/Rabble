@@ -37,7 +37,12 @@ struct ChannelView: View {
         .navigationSubtitle(channelState.topic ?? "No topic")
         #endif
         .safeAreaInset(edge: .bottom) {
-            ChannelMessageField()
+            if serverState.state == .connected {
+                @Bindable var channelState = channelState
+                MessageField(text: $channelState.draft) {
+                    handleSubmit()
+                }
+            }
         }
         .toolbar {
             ToolbarItem {
@@ -54,6 +59,17 @@ struct ChannelView: View {
 //        }
         .onChange(of: messages.count) { _, _ in
             scrollPosition.scrollTo(edge: .bottom)
+        }
+    }
+
+    func handleSubmit() {
+        let input = channelState.draft
+        channelState.draft = ""
+
+        if let command = SlashCommand.parse(input) {
+            serverState.executeSlashCommand(command, currentChannel: channelState.name)
+        } else {
+            serverState.privmsg(target: channelState.name, text: input)
         }
     }
 }

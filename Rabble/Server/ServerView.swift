@@ -38,7 +38,12 @@ struct ServerView: View {
         .navigationSubtitle("\(serverState.channels.count) channels")
         #endif
         .safeAreaInset(edge: .bottom) {
-            ServerMessageField()
+            if serverState.state == .connected {
+                @Bindable var serverState = serverState
+                MessageField(text: $serverState.draft) {
+                    serverState.submit()
+                }
+            }
         }
         .toolbar {
             ToolbarItem {

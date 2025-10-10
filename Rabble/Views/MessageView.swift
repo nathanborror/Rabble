@@ -92,6 +92,7 @@ struct MessageLine: View {
                     }
                     if let symbol {
                         Image(systemName: symbol)
+                            .foregroundStyle(.tertiary)
                     }
                 }
                 .fontWeight(.semibold)
