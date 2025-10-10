@@ -30,38 +30,24 @@ struct MainApp: App {
             }
             .containerBackground(.background, for: .window)
             .onAppear {
-                Task { await appActive() }
+                appActive()
             }
         }
         .environment(state)
         .commands {
-            CommandGroup(replacing: .newItem) {
+            CommandMenu("Rabble") {
                 Button("New Server") {
                     state.showingServerForm = true
                 }
                 .keyboardShortcut("n", modifiers: .command)
-            }
-            CommandGroup(after: .newItem) {
-                Button("Save All") {
-                    Task {
-                        do {
-                            try await state.save()
-                        } catch {
-                            print(error)
-                        }
-                    }
+                Divider()
+                Button("Save") {
+                    state.save()
                 }
                 .keyboardShortcut("s", modifiers: .command)
-            }
-            CommandMenu("Rabble") {
+                Divider()
                 Button("Reset All Data") {
-                    Task {
-                        do {
-                            try await state.resetAll()
-                        } catch {
-                            print(error)
-                        }
-                    }
+                    state.resetAll()
                 }
             }
         }
@@ -101,12 +87,12 @@ struct MainApp: App {
         .defaultSize(width: 350, height: 500)
     }
 
-    func appActive() async {
-        print("appActive: not implemented")
+    func appActive() {
+        state.restore()
     }
 
     func appReset() async {
-        try? await state.resetAll()
-        await appActive()
+        state.resetAll()
+        appActive()
     }
 }

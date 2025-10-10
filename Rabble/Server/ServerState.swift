@@ -4,9 +4,9 @@ import IRC
 @MainActor
 @Observable
 final class ServerState {
-    let config: Config
     let client: IRC.Client
 
+    var config: Config
     var events: [IRC.Client.Event] = []
     var joined: [String: ChannelState] = [:]
     var channels: [String: IRC.ListAggregation.Entry] = [:]
@@ -65,12 +65,44 @@ final class ServerState {
         self.client = .init(config: clientConfig, transport: transport)
     }
 
+    convenience init(_ path: String) throws {
+        let documentsURL = URL.documentsDirectory
+        let serverURL = documentsURL.appendingPathComponent(path)
+
+        let configURL = serverURL.appendingPathComponent("config")
+        let configData = try Data(contentsOf: configURL)
+        let config = ConfigDecoder().decode(configData)
+
+        self.init(config: config, transport: NWTransport())
+
+        let logsURL = serverURL.appendingPathComponent("logs")
+        let logsString = try String(contentsOf: logsURL, encoding: .utf8)
+
+        let lines = logsString.split(separator: "\r\n").map(String.init)
+        self.events = lines.map { IRC.Message.parse($0) }.map { .message($0) }
+    }
+
+    func save() {
+        do {
+            try serialize()
+        } catch {
+            print(error)
+        }
+    }
+
     func connect() {
         Task {
             do {
                 try await client.connect()
                 Task { await processEvents() }
                 await client.awaitRegistered()
+
+                // Rejoin channels
+                if case .array(let channels) = config[section: "channels"] {
+                    for channel in channels {
+                        join(channel)
+                    }
+                }
             } catch {
                 print(error)
             }
@@ -409,6 +441,9 @@ final class ServerState {
     }
 
     private func serialize() throws {
+        config[section: "channels"] = .array(Array(joined.keys))
+
+        // Extract message events
         let messages: [Message] = events
             .compactMap {
                 guard case .message(let message) = $0 else {
@@ -417,5 +452,23 @@ final class ServerState {
                 return message
             }
         let lines = messages.map { $0.raw }
+        
+        // Get documents directory
+        let fileManager = FileManager.default
+        let documentsURL = URL.documentsDirectory
+
+        // Create server folder
+        let serverFolderURL = documentsURL.appendingPathComponent(server)
+        try fileManager.createDirectory(at: serverFolderURL, withIntermediateDirectories: true, attributes: nil)
+        
+        // Save config file
+        let configURL = serverFolderURL.appendingPathComponent("config")
+        let configData = ConfigEncoder().encode(config.sections)
+        try configData.write(to: configURL, atomically: true, encoding: .utf8)
+        
+        // Save logs file
+        let logsURL = serverFolderURL.appendingPathComponent("logs")
+        let logsData = lines.joined(separator: "\r\n")
+        try logsData.write(to: logsURL, atomically: true, encoding: .utf8)
     }
 }

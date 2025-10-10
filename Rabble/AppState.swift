@@ -30,17 +30,32 @@ final class AppState {
         logger.info("🍱 \(URL.documentsDirectory.path())")
     }
 
-    func ready() async throws {
-        print("not implemented")
+    func restore() {
+        do {
+            let contents = try FileManager.default.contentsOfDirectory(at: .documentsDirectory, includingPropertiesForKeys: [.isDirectoryKey])
+            let directories = contents
+                .filter { (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false }
+                .map { $0.lastPathComponent }
+
+            for path in directories {
+                if let server = try? ServerState(path) {
+                    servers[server.server] = server
+                }
+            }
+        } catch {
+            print("Error restoring:", error)
+        }
     }
 
-    func resetAll() async throws {
+    func resetAll() {
         servers = [:]
         selection = nil
     }
 
-    func save() async throws {
-        print("not implemented")
+    func save() {
+        for (_, serverState) in servers {
+            serverState.save()
+        }
     }
 
     // MARK: - IRC

@@ -169,7 +169,11 @@ public struct ConfigDecoder {
 
         for line in input.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.isEmpty || trimmed.hasPrefix(";") || trimmed.hasPrefix("#") {
+            if trimmed.isEmpty || trimmed.hasPrefix(";") {
+                continue
+            }
+            // Only treat # as a comment outside of sections
+            if trimmed.hasPrefix("#") && currentSection == nil {
                 continue
             }
             if trimmed.hasPrefix("[") && trimmed.hasSuffix("]") {
