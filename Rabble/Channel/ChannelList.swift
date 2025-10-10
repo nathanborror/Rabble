@@ -1,66 +1,80 @@
 import SwiftUI
 import IRC
-import RabbleKit
 
 struct ChannelList: View {
     @Environment(AppState.self) var state
+    @Environment(ServerState.self) var serverState
     @Environment(\.dismiss) var dismiss
 
-    let session: IRCSession
+    @State private var selected: String? = nil
+    @State private var showingCreateForm = false
+    @State private var createChannelName = ""
 
-    @State private var selected: Set<String> = []
-    @State private var sortOrder = [KeyPathComparator(\IRC.ChannelRef.name)]
+    var channels: [IRC.ListAggregation.Entry] {
+        Array(serverState.channels.values)
+    }
 
     var body: some View {
-        Table(session.server.channelList, selection: $selected, sortOrder: $sortOrder) {
-            TableColumn("Name", value: \.name)
-            TableColumn("Users") { channel in
-                Text("\(channel.users ?? 0)")
-            }
-            .width(50)
-            TableColumn("Topic") { channel in
-                if let topic = channel.topic {
-                    Text(topic)
+        List(selection: $selected) {
+            ForEach(channels, id: \.channel) { channel in
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading) {
+                        Text(channel.channel)
+                        Text(channel.topic)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Text("\(channel.userCount)")
                 }
+                .tag(channel.channel)
             }
-        }
-        .contextMenu(forSelectionType: String.self) { names in
-            Button("Join") {
-                handleJoin(names)
-            }
-        } primaryAction: { names in
-            handleJoin(names)
         }
         .navigationTitle("Channels")
         .toolbar {
-            ToolbarItem {
+            ToolbarItemGroup {
                 Button("List", systemImage: "arrow.clockwise") {
                     handleList()
+                }
+                Button("Create", systemImage: "plus") {
+                    showingCreateForm = true
+                }
+            }
+        }
+        .sheet(isPresented: $showingCreateForm) {
+            Form {
+                TextField("Channel Name", text: $createChannelName)
+                    .padding()
+            }
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Create") {
+                        handleCreate(createChannelName)
+                    }
+                }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        showingCreateForm = false
+                    }
                 }
             }
         }
     }
 
     func handleList() {
-        Task {
-            do {
-                try await session.send("LIST")
-            } catch {
-                print(error)
-            }
-        }
+        serverState.list()
     }
 
-    func handleJoin(_ names: Set<String>) {
-        Task {
-            do {
-                for name in names {
-                    try await session.channelJoin(name)
-                    state.selection = .init(fileID: session.server.id, channelID: name)
-                }
-            } catch {
-                print(error)
-            }
-        }
+    func handleJoin() {
+        guard let name = selected, !name.isEmpty else { return }
+        serverState.join(name)
+    }
+
+    func handleCreate(_ name: String) {
+        guard !name.isEmpty else { return }
+        serverState.join(name)
+        handleList()
+        createChannelName = ""
+        showingCreateForm = false
     }
 }

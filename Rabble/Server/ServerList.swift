@@ -1,64 +1,52 @@
 import SwiftUI
 import IRC
-import RabbleKit
 
 struct ServerList: View {
     @Environment(AppState.self) var state
-
-    @State var showingConfig: IRC.Config? = nil
 
     var body: some View {
         @Bindable var state = state
         VStack {
             List(selection: $state.selection) {
-                ForEach(Array(state.sessionPool.values).sorted(by: { $0.server.config.created < $1.server.config.created }), id: \.server.id) { session in
-                    ServerRow(session: session)
-                        .tag(AppState.Selection(fileID: session.server.id))
-                }
-            }
-            .sheet(item: $showingConfig) { config in
-                ServerForm(config: config)
-            }
-            .contextMenu(forSelectionType: AppState.Selection.self) { selections in
-                if let selection = selections.first, let session = state.sessionPool[selection.sessionID] {
-                    if let channelID = selection.channelID {
-                        Button("Get Info") {
-                            Task {
-                                do {
-                                    try await session.channelInfo(channelID)
-                                } catch {
-                                    print(error)
-                                }
-                            }
-                        }
-                        Divider()
-                        Button("Leave") {
-                            Task {
-                                do {
-                                    try await session.channelPart(channelID)
-                                } catch {
-                                    print(error)
-                                }
-                            }
-                        }
-                    } else {
-                        Button("Edit") {
-                            showingConfig = session.server.config
-                        }
-                        Divider()
-                        Button("Connect") {
-                            Task { try await state.sessionConnect(session: session) }
-                        }
-                        Button("Disconnect") {
-                            Task { try await state.sessionDisconnect(session: session) }
-                        }
-                        Divider()
-                        Button("Delete") {
-                            Task { try await state.sessionDelete(session: session) }
-                        }
+                ForEach(Array(state.servers.keys), id: \.self) { host in
+                    if let serverState = state.servers[host] {
+                        ServerRow()
+                            .environment(serverState)
+                            .tag(AppState.Selection(server: host))
                     }
                 }
             }
+//            .sheet(item: $showingConfig) { config in
+//                ServerForm(config: config)
+//            }
+//            .contextMenu(forSelectionType: AppState.Selection.self) { selections in
+//                if let selection = selections.first, let server = state.servers[selection.server] {
+//                    if let channel = selection.channel {
+//                        Button("Get Info") {
+//                            print("not implemented")
+//                        }
+//                        Divider()
+//                        Button("Leave") {
+//                            print("not implemented")
+//                        }
+//                    } else {
+//                        Button("Edit") {
+//                            showingConfig = session.server.config
+//                        }
+//                        Divider()
+//                        Button("Connect") {
+//                            print("not implemented")
+//                        }
+//                        Button("Disconnect") {
+//                            print("not implemented")
+//                        }
+//                        Divider()
+//                        Button("Delete") {
+//                            print("not implemented")
+//                        }
+//                    }
+//                }
+//            }
             Spacer()
             HStack {
                 Button {
@@ -76,8 +64,7 @@ struct ServerList: View {
 
 struct ServerRow: View {
     @Environment(AppState.self) var state
-
-    let session: IRCSession
+    @Environment(ServerState.self) var serverState
 
     @State var isExpanded = true
 
@@ -92,14 +79,14 @@ struct ServerRow: View {
             .foregroundStyle(.secondary)
             .buttonStyle(.borderless)
 
-            Text("\(session.server.config.nick)@\(session.server.config.server)")
+            Text("\(serverState.nick)@\(serverState.server)")
                 .fontWeight(.semibold)
 
             Spacer()
 
-            if !session.isConnected {
+            if serverState.state != .connected {
                 Button {
-                    Task { try await state.sessionConnect(session: session) }
+                    serverState.connect()
                 } label: {
                     Image(systemName: "bolt.horizontal.fill")
                         .imageScale(.small)
@@ -110,7 +97,7 @@ struct ServerRow: View {
         }
 
         if isExpanded {
-            ForEach(session.server.channels.sorted(by: { $0.name < $1.name })) { channel in
+            ForEach(Array(serverState.joined.values), id: \.name) { channel in
                 HStack(spacing: 0) {
                     Image(systemName: "number")
                         .frame(width: 16, height: 16)
@@ -120,7 +107,7 @@ struct ServerRow: View {
                         .fontDesign(.monospaced)
                 }
                 .padding(.leading, 16)
-                .tag(AppState.Selection(fileID: session.server.id, channelID: channel.id))
+                .tag(AppState.Selection(server: serverState.server, channel: channel.name))
             }
         }
     }

@@ -1,19 +1,19 @@
 import SwiftUI
-import RabbleKit
 
 struct ServerMessageField: View {
-    @Environment(ServerViewModel.self) var viewModel
+    @Environment(AppState.self) var state
+    @Environment(ServerState.self) var serverState
 
     @State private var history: [String] = []
     @State private var historyIndex: Int? = nil
 
     var body: some View {
-        @Bindable var viewModel = viewModel
+        @Bindable var serverState = serverState
         VStack(alignment: .leading, spacing: 0) {
             Divider()
             HStack(alignment: .bottom) {
-                if viewModel.session.isConnected {
-                    TextField("Message", text: $viewModel.draft, axis: .vertical)
+                if serverState.state == .connected {
+                    TextField("Message", text: $serverState.draft, axis: .vertical)
                         .onKeyPress { press in
                             switch press.key {
                             case .upArrow:
@@ -41,11 +41,11 @@ struct ServerMessageField: View {
                             .padding(8)
                     }
                     .buttonStyle(.plain)
-                    .disabled(viewModel.draft.isEmpty)
+                    .disabled(serverState.draft.isEmpty)
                 } else {
                     Spacer()
                     Button("Reconnect") {
-                        Task { try await viewModel.session.connect() }
+                        serverState.connect()
                     }
                     #if os(macOS)
                     .buttonStyle(.link)
@@ -59,10 +59,9 @@ struct ServerMessageField: View {
     }
 
     func handleSubmit() {
-        history.append(viewModel.draft)
+        history.append(serverState.draft)
         historyIndex = nil
-
-        viewModel.submit()
+        serverState.submit()
     }
 
     func handleHistoryBackward() {
@@ -72,17 +71,17 @@ struct ServerMessageField: View {
         } else {
             historyIndex = history.count - 1
         }
-        viewModel.draft = history[historyIndex!]
+        serverState.draft = history[historyIndex!]
     }
 
     func handleHistoryForward() {
         guard let index = historyIndex else { return }
         if index < (history.count - 1) {
             historyIndex = index + 1
-            viewModel.draft = history[historyIndex!]
+            serverState.draft = history[historyIndex!]
         } else {
             historyIndex = nil
-            viewModel.draft = ""
+            serverState.draft = ""
         }
     }
 }

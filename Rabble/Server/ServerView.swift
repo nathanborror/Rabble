@@ -1,30 +1,30 @@
 import SwiftUI
 import IRC
-import RabbleKit
 
 struct ServerView: View {
     @Environment(AppState.self) var state
+    @Environment(ServerState.self) var serverState
     @Environment(\.openWindow) var openWindow
 
-    @State private var viewModel: ServerViewModel
     @State private var scrollPosition = ScrollPosition()
 
-    init(session: IRCSession) {
-        self.viewModel = .init(session: session)
+    var messages: [IRC.Message] {
+        serverState.events.compactMap {
+            guard case .message(let message) = $0 else { return nil }
+            return message
+        }
     }
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
             ScrollView {
                 LazyVStack(alignment: .leading) {
-                    ForEach(viewModel.logs.indices, id: \.self) { index in
-                        if index < viewModel.logs.count {
-                            Text(viewModel.logs[index])
-                                .font(.footnote)
-                                .fontDesign(.monospaced)
-                                .textSelection(.enabled)
-                                .scrollTargetLayout()
-                        }
+                    ForEach(messages.indices, id: \.self) { index in
+                        Text(messages[index].raw)
+                            .font(.footnote)
+                            .fontDesign(.monospaced)
+                            .textSelection(.enabled)
+                            .scrollTargetLayout()
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -32,24 +32,13 @@ struct ServerView: View {
             }
             .scrollPosition($scrollPosition, anchor: .bottom)
             .defaultScrollAnchor(.bottom)
-            .background(.background)
-
-            VStack(alignment: .leading) {
-                if let error = viewModel.session.error {
-                    StickyView(kind: .error, title: "Error", expanded: true) {
-                        Text("\(error)")
-                    }
-                }
-            }
-            .padding()
         }
-        .navigationTitle("\(viewModel.config.nick)@\(viewModel.config.server)")
+        .navigationTitle("\(serverState.nick)@\(serverState.server)")
         #if os(macOS)
-        .navigationSubtitle("\(viewModel.list.count) channels")
+        .navigationSubtitle("\(serverState.channels.count) channels")
         #endif
         .safeAreaInset(edge: .bottom) {
             ServerMessageField()
-                .environment(viewModel)
         }
         .toolbar {
             ToolbarItem {
@@ -63,33 +52,21 @@ struct ServerView: View {
                 }
             }
         }
-        .onChange(of: viewModel.logs.count) { _, _ in
+        .onChange(of: serverState.events.count) { _, _ in
             scrollPosition.scrollTo(edge: .bottom)
         }
     }
 
     func handleConnect() {
-        Task {
-            do {
-                try await viewModel.session.connect()
-            } catch {
-                print(error)
-            }
-        }
+        serverState.connect()
     }
 
     func handleChannelList() {
-        Task {
-            do {
-                try await viewModel.session.send("LIST")
-                openWindow(id: "channels", value: viewModel.session.server.id)
-            } catch {
-                print(error)
-            }
-        }
+        serverState.list()
+        openWindow(id: "channels", value: serverState.server)
     }
 
     func handleChannelInfo() {
-        openWindow(id: "server", value: viewModel.session.server.id)
+        openWindow(id: "server", value: serverState.server)
     }
 }

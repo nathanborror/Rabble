@@ -1,23 +1,30 @@
 import SwiftUI
 import IRC
-import RabbleKit
 
 struct ChannelView: View {
     @Environment(AppState.self) var state
+    @Environment(ServerState.self) var serverState
+    @Environment(ChannelState.self) var channelState
     @Environment(\.openWindow) var openWindow
 
-    @State private var viewModel: ChannelViewModel
     @State private var scrollPosition = ScrollPosition()
 
-    init(channelID: String, session: IRCSession) {
-        self.viewModel = .init(channelID: channelID, session: session)
+    var messages: [Message] {
+        serverState.events
+            .compactMap {
+                guard case .message(let message) = $0 else { return nil }
+                return message
+            }
+            .filter {
+                $0.params.first == channelState.name
+            }
     }
 
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
-                ForEach(viewModel.messages) { message in
-                    MessageView(message: message)
+                ForEach(messages.indices, id: \.self) { index in
+                    MessageView(message: messages[index])
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .scrollTargetLayout()
                 }
@@ -25,30 +32,27 @@ struct ChannelView: View {
         }
         .scrollPosition($scrollPosition, anchor: .bottom)
         .defaultScrollAnchor(.bottom)
-        .environment(viewModel)
-        .navigationTitle(viewModel.title)
+        .navigationTitle(channelState.name)
         #if os(macOS)
-        .navigationSubtitle(viewModel.subtitle)
+        .navigationSubtitle(channelState.topic ?? "No topic")
         #endif
         .safeAreaInset(edge: .bottom) {
             ChannelMessageField()
-                .environment(viewModel)
         }
         .toolbar {
             ToolbarItem {
                 Button("Inspector", systemImage: "sidebar.right") {
-                    viewModel.showingInspector.toggle()
+                    channelState.showingInspector.toggle()
                 }
             }
         }
-        .inspector(isPresented: $viewModel.showingInspector) {
-            NavigationStack {
-                ChannelDetails(session: viewModel.session)
-            }
-            .environment(viewModel)
-            .inspectorColumnWidth(ideal: 200)
-        }
-        .onChange(of: viewModel.messages.count) { _, _ in
+//        .inspector(isPresented: $channelState.showingInspector) {
+//            NavigationStack {
+//                ChannelDetails(session: viewModel.session)
+//            }
+//            .inspectorColumnWidth(ideal: 200)
+//        }
+        .onChange(of: messages.count) { _, _ in
             scrollPosition.scrollTo(edge: .bottom)
         }
     }

@@ -1,5 +1,4 @@
 import SwiftUI
-import RabbleKit
 
 @main
 struct MainApp: App {
@@ -16,13 +15,14 @@ struct MainApp: App {
                         }
                     }
             } detail: {
-                if let fileID = state.selection?.sessionID, let session = state.sessionPool[fileID] {
-                    if let channelID = state.selection?.channelID {
-                        ChannelView(channelID: channelID, session: session)
-                            .id(fileID+channelID)
+                if let server = state.selection?.server, let serverState = state.servers[server] {
+                    if let channel = state.selection?.channel, let channelState = serverState.joined[channel] {
+                        ChannelView()
+                            .environment(serverState)
+                            .environment(channelState)
                     } else {
-                        ServerView(session: session)
-                            .id(fileID)
+                        ServerView()
+                            .environment(serverState)
                     }
                 } else {
                     ContentUnavailableView("No Server", systemImage: "apple.terminal")
@@ -66,10 +66,11 @@ struct MainApp: App {
             }
         }
 
-        WindowGroup("Channels", id: "channels", for: String.self) { fileID in
+        WindowGroup("Channels", id: "channels", for: String.self) { server in
             NavigationStack {
-                if let fileID = fileID.wrappedValue, let session = state.sessionPool[fileID] {
-                    ChannelList(session: session)
+                if let server = server.wrappedValue, let serverState = state.servers[server] {
+                    ChannelList()
+                        .environment(serverState)
                 } else {
                     ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
                 }
@@ -78,9 +79,10 @@ struct MainApp: App {
         .environment(state)
         .defaultSize(width: 500, height: 600)
 
-        WindowGroup("Server Info", id: "server", for: String.self) { fileID in
-            if let fileID = fileID.wrappedValue, let session = state.sessionPool[fileID] {
-                ServerInfo(session: session)
+        WindowGroup("Server Info", id: "server", for: String.self) { server in
+            if let server = server.wrappedValue, let serverState = state.servers[server] {
+                ServerInfo()
+                    .environment(serverState)
             } else {
                 ContentUnavailableView("No Channels", image: "list.bullet.rectangle")
             }
@@ -89,8 +91,8 @@ struct MainApp: App {
         .defaultSize(width: 350, height: 500)
 
         WindowGroup("User Info", id: "user", for: AppState.Selection.self) { selection in
-            if let selection = selection.wrappedValue, let channelID = selection.channelID, let userID = selection.userID {
-                ChannelMemberInfo(sessionID: selection.sessionID, channelID: channelID, userID: userID)
+            if let selection = selection.wrappedValue, let nick = selection.nick {
+                UserDetail(server: selection.server, nick: nick)
             } else {
                 ContentUnavailableView("No Channel Member", image: "person.text.rectangle")
             }
@@ -100,11 +102,7 @@ struct MainApp: App {
     }
 
     func appActive() async {
-        do {
-            try await state.ready()
-        } catch {
-            state.log(error: error)
-        }
+        print("appActive: not implemented")
     }
 
     func appReset() async {

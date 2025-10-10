@@ -1,20 +1,20 @@
 import SwiftUI
-import RabbleKit
 
 struct ChannelMessageField: View {
     @Environment(AppState.self) var state
-    @Environment(ChannelViewModel.self) var viewModel
+    @Environment(ServerState.self) var serverState
+    @Environment(ChannelState.self) var channelState
 
     @State private var history: [String] = []
     @State private var historyIndex: Int? = nil
 
     var body: some View {
-        @Bindable var viewModel = viewModel
+        @Bindable var channelState = channelState
         VStack(alignment: .leading, spacing: 0) {
             Divider()
             HStack(alignment: .bottom) {
-                if viewModel.session.isConnected {
-                    TextField("Say something...", text: $viewModel.draft, axis: .vertical)
+                if serverState.state == .connected {
+                    TextField("Say something...", text: $channelState.draft, axis: .vertical)
                         .onKeyPress { press in
                             switch press.key {
                             case .upArrow:
@@ -42,11 +42,11 @@ struct ChannelMessageField: View {
                             .padding(8)
                     }
                     .buttonStyle(.plain)
-                    .disabled(viewModel.draft.isEmpty)
+                    .disabled(channelState.draft.isEmpty)
                 } else {
                     Spacer()
                     Button("Reconnect") {
-                        Task { try await state.sessionConnect(session: viewModel.session) }
+                        serverState.connect()
                     }
                     #if os(macOS)
                     .buttonStyle(.link)
@@ -60,10 +60,17 @@ struct ChannelMessageField: View {
     }
 
     func handleSubmit() {
-        history.append(viewModel.draft)
+        history.append(channelState.draft)
         historyIndex = nil
 
-        viewModel.submit()
+        let input = channelState.draft
+        channelState.draft = ""
+        
+        if let command = SlashCommand.parse(input) {
+            serverState.executeSlashCommand(command, currentChannel: channelState.name)
+        } else {
+            serverState.privmsg(target: channelState.name, text: input)
+        }
     }
 
     func handleHistoryBackward() {
@@ -73,17 +80,17 @@ struct ChannelMessageField: View {
         } else {
             historyIndex = history.count - 1
         }
-        viewModel.draft = history[historyIndex!]
+        channelState.draft = history[historyIndex!]
     }
 
     func handleHistoryForward() {
         guard let index = historyIndex else { return }
         if index < (history.count - 1) {
             historyIndex = index + 1
-            viewModel.draft = history[historyIndex!]
+            channelState.draft = history[historyIndex!]
         } else {
             historyIndex = nil
-            viewModel.draft = ""
+            channelState.draft = ""
         }
     }
 }

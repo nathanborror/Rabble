@@ -1,5 +1,4 @@
 import SwiftUI
-import RabbleKit
 
 @main
 struct MainApp: App {

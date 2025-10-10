@@ -1,22 +1,13 @@
 {
-  "originHash" : "dbda7941e7c99e355a49fd7592b8ef08c5aec82c7eda158db7edcd95d458d197",
+  "originHash" : "810d6dd1db0d2cfd677cedab04596ca36ea2f3b97e7f50b9276ee0b4ebbd8e20",
   "pins" : [
     {
-      "identity" : "swift-irc",
+      "identity" : "swift-irc-generated",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/nathanborror/swift-irc",
+      "location" : "https://github.com/nathanborror/swift-irc-generated",
       "state" : {
         "branch" : "main",
-        "revision" : "2989d8a8f3401ec89e928967c5478ff03d1d6884"
-      }
-    },
-    {
-      "identity" : "swift-shared-kit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/nathanborror/swift-shared-kit",
-      "state" : {
-        "branch" : "main",
-        "revision" : "3159eb54575d9f8b432bc236f7f46a8d6431d563"
+        "revision" : "0ba48a4612890757494d80a7a932c2b754f7494f"
       }
     }
   ],

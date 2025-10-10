@@ -1,6 +1,5 @@
 import SwiftUI
 import IRC
-import RabbleKit
 
 struct MessageRow: View {
     let message: IRC.Message

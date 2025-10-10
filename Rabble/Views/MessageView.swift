@@ -1,52 +1,62 @@
 import SwiftUI
 import IRC
-import RabbleKit
 
 struct MessageView: View {
-    @Environment(ChannelViewModel.self) var channelViewModel
 
     let message: IRC.Message
 
     var body: some View {
         switch message.command {
-        case let .PRIVMSG(_, text):
+        case "PRIVMSG":
             MessageLine(
-                timestamp: message.timestamp,
+                timestamp: timestamp(for: message),
                 nick: message.nick ?? "guest",
-                text: text
+                text: message.params.last ?? ""
             )
-        case .JOIN:
+        case "JOIN":
             MessageLine(
-                timestamp: message.timestamp,
+                timestamp: timestamp(for: message),
                 symbol: "hand.wave.fill",
                 text: "\(message.nick ?? "Unknown user") joined"
             )
-        case let .PART(_, reason):
+        case "PART":
             MessageLine(
-                timestamp: message.timestamp,
+                timestamp: timestamp(for: message),
                 symbol: "door.left.hand.closed",
-                text: "\(message.nick ?? "Unknown user") left \(reason != nil ? "(\(reason!))" : "")"
+                text: "\(message.nick ?? "Unknown") left" // TODO: Add reason
             )
-        case let .KICK(_, nick, comment):
+        case "KICK":
             MessageLine(
-                timestamp: message.timestamp,
+                timestamp: timestamp(for: message),
                 symbol: "figure.kickboxing",
-                text: "\(nick) was kicked \(comment != nil ? "(\(comment!))" : "")"
+                text: "\(message.nick ?? "Unknown") was kicked" // TODO: Add reason
             )
-        case let .TOPIC(_, text):
+        case "TOPIC":
             MessageLine(
-                timestamp: message.timestamp,
+                timestamp: timestamp(for: message),
                 symbol: "megaphone.fill",
-                text: text
+                text: "Topic changed '\(message.params.last ?? "")'"
             )
         default:
             Text("nil")
         }
     }
+
+    func timestamp(for message: Message) -> Date {
+        if let timeTag = message.tags["time"] {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = formatter.date(from: timeTag) {
+                return date
+            }
+        }
+        // Fall back to current time if no server-time tag
+        return Date()
+    }
 }
 
 struct MessageLine: View {
-    @Environment(ChannelViewModel.self) var channelViewModel
+    @Environment(ServerState.self) var serverState
 
     let timestamp: Date
     let nick: String?
@@ -94,13 +104,5 @@ struct MessageLine: View {
         .padding(.horizontal)
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(.system(.subheadline, design: .monospaced))
-        .background(backgroundColor)
-    }
-
-    var backgroundColor: Color {
-        if nick == channelViewModel.config.nick {
-            return .yellow.opacity(0.2)
-        }
-        return .clear
     }
 }
